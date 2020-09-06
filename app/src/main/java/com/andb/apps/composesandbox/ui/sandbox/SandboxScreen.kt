@@ -1,6 +1,8 @@
 package com.andb.apps.composesandbox.ui.sandbox
 
 import androidx.compose.Composable
+import androidx.compose.mutableStateOf
+import androidx.compose.remember
 import androidx.compose.state
 import androidx.ui.core.Modifier
 import androidx.ui.foundation.Icon
@@ -13,6 +15,8 @@ import androidx.ui.material.icons.Icons
 import androidx.ui.material.icons.filled.*
 import androidx.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.Project
+import com.andb.apps.composesandbox.ui.common.BottomSheetLayout
+import com.andb.apps.composesandbox.ui.common.BottomSheetState
 import com.andb.apps.composesandbox.ui.common.RenderComponent
 
 @Composable
@@ -33,9 +37,19 @@ fun SandboxScreen(project: Project) {
         },
         bodyColor = Color(229, 229, 229),
         bodyContent = {
-            MaterialTheme(colors = project.theme.colors) {
-                Stack(Modifier.padding(32.dp).drawBackground(MaterialTheme.colors.background).fillMaxSize()) {
-                    RenderComponent(component = project.screens.first())
+            val sheetState = remember { mutableStateOf(BottomSheetState.Peek) }
+            BottomSheetLayout(
+                sheetState = sheetState.value,
+                onStateChange = { sheetState.value = it },
+                hideable = false,
+                drawerContent = {
+                    Text(text = project.name)
+                }
+            ) {
+                MaterialTheme(colors = project.theme.colors) {
+                    Stack(Modifier.padding(32.dp).drawBackground(MaterialTheme.colors.background).fillMaxSize()) {
+                        RenderComponent(component = project.screens.first())
+                    }
                 }
             }
         }
