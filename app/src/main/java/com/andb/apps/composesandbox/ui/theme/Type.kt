@@ -1,12 +1,11 @@
 package com.andb.apps.composesandbox.ui.theme
 
-import androidx.compose.Composable
-import androidx.ui.material.MaterialTheme
-import androidx.ui.material.Typography
-import androidx.ui.text.TextStyle
-import androidx.ui.text.font.FontFamily
-import androidx.ui.text.font.FontWeight
-import androidx.ui.unit.sp
+import androidx.compose.runtime.Composable
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Typography
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 // Set of Material typography styles to start with
 val typography = Typography(

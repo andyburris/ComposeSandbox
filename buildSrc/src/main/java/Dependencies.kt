@@ -2,9 +2,9 @@ object Versions {
     const val minSDK = 23
     const val targetSDK = 29
     const val compileSDK = 29
-    const val kotlin = "1.4.0-rc"
+    const val kotlin = "1.4.0"
     const val koin = "2.1.5"
-    const val compose = "0.1.0-dev15"
+    const val compose = "1.0.0-alpha02"
 }
 
 object Dependencies {

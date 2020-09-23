@@ -1,23 +1,24 @@
 package com.andb.apps.composesandbox.ui.projects
 
-import androidx.compose.Composable
-import androidx.ui.core.Modifier
-import androidx.ui.foundation.Icon
-import androidx.ui.foundation.ScrollableColumn
-import androidx.ui.foundation.Text
-import androidx.ui.foundation.drawBackground
-import androidx.ui.foundation.lazy.LazyColumnItems
-import androidx.ui.graphics.Color
-import androidx.ui.layout.*
-import androidx.ui.material.ExtendedFloatingActionButton
-import androidx.ui.material.MaterialTheme
-import androidx.ui.material.Scaffold
-import androidx.ui.material.icons.Icons
-import androidx.ui.material.icons.filled.Add
-import androidx.ui.unit.dp
+import androidx.compose.foundation.Icon
+import androidx.compose.foundation.ScrollableColumn
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.material.ExtendedFloatingActionButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.Project
-import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.Handler
+import com.andb.apps.composesandbox.state.SandboxState
 import com.andb.apps.composesandbox.state.Screen
 import com.andb.apps.composesandbox.state.UserAction
 
@@ -39,13 +40,13 @@ fun ProjectsScreen(projects: List<Project>){
                 style = MaterialTheme.typography.h4,
                 modifier = Modifier.padding(vertical = 32.dp, horizontal = 32.dp)
             )
-            LazyGridItems(items = projects, modifier = Modifier.padding(horizontal = 32.dp), columns = 2) { project ->
+            LazyGridFor(items = projects, modifier = Modifier.padding(horizontal = 32.dp), columns = 2) { project ->
                 val handler = Handler
                 ProjectItem(
                     project = project,
                     modifier = Modifier.weight(1f),
                     onClick = {
-                        val screen = Screen.Sandbox(it)
+                        val screen = Screen.Sandbox(SandboxState(it))
                         println("screen = $screen")
                         handler.invoke(UserAction.OpenScreen(screen))
                     }
@@ -56,8 +57,8 @@ fun ProjectsScreen(projects: List<Project>){
 }
 
 @Composable
-fun <T> LazyGridItems(items: List<T>, columns: Int, modifier: Modifier = Modifier, itemContent: @Composable() (T) -> Unit) {
-    LazyColumnItems(items = items.chunked(columns), modifier = modifier) { rowItems ->
+fun <T> LazyGridFor(items: List<T>, columns: Int, modifier: Modifier = Modifier, itemContent: @Composable() (T) -> Unit) {
+    LazyColumnFor(items = items.chunked(columns), modifier = modifier) { rowItems ->
         Row {
             rowItems.forEach {
                 itemContent(it)

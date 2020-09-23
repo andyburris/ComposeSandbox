@@ -1,10 +1,9 @@
 package com.andb.apps.composesandbox.ui.common
 
-import androidx.compose.Composable
-import androidx.ui.foundation.Icon
-import androidx.ui.foundation.Text
-import androidx.ui.layout.Column
-import androidx.ui.layout.Row
+import androidx.compose.foundation.Icon
+import androidx.compose.foundation.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
 import com.andb.apps.composesandbox.data.model.Component
 
 @Composable
@@ -12,12 +11,12 @@ fun RenderComponent(component: Component){
     when(component){
         is Component.Text -> Text(text = component.text)
         is Component.Icon -> Icon(asset = component.icon)
-        is Component.Column -> Column {
+        is Component.Group.Column -> Column {
             for (child in component.children) {
                 RenderComponent(component = child)
             }
         }
-        is Component.Row -> Row {
+        is Component.Group.Row -> Row {
             for (child in component.children) {
                 RenderComponent(component = child)
             }

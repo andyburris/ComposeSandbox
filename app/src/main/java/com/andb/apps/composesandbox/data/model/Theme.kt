@@ -1,5 +1,5 @@
 package com.andb.apps.composesandbox.data.model
 
-import androidx.ui.material.ColorPalette
+import androidx.compose.material.Colors
 
-class Theme(val colors: ColorPalette)
+class Theme(val colors: Colors)

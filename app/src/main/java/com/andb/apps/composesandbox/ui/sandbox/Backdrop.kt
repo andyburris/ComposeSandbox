@@ -1,26 +1,41 @@
 package com.andb.apps.composesandbox.ui.sandbox
 
-import androidx.compose.Composable
-import androidx.compose.remember
-import androidx.compose.state
-import androidx.ui.animation.animate
-import androidx.ui.animation.animatedFloat
-import androidx.ui.core.DensityAmbient
-import androidx.ui.core.Modifier
-import androidx.ui.core.WithConstraints
-import androidx.ui.core.onPositioned
-import androidx.ui.foundation.drawBackground
-import androidx.ui.foundation.shape.corner.RoundedCornerShape
-import androidx.ui.graphics.Color
-import androidx.ui.layout.Column
-import androidx.ui.layout.Stack
-import androidx.ui.layout.fillMaxWidth
-import androidx.ui.layout.offset
-import androidx.ui.material.MaterialTheme
-import androidx.ui.material.Surface
-import androidx.ui.unit.dp
-import com.andb.apps.composesandbox.util.Content
+import androidx.compose.animation.animate
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Stack
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.onPositioned
+import androidx.compose.ui.platform.DensityAmbient
+import androidx.compose.ui.unit.dp
 
+/**
+ * A backdrop appears behind all other surfaces in an app,
+ * displaying contextual and actionable content.
+ *
+ * A backdrop is composed of two surfaces: a back layer and a front layer.
+ * The back layer displays actions and context, and these control and
+ * inform the front layer's content.
+ *
+ * For more information, see https://material.io/components/backdrop
+ *
+ * @param backdropState state of the backdrop
+ * @param modifier optional modifier for the backdrop
+ * @param peekContent composable for the content on the back layer that stays visible when the front layer is fully visible
+ * @param backdropContent composable for the content on the back layer that is only exposed when the front layer is moved
+ * @param backdropColor color behind the content on the back layer and peek composables
+ * @param bodyContent composable for the content on the front layer
+ * @param bodyColor color of the front layer surface
+ */
 @Composable
 fun Backdrop(
     backdropState: BackdropState = remember { BackdropState.CONCEALED },
@@ -31,10 +46,10 @@ fun Backdrop(
     bodyContent: @Composable() (BackdropState) -> Unit,
     bodyColor: Color = MaterialTheme.colors.surface
 ) {
-    Column(modifier.drawBackground(backdropColor)) {
+    Column(modifier.background(backdropColor)) {
         peekContent(backdropState)
         Stack(Modifier.fillMaxWidth().weight(1f)) {
-            val (backdropContentSize, setBackdropContentSize) = state { 0 }
+            val (backdropContentSize, setBackdropContentSize) = remember { mutableStateOf(0) }
             val frontSlide = animate(if (backdropState == BackdropState.CONCEALED) 0 else backdropContentSize)
             Stack(
                 modifier = Modifier.onPositioned { setBackdropContentSize(it.size.height) }

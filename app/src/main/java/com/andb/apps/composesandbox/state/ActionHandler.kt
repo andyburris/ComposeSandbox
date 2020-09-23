@@ -1,8 +1,8 @@
 package com.andb.apps.composesandbox.state
 
-import androidx.compose.Composable
-import androidx.compose.Providers
-import androidx.compose.staticAmbientOf
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Providers
+import androidx.compose.runtime.staticAmbientOf
 
 typealias ActionHandler = (Action) -> Unit
 

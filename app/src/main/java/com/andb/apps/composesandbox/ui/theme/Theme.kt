@@ -1,21 +1,24 @@
 package com.andb.apps.composesandbox.ui.theme
 
-import androidx.compose.Composable
-import androidx.ui.foundation.isSystemInDarkTheme
-import androidx.ui.material.MaterialTheme
-import androidx.ui.material.darkColorPalette
-import androidx.ui.material.lightColorPalette
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.darkColors
+import androidx.compose.material.lightColors
 
-private val DarkColorPalette = darkColorPalette(
+private val DarkColorPalette = darkColors(
     primary = purple200,
     primaryVariant = purple700,
-    secondary = teal200
+    secondary = teal200,
+    onSecondary = Color.Black.copy(alpha = 0.5f),
 )
 
-private val LightColorPalette = lightColorPalette(
+private val LightColorPalette = lightColors(
     primary = purple500,
     primaryVariant = purple700,
-    secondary = teal200
+    secondary = teal200,
+    onSecondary = Color.Black.copy(alpha = 0.5f),
 
     /* Other default colors to override
     background = Color.White,

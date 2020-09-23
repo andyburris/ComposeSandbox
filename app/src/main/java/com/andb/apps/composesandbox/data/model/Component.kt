@@ -1,11 +1,12 @@
 package com.andb.apps.composesandbox.data.model
 
-import androidx.ui.core.Modifier
-import androidx.ui.graphics.vector.VectorAsset
+import androidx.compose.ui.graphics.vector.VectorAsset
 
-sealed class Component () {
-    data class Text(val text: String) : Component()
-    data class Icon(val icon: VectorAsset) : Component()
-    data class Column(val children: List<Component>) : Component()
-    data class Row(val children: List<Component>) : Component()
+sealed class Component (open val name: String) {
+    data class Text(val text: String, override val name: String = "Text") : Component(name)
+    data class Icon(val icon: VectorAsset, override val name: String = "Icon") : Component(name)
+    sealed class Group (open val children: List<Component>, name: String) : Component(name) {
+        data class Column(override val children: List<Component>) : Group(children, "Column")
+        data class Row(override val children: List<Component>) : Group(children, "Row")
+    }
 }

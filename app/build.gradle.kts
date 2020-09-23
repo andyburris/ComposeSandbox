@@ -44,17 +44,17 @@ dependencies {
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlin}")
     implementation("androidx.core:core-ktx:1.3.1")
-    implementation("androidx.appcompat:appcompat:1.1.0")
-    implementation("com.google.android.material:material:1.1.0")
+    implementation("androidx.appcompat:appcompat:1.2.0")
+    implementation("com.google.android.material:material:1.2.1")
     implementation(Dependencies.Compose.layout)
     implementation(Dependencies.Compose.material)
     implementation(Dependencies.Compose.icons)
     implementation(Dependencies.Compose.tooling)
     implementation(Dependencies.Koin.android)
     implementation(Dependencies.Koin.viewModel)
-    testImplementation("junit:junit:4.+")
-    androidTestImplementation("androidx.test.ext:junit:1.1.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.2.0")
+    testImplementation("junit:junit:4.13")
+    androidTestImplementation("androidx.test.ext:junit:1.1.2")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).configureEach {

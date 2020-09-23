@@ -1,18 +1,16 @@
 package com.andb.apps.composesandbox.ui.projects
 
-import androidx.compose.Composable
-import androidx.ui.core.Modifier
-import androidx.ui.foundation.Border
-import androidx.ui.foundation.Box
-import androidx.ui.foundation.Text
-import androidx.ui.foundation.clickable
-import androidx.ui.foundation.shape.corner.RoundedCornerShape
-import androidx.ui.graphics.Color
-import androidx.ui.layout.Column
-import androidx.ui.layout.aspectRatio
-import androidx.ui.layout.fillMaxWidth
-import androidx.ui.material.Surface
-import androidx.ui.unit.dp
+import androidx.compose.foundation.Border
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.clickable
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.Surface
+import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.Project
 import com.andb.apps.composesandbox.ui.common.RenderComponent
 
@@ -21,7 +19,7 @@ fun ProjectItem(project: Project, modifier: Modifier = Modifier, onClick: (proje
     Column(modifier = modifier.clickable(onClick = { onClick.invoke(project) })) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            border = Border(1.dp, Color.Gray),
+            border = BorderStroke(1.dp, Color.Gray),
             modifier = Modifier.aspectRatio(.5f).fillMaxWidth()
         ){
             RenderComponent(component = project.screens.first())
