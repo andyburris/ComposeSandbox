@@ -1,10 +1,7 @@
 package com.andb.apps.composesandbox.ui.sandbox.tree
 
 import androidx.compose.animation.animate
-import androidx.compose.foundation.Icon
-import androidx.compose.foundation.Text
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
@@ -23,6 +20,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.gesture.DragObserver
 import androidx.compose.ui.gesture.dragGestureFilter
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.globalPosition
+import androidx.compose.ui.onPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Position
@@ -40,6 +39,8 @@ fun DrawerTree(opened: Component, sheetState: BottomSheetState, moving: Componen
     val density = DensityAmbient.current
 
     val dragPosition = remember { mutableStateOf(Position(0.dp, 0.dp)) }
+    val globalPositionOffset = remember { mutableStateOf(Position(0.dp, 0.dp)) }
+    val (hoverState, setHoverState) = remember { mutableStateOf<HoverState?>(null) }
     val onRelease = { actionHandler.invoke(UserAction.UpdateTree(opened)) }
     Column(
         modifier = Modifier
@@ -55,16 +56,27 @@ fun DrawerTree(opened: Component, sheetState: BottomSheetState, moving: Componen
                 },
                 canDrag = { moving != null},
                 startDragImmediately = false
-            )
+            ).onPositioned {
+                globalPositionOffset.value = it.globalPosition.toDpPosition(density)
+            }
     ) {
         DrawerTreeHeader(opened, sheetState)
         Tree(
             parent = opened,
-            modifier = Modifier.padding(start = 32.dp, end = 32.dp)
+            modifier = Modifier.padding(start = 32.dp, end = 32.dp),
+            globalPositionOffset = globalPositionOffset.value,
+            movingPosition = moving?.let { dragPosition.value },
+            onMove = { hoverState ->
+                setHoverState(hoverState)
+            }
         )
     }
     if (moving != null) {
         ComponentDragDropItem(component = moving, position = dragPosition.value)
+        if (hoverState != null) {
+            println("hoverstate padding = ${hoverState.dropIndicatorPosition}")
+            DropIndicator(hoverState)
+        }
     }
 }
 
@@ -107,4 +119,21 @@ private fun ComponentDragDropItem(component: Component, position: Position) {
     )
 }
 
-private fun Offset.toDpPosition(density: Density) = with(density) { Position(this@toDpPosition.x.toDp(), this@toDpPosition.y.toDp()) }
+@Composable
+private fun DropIndicator(hoverState: HoverState) {
+    val position = hoverState.dropIndicatorPosition
+    Row(modifier = Modifier.padding(start = 24.dp, top = position.y).fillMaxWidth()) {
+        repeat(hoverState.indent) {
+            Box(
+                Modifier.size(40.dp, 2.dp).padding(end = 2.dp),
+                backgroundColor = MaterialTheme.colors.primary.copy(alpha = .5f)
+            )
+        }
+        Box(
+            Modifier.height(2.dp).weight(1f),
+            backgroundColor = MaterialTheme.colors.primary
+        )
+    }
+}
+
+fun Offset.toDpPosition(density: Density) = with(density) { Position(this@toDpPosition.x.toDp(), this@toDpPosition.y.toDp()) }
