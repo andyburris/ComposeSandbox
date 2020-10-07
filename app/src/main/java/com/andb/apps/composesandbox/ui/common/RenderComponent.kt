@@ -2,10 +2,15 @@ package com.andb.apps.composesandbox.ui.common
 
 import androidx.compose.foundation.Icon
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
-import androidx.compose.foundation.layout.*
 import com.andb.apps.composesandbox.data.model.Component
 
+/**
+ * Composable that renders a prototype component. Can be used recursively to render nested prototype components
+ * @param component prototype component to be rendered
+ */
 @Composable
 fun RenderComponent(component: Component){
     when(component){

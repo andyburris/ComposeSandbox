@@ -8,9 +8,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.drawLayer
-import androidx.compose.ui.onPositioned
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerState
@@ -22,7 +19,6 @@ import com.andb.apps.composesandbox.ui.common.BottomSheetValue
 import com.andb.apps.composesandbox.ui.common.rememberBottomSheetState
 import com.andb.apps.composesandbox.ui.sandbox.properties.DrawerEditProperties
 import com.andb.apps.composesandbox.ui.sandbox.tree.DrawerTree
-import com.andb.apps.composesandbox.ui.util.ItemSwitcher
 import com.andb.apps.composesandbox.ui.util.ItemTransitionState
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -38,16 +34,17 @@ fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: B
         bodyContent = { bodyContent(sheetState) },
         sheetContent = {
             val (contentWidth, setContentWidth) = remember { mutableStateOf(0) }
-            ItemSwitcher(
+/*            ItemSwitcher(
                 current = sandboxState.drawerState,
                 transitionDefinition = getDrawerContentTransition(offsetPx = contentWidth.toFloat(), reverse = sandboxState.drawerState is DrawerState.Tree),
                 modifier = Modifier.onPositioned { setContentWidth(it.size.width) }
-            ) { drawerState, transitionState ->
+            ) { drawerState, transitionState ->*/
+                val drawerState = sandboxState.drawerState
                 Stack(
-                    modifier = Modifier.drawLayer(
+/*                    modifier = Modifier.drawLayer(
                         translationX = transitionState[Offset],
                         alpha = transitionState[Alpha]
-                    )
+                    )*/
                 ) {
                     val actionHandler = ActionHandlerAmbient.current
                     when (drawerState) {
@@ -56,7 +53,7 @@ fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: B
                         is DrawerState.EditProperties -> DrawerEditProperties(drawerState.component)
                     }
                 }
-            }
+            //}
         },
     )
 }

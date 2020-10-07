@@ -19,6 +19,7 @@ import androidx.compose.ui.drawLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.gesture.DragObserver
 import androidx.compose.ui.gesture.dragGestureFilter
+import androidx.compose.ui.gesture.rawPressStartGestureFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.globalPosition
 import androidx.compose.ui.onPositioned
@@ -32,6 +33,12 @@ import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.BottomSheetState
 import com.andb.apps.composesandbox.ui.common.BottomSheetValue
 
+/**
+ * Tree representing prototype components. Holds drag-and-drop logic currently. Uses [GenericTree] under the hood
+ * @param opened the top-level component opened in the editor
+ * @param sheetState the state of the bottom sheet, used to calculate the global position of each [TreeItem]
+ * @param moving the componently currently in the drag state of drag-and-drop. null if no component is currently being dragged
+ */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun DrawerTree(opened: Component, sheetState: BottomSheetState, moving: Component? = null) {
@@ -41,9 +48,20 @@ fun DrawerTree(opened: Component, sheetState: BottomSheetState, moving: Componen
     val dragPosition = remember { mutableStateOf(Position(0.dp, 0.dp)) }
     val globalPositionOffset = remember { mutableStateOf(Position(0.dp, 0.dp)) }
     val (hoverState, setHoverState) = remember { mutableStateOf<HoverState?>(null) }
-    val onRelease = { actionHandler.invoke(UserAction.UpdateTree(opened)) }
+    val onRelease = {
+        hoverState?.run {
+            // hovering item = tree item that finger is above
+            // if drop position is above hovering item, add it to the same indent right above hovering item
+
+            this
+        }
+        actionHandler.invoke(UserAction.UpdateTree(opened))
+    }
     Column(
         modifier = Modifier
+            .rawPressStartGestureFilter(onPressStart = {pointer ->
+                dragPosition.value = pointer.toDpPosition(density)
+            })
             .dragGestureFilter(
                 dragObserver = object : DragObserver {
                     override fun onStart(downPosition: Offset) { dragPosition.value = downPosition.toDpPosition(density) }
@@ -122,7 +140,7 @@ private fun ComponentDragDropItem(component: Component, position: Position) {
 @Composable
 private fun DropIndicator(hoverState: HoverState) {
     val position = hoverState.dropIndicatorPosition
-    Row(modifier = Modifier.padding(start = 24.dp, top = position.y).fillMaxWidth()) {
+    Row(modifier = Modifier.padding(start = 24.dp, top = position).fillMaxWidth()) {
         repeat(hoverState.indent) {
             Box(
                 Modifier.size(40.dp, 2.dp).padding(end = 2.dp),

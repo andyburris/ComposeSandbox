@@ -26,17 +26,22 @@ import com.andb.apps.composesandbox.data.model.Component
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 
-data class HoverState(val dropIndicatorPosition: Position, val indent: Int)
+data class HoverState(val dropIndicatorPosition: Dp, val indent: Int, val parentComponent: Component.Group, val dropPositionInParent: Int)
 private data class TreeHoverItem(val component: Component, val position: Position, val height: Dp, val indent: Int = 0) {
     fun isHovering(hoverPosition: Position): Boolean =
         hoverPosition.y in position.y..(position.y + height)
 
-    fun getHoverState(hoverPosition: Position): HoverState {
+    fun getHoverState(hoverPosition: Position, parent: TreeHoverItem?): HoverState {
+        val hoverInTopHalf = hoverPosition.y < (position.y + height / 2)
         val dropIndicatorPosition = when {
-            hoverPosition.y < (position.y + height / 2) -> position
+            hoverInTopHalf -> position
             else -> position.copy(y = position.y + height)
         }
-        return HoverState(dropIndicatorPosition, indent)
+        val (parentComponent, index) = when {
+            component is Component.Group && !hoverInTopHalf -> Pair(component, 0)
+            else -> Pair(parent?.component as Component.Group, 10)
+        }
+        return HoverState(dropIndicatorPosition.y, indent, parentComponent, index)
     }
 }
 
@@ -48,10 +53,22 @@ fun Tree(parent: Component, modifier: Modifier = Modifier, globalPositionOffset:
         println("new tree positions (size = ${treePositions.size}) = $treePositions")
     }
     if (movingPosition != null) {
+        val treeTop = treePositions.maxOfOrNull { it.position.y } ?: 0.dp
+        val treeBottom = treePositions.maxOfOrNull { it.position.y + it.height } ?: 0.dp
+        val above = movingPosition.y < treeTop
+        val below = movingPosition.y > treeBottom
         val hovering = treePositions.find { it.isHovering(movingPosition) }
         println("finding hover at $movingPosition, hover positions = ${treePositions.map { it.position.y..(it.position.y + it.height) }} hovering = $hovering")
-        if (hovering != null) {
-            onMove.invoke(hovering.getHoverState(movingPosition))
+        when {
+            /*below -> {
+                val indent = (movingPosition.x / 40.dp).toInt().coerceAtMost(treePositions.maxByOrNull { it.position.y }?.indent ?: 0)
+                val hoverState = HoverState(treeBottom, indent)
+                onMove.invoke(hoverState)
+            } TODO: decide whether multiple top-levels can be used in a tree, include this code if yes */
+            hovering != null -> {
+                val parent = treePositions.maxByOrNull { it.position.y < hovering.position.y && it.indent == hovering.indent - 1 }
+                onMove.invoke(hovering.getHoverState(movingPosition, parent))
+            }
         }
     }
 }
@@ -71,7 +88,10 @@ private fun TreeItem(component: Component, modifier: Modifier = Modifier, hoistT
                 )
                 hoistTreePositions.invoke(childTreePositions.value.plusElement(hoverItem))
             }
-            .clickable { actionHandler.invoke(UserAction.OpenComponent(component)) }
+            .clickable(
+                onLongClick = { actionHandler.invoke(UserAction.MoveComponent(component)) },
+                onClick = { actionHandler.invoke(UserAction.OpenComponent(component)) }
+            )
             .fillMaxWidth()
     ) {
         ComponentItem(
@@ -96,17 +116,21 @@ data class TreeConfig(
     val horizontalLineLength: Dp = 20.dp,
     val horizontalPaddingStart: Dp = 12.dp,
     val horizontalPaddingEnd: Dp = 8.dp,
-    val itemHeight: Dp = 40.dp
-
 )
 
 @Composable
 fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: TreeConfig = TreeConfig(), component: @Composable RowScope.(T) -> Unit) {
     Stack(modifier) {
         val (height, setHeight) = remember { mutableStateOf(0) }
+        val (lastItemHeight, setLastItemHeight) = remember { mutableStateOf(0) }
         Column(Modifier.onPositioned { setHeight(it.size.height) }) {
-            for (item in items) {
-                Row() {
+            for ((index, item) in items.withIndex()) {
+                Row(
+                    modifier = when (index) {
+                        items.size - 1 -> Modifier.onPositioned { setLastItemHeight(it.size.height) }
+                        else -> Modifier
+                    }
+                ) {
                     Box(
                         modifier = Modifier
                             .padding(start = treeConfig.horizontalPaddingStart, top = 20.dp, end = treeConfig.horizontalPaddingEnd)
@@ -120,7 +144,7 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
         Box(
             modifier = Modifier
                 .padding(start = treeConfig.horizontalPaddingStart - 1.dp)
-                .size(1.dp, (with(DensityAmbient.current) { height.toDp() } - (treeConfig.itemHeight / 2) + 1.dp).coerceAtLeast(0.dp)),
+                .size(1.dp, (with(DensityAmbient.current) { height.toDp() } - (with(DensityAmbient.current) { lastItemHeight.toDp() } - 20.dp) + 1.dp).coerceAtLeast(0.dp)),
             backgroundColor = Color.Black.copy(alpha = .25f)
         )
     }
