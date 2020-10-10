@@ -3,6 +3,7 @@ package com.andb.apps.composesandbox.ui.projects
 import androidx.compose.foundation.Icon
 import androidx.compose.foundation.ScrollableColumn
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,13 +41,12 @@ fun ProjectsScreen(projects: List<Project>){
                 style = MaterialTheme.typography.h4,
                 modifier = Modifier.padding(vertical = 32.dp, horizontal = 32.dp)
             )
-            LazyGridFor(items = projects, modifier = Modifier.padding(horizontal = 32.dp), columns = 2) { project ->
+            LazyGridFor(items = projects, modifier = Modifier.padding(horizontal = 16.dp), columns = 2) { project ->
                 val handler = Handler
                 ProjectItem(
                     project = project,
-                    modifier = Modifier.weight(1f),
-                    onClick = {
-                        val screen = Screen.Sandbox(SandboxState(it))
+                    modifier = Modifier.weight(1f).padding(16.dp).clickable {
+                        val screen = Screen.Sandbox(SandboxState(project))
                         println("screen = $screen")
                         handler.invoke(UserAction.OpenScreen(screen))
                     }
