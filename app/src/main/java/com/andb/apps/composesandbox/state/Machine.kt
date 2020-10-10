@@ -2,6 +2,7 @@ package com.andb.apps.composesandbox.state
 
 import com.andb.apps.composesandbox.data.model.Component
 import com.andb.apps.composesandbox.data.model.Project
+import com.andb.apps.composesandbox.data.model.minusChildFromTree
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -18,7 +19,7 @@ class Machine {
             is UserAction.AddProject -> addProject(Project(action.name))
             is UserAction.OpenComponent -> screens.updateSandbox { it.copy(drawerState = DrawerState.EditProperties(action.component)) }
             is UserAction.OpenComponentList -> screens.updateSandbox { it.copy(drawerState = DrawerState.AddComponent) }
-            is UserAction.MoveComponent -> screens.updateSandbox { it.copy(drawerState = DrawerState.Tree(action.moving)) }
+            is UserAction.MoveComponent -> screens.updateSandbox { it.copy(drawerState = DrawerState.Tree(action.moving), opened = it.opened.minusChildFromTree(action.moving)) }
             is UserAction.UpdateTree -> updateTree(action.updated)
         }
     }

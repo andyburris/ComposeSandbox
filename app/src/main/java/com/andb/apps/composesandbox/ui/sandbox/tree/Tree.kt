@@ -26,22 +26,18 @@ import com.andb.apps.composesandbox.data.model.Component
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 
-data class HoverState(val dropIndicatorPosition: Dp, val indent: Int, val parentComponent: Component.Group, val dropPositionInParent: Int)
+data class HoverState(val dropIndicatorPosition: Dp, val indent: Int, val hoveringComponent: Component, val dropAbove: Boolean)
 private data class TreeHoverItem(val component: Component, val position: Position, val height: Dp, val indent: Int = 0) {
     fun isHovering(hoverPosition: Position): Boolean =
         hoverPosition.y in position.y..(position.y + height)
 
-    fun getHoverState(hoverPosition: Position, parent: TreeHoverItem?): HoverState {
-        val hoverInTopHalf = hoverPosition.y < (position.y + height / 2)
+    fun getHoverState(hoverPosition: Position): HoverState {
+        val hoverInTopHalf = hoverPosition.y < (position.y + height / 2) && indent > 0
         val dropIndicatorPosition = when {
             hoverInTopHalf -> position
             else -> position.copy(y = position.y + height)
         }
-        val (parentComponent, index) = when {
-            component is Component.Group && !hoverInTopHalf -> Pair(component, 0)
-            else -> Pair(parent?.component as Component.Group, 10)
-        }
-        return HoverState(dropIndicatorPosition.y, indent, parentComponent, index)
+        return HoverState(dropIndicatorPosition.y, indent, component, hoverInTopHalf)
     }
 }
 
@@ -66,8 +62,8 @@ fun Tree(parent: Component, modifier: Modifier = Modifier, globalPositionOffset:
                 onMove.invoke(hoverState)
             } TODO: decide whether multiple top-levels can be used in a tree, include this code if yes */
             hovering != null -> {
-                val parent = treePositions.maxByOrNull { it.position.y < hovering.position.y && it.indent == hovering.indent - 1 }
-                onMove.invoke(hovering.getHoverState(movingPosition, parent))
+                //val parent = treePositions.maxByOrNull { it.position.y < hovering.position.y && it.indent == hovering.indent - 1 }
+                onMove.invoke(hovering.getHoverState(movingPosition))
             }
         }
     }

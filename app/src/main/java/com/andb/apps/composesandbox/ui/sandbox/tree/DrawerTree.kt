@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.Component
+import com.andb.apps.composesandbox.data.model.plusChildInTree
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.BottomSheetState
@@ -37,7 +38,7 @@ import com.andb.apps.composesandbox.ui.common.BottomSheetValue
  * Tree representing prototype components. Holds drag-and-drop logic currently. Uses [GenericTree] under the hood
  * @param opened the top-level component opened in the editor
  * @param sheetState the state of the bottom sheet, used to calculate the global position of each [TreeItem]
- * @param moving the componently currently in the drag state of drag-and-drop. null if no component is currently being dragged
+ * @param moving the component currently in the drag state of drag-and-drop. null if no component is currently being dragged
  */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -52,10 +53,9 @@ fun DrawerTree(opened: Component, sheetState: BottomSheetState, moving: Componen
         hoverState?.run {
             // hovering item = tree item that finger is above
             // if drop position is above hovering item, add it to the same indent right above hovering item
-
-            this
+            val updated = opened.plusChildInTree(moving!!, this.hoveringComponent, this.dropAbove)
+            actionHandler.invoke(UserAction.UpdateTree(updated))
         }
-        actionHandler.invoke(UserAction.UpdateTree(opened))
     }
     Column(
         modifier = Modifier
