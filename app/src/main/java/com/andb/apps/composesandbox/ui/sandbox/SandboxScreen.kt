@@ -52,7 +52,7 @@ fun SandboxScreen(sandboxState: SandboxState) {
                             .background(MaterialTheme.colors.background)
                             .fillMaxSize()
                     ) {
-                        RenderComponent(component = sandboxState.opened)
+                        RenderComponent(component = sandboxState.openedTree)
                     }
                 }
             }

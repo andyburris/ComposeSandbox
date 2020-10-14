@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.InternalLayoutApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -19,7 +20,13 @@ fun SpacedColumn(
     innerPadding: Dp = 0.dp,
     children: @Composable ColumnScope.() -> Unit
 ) {
-    Column(modifier, verticalArrangement, horizontalGravity) {
+    val spaced = object : Arrangement.Vertical {
+        override val spacing: Dp
+            get() = innerPadding
+
+        override fun arrange(totalSize: Int, size: List<Int>, density: Density, outPosition: MutableList<Int>) = verticalArrangement.arrange(totalSize, size, density, outPosition)
+    }
+    Column(modifier, spaced, horizontalGravity) {
 
     }
 }

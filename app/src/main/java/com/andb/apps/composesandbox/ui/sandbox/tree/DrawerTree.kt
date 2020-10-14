@@ -59,7 +59,7 @@ fun DrawerTree(opened: Component, sheetState: BottomSheetState, moving: Componen
     }
     Column(
         modifier = Modifier
-            .rawPressStartGestureFilter(onPressStart = {pointer ->
+            .rawPressStartGestureFilter(onPressStart = { pointer ->
                 dragPosition.value = pointer.toDpPosition(density)
             })
             .dragGestureFilter(

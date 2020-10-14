@@ -2,12 +2,21 @@ package com.andb.apps.composesandbox.ui.sandbox
 
 import androidx.compose.animation.animate
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.layout.Stack
+import androidx.compose.foundation.Icon
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.VectorAsset
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerState
@@ -17,6 +26,7 @@ import com.andb.apps.composesandbox.ui.common.BottomSheetLayout
 import com.andb.apps.composesandbox.ui.common.BottomSheetState
 import com.andb.apps.composesandbox.ui.common.BottomSheetValue
 import com.andb.apps.composesandbox.ui.common.rememberBottomSheetState
+import com.andb.apps.composesandbox.ui.sandbox.modifiers.DrawerEditModifiers
 import com.andb.apps.composesandbox.ui.sandbox.properties.DrawerEditProperties
 import com.andb.apps.composesandbox.ui.sandbox.tree.DrawerTree
 import com.andb.apps.composesandbox.ui.util.ItemTransitionState
@@ -39,20 +49,22 @@ fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: B
                 transitionDefinition = getDrawerContentTransition(offsetPx = contentWidth.toFloat(), reverse = sandboxState.drawerState is DrawerState.Tree),
                 modifier = Modifier.onPositioned { setContentWidth(it.size.width) }
             ) { drawerState, transitionState ->*/
-                val drawerState = sandboxState.drawerState
-                Stack(
-/*                    modifier = Modifier.drawLayer(
-                        translationX = transitionState[Offset],
-                        alpha = transitionState[Alpha]
-                    )*/
-                ) {
-                    val actionHandler = ActionHandlerAmbient.current
-                    when (drawerState) {
-                        is DrawerState.Tree -> DrawerTree(opened = sandboxState.opened, sheetState = sheetState, moving = drawerState.movingComponent)
-                        DrawerState.AddComponent -> ComponentList(project = sandboxState.project, onSelect = { actionHandler.invoke(UserAction.MoveComponent(it)) })
-                        is DrawerState.EditProperties -> DrawerEditProperties(drawerState.component)
+            val drawerState = sandboxState.drawerStack.last()
+            Stack {
+                val actionHandler = ActionHandlerAmbient.current
+                when (drawerState) {
+                    is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, moving = drawerState.movingComponent)
+                    DrawerState.AddComponent -> ComponentList(project = sandboxState.project, onSelect = { actionHandler.invoke(UserAction.MoveComponent(it)) })
+                    is DrawerState.EditComponent -> DrawerEditProperties(drawerState.editing, actionHandler)
+                    is DrawerState.AddModifier -> AddModifierList {
+                        val withModifier = drawerState.editingComponent.withModifiers(drawerState.editingComponent.modifiers + it)
+                        val updateAction = UserAction.UpdateComponent(withModifier)
+                        actionHandler.invoke(updateAction)
+                        actionHandler.invoke(UserAction.Back)
                     }
+                    is DrawerState.EditModifier -> DrawerEditModifiers(editingComponent = drawerState.editingComponent, modifier = drawerState.modifier)
                 }
+            }
             //}
         },
     )
@@ -115,6 +127,36 @@ private fun getDrawerContentTransition(
                 easing = LinearOutSlowInEasing,
                 delayMillis = 24
             )
+        }
+    }
+}
+
+@Composable
+fun DrawerHeader(title: String, icon: VectorAsset = Icons.Default.ArrowBack, onIconClick: () -> Unit, actions: (@Composable RowScope.() -> Unit)? = null) {
+
+    Row(
+        verticalGravity = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.padding(32.dp).fillMaxWidth()
+    ) {
+        Row(
+            verticalGravity = Alignment.CenterVertically
+        ) {
+            Icon(
+                asset = icon,
+                modifier = Modifier.clickable(onClick = onIconClick)
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.h6,
+                modifier = Modifier.padding(start = 16.dp)
+            )
+        }
+
+        if(actions != null) {
+            Row(verticalGravity = Alignment.CenterVertically) {
+                actions()
+            }
         }
     }
 }

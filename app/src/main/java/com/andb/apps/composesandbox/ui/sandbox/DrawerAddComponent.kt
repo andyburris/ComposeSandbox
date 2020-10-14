@@ -53,7 +53,7 @@ private fun AddComponentItem(component: Component, onSelect: (Component) -> Unit
 }
 
 @Composable
-fun ComponentListHeader() {
+private fun ComponentListHeader() {
 
     Row(
         verticalGravity = Alignment.CenterVertically,

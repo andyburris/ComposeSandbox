@@ -37,6 +37,7 @@ private data class TreeHoverItem(val component: Component, val position: Positio
             hoverInTopHalf -> position
             else -> position.copy(y = position.y + height)
         }
+        val indent = this.indent + if (component is Component.Group && component.children.isEmpty() && !hoverInTopHalf) 1 else 0
         return HoverState(dropIndicatorPosition.y, indent, component, hoverInTopHalf)
     }
 }
@@ -137,12 +138,14 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
                 }
             }
         }
-        Box(
-            modifier = Modifier
-                .padding(start = treeConfig.horizontalPaddingStart - 1.dp)
-                .size(1.dp, (with(DensityAmbient.current) { height.toDp() } - (with(DensityAmbient.current) { lastItemHeight.toDp() } - 20.dp) + 1.dp).coerceAtLeast(0.dp)),
-            backgroundColor = Color.Black.copy(alpha = .25f)
-        )
+        if (items.isNotEmpty()){
+            Box(
+                modifier = Modifier
+                    .padding(start = treeConfig.horizontalPaddingStart - 1.dp)
+                    .size(1.dp, (with(DensityAmbient.current) { height.toDp() } - (with(DensityAmbient.current) { lastItemHeight.toDp() } - 20.dp) + 1.dp).coerceAtLeast(0.dp)),
+                backgroundColor = Color.Black.copy(alpha = .25f)
+            )
+        }
     }
 }
 
