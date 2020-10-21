@@ -5,7 +5,8 @@ import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
-import com.andb.apps.composesandbox.data.model.Component
+import com.andb.apps.composesandbox.data.model.Properties
+import com.andb.apps.composesandbox.data.model.PrototypeComponent
 import com.andb.apps.composesandbox.data.model.toModifier
 
 /**
@@ -13,17 +14,17 @@ import com.andb.apps.composesandbox.data.model.toModifier
  * @param component prototype component to be rendered
  */
 @Composable
-fun RenderComponent(component: Component){
-    when(component){
-        is Component.Text -> Text(text = component.text, modifier = component.modifiers.toModifier())
-        is Component.Icon -> Icon(asset = component.icon, modifier = component.modifiers.toModifier())
-        is Component.Group.Column -> Column(modifier = component.modifiers.toModifier(), horizontalGravity = component.horizontalAlignment, verticalArrangement = component.verticalArrangement) {
-            for (child in component.children) {
+fun RenderComponent(component: PrototypeComponent){
+    when (component.properties){
+        is Properties.Text -> Text(text = component.properties.text, modifier = component.modifiers.toModifier())
+        is Properties.Icon -> Icon(asset = component.properties.icon, modifier = component.modifiers.toModifier())
+        is Properties.Group.Column -> Column(modifier = component.modifiers.toModifier(), horizontalGravity = component.properties.horizontalAlignment, verticalArrangement = component.properties.verticalArrangement) {
+            for (child in component.properties.children) {
                 RenderComponent(component = child)
             }
         }
-        is Component.Group.Row -> Row(modifier = component.modifiers.toModifier(), verticalGravity = component.verticalAlignment, horizontalArrangement = component.horizontalArrangement) {
-            for (child in component.children) {
+        is Properties.Group.Row -> Row(modifier = component.modifiers.toModifier(), verticalGravity = component.properties.verticalAlignment, horizontalArrangement = component.properties.horizontalArrangement) {
+            for (child in component.properties.children) {
                 RenderComponent(component = child)
             }
         }

@@ -18,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.VectorAsset
 import androidx.compose.ui.unit.dp
+import com.andb.apps.composesandbox.data.model.updatedChildInTree
+import com.andb.apps.composesandbox.data.model.updatedModifier
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerState
 import com.andb.apps.composesandbox.state.SandboxState
@@ -30,6 +32,7 @@ import com.andb.apps.composesandbox.ui.sandbox.modifiers.DrawerEditModifiers
 import com.andb.apps.composesandbox.ui.sandbox.properties.DrawerEditProperties
 import com.andb.apps.composesandbox.ui.sandbox.tree.DrawerTree
 import com.andb.apps.composesandbox.ui.util.ItemTransitionState
+import com.andb.apps.composesandbox.util.plusElement
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -53,16 +56,25 @@ fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: B
             Stack {
                 val actionHandler = ActionHandlerAmbient.current
                 when (drawerState) {
-                    is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, moving = drawerState.movingComponent)
-                    DrawerState.AddComponent -> ComponentList(project = sandboxState.project, onSelect = { actionHandler.invoke(UserAction.MoveComponent(it)) })
-                    is DrawerState.EditComponent -> DrawerEditProperties(drawerState.editing, actionHandler)
+                    is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, moving = drawerState.movingComponent) { updated ->
+                        actionHandler.invoke(UserAction.UpdateTree(updated))
+                    }
+                    DrawerState.AddComponent -> ComponentList(project = sandboxState.project) {
+                        actionHandler.invoke(UserAction.MoveComponent(it))
+                    }
+                    is DrawerState.EditComponent -> DrawerEditProperties(sandboxState.editingComponent, actionHandler) { updatedComponent ->
+                        actionHandler.invoke(UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(updatedComponent)))
+                    }
                     is DrawerState.AddModifier -> AddModifierList {
-                        val withModifier = drawerState.editingComponent.withModifiers(drawerState.editingComponent.modifiers + it)
-                        val updateAction = UserAction.UpdateComponent(withModifier)
+                        val withModifier = sandboxState.editingComponent.copy(modifiers = sandboxState.editingComponent.modifiers.plusElement(it, 0))
+                        val updateAction = UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(withModifier))
                         actionHandler.invoke(updateAction)
                         actionHandler.invoke(UserAction.Back)
                     }
-                    is DrawerState.EditModifier -> DrawerEditModifiers(editingComponent = drawerState.editingComponent, modifier = drawerState.modifier)
+                    is DrawerState.EditModifier -> DrawerEditModifiers(modifier = sandboxState.editingModifier) {
+                        val updateAction = UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it)))
+                        actionHandler.invoke(updateAction)
+                    }
                 }
             }
             //}

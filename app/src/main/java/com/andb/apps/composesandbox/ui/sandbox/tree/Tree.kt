@@ -22,12 +22,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.R
-import com.andb.apps.composesandbox.data.model.Component
+import com.andb.apps.composesandbox.data.model.Properties
+import com.andb.apps.composesandbox.data.model.PrototypeComponent
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 
-data class HoverState(val dropIndicatorPosition: Dp, val indent: Int, val hoveringComponent: Component, val dropAbove: Boolean)
-private data class TreeHoverItem(val component: Component, val position: Position, val height: Dp, val indent: Int = 0) {
+data class HoverState(val dropIndicatorPosition: Dp, val indent: Int, val hoveringComponent: PrototypeComponent, val dropAbove: Boolean)
+private data class TreeHoverItem(val component: PrototypeComponent, val position: Position, val height: Dp, val indent: Int = 0) {
     fun isHovering(hoverPosition: Position): Boolean =
         hoverPosition.y in position.y..(position.y + height)
 
@@ -37,13 +38,13 @@ private data class TreeHoverItem(val component: Component, val position: Positio
             hoverInTopHalf -> position
             else -> position.copy(y = position.y + height)
         }
-        val indent = this.indent + if (component is Component.Group && component.children.isEmpty() && !hoverInTopHalf) 1 else 0
+        val indent = this.indent + if (component.properties is Properties.Group && component.properties.children.isEmpty() && !hoverInTopHalf) 1 else 0
         return HoverState(dropIndicatorPosition.y, indent, component, hoverInTopHalf)
     }
 }
 
 @Composable
-fun Tree(parent: Component, modifier: Modifier = Modifier, globalPositionOffset: Position, movingPosition: Position?, onMove: (HoverState) -> Unit) {
+fun Tree(parent: PrototypeComponent, modifier: Modifier = Modifier, globalPositionOffset: Position, movingPosition: Position?, onMove: (HoverState) -> Unit) {
     val (treePositions, setTreePositions) = remember { mutableStateOf<List<TreeHoverItem>>(emptyList()) }
     TreeItem(component = parent, modifier) { newPositions ->
         setTreePositions(newPositions.map { it.copy(position = it.position - globalPositionOffset) }.sortedByDescending { it.indent })
@@ -71,7 +72,7 @@ fun Tree(parent: Component, modifier: Modifier = Modifier, globalPositionOffset:
 }
 
 @Composable
-private fun TreeItem(component: Component, modifier: Modifier = Modifier, hoistTreePositions: (List<TreeHoverItem>) -> Unit) {
+private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifier, hoistTreePositions: (List<TreeHoverItem>) -> Unit) {
     val actionHandler = ActionHandlerAmbient.current
     val childTreePositions = remember(component) { mutableStateOf<List<TreeHoverItem>>(emptyList()) }
     val density = DensityAmbient.current
@@ -87,7 +88,7 @@ private fun TreeItem(component: Component, modifier: Modifier = Modifier, hoistT
             }
             .clickable(
                 onLongClick = { actionHandler.invoke(UserAction.MoveComponent(component)) },
-                onClick = { actionHandler.invoke(UserAction.OpenComponent(component)) }
+                onClick = { actionHandler.invoke(UserAction.OpenComponent(component.id)) }
             )
             .fillMaxWidth()
     ) {
@@ -95,8 +96,8 @@ private fun TreeItem(component: Component, modifier: Modifier = Modifier, hoistT
             component = component,
             modifier = Modifier.padding(vertical = 8.dp)
         )
-        if (component is Component.Group) {
-            GenericTree(items = component.children) { child ->
+        if (component.properties is Properties.Group) {
+            GenericTree(items = component.properties.children) { child ->
                 TreeItem(child) { treePositions ->
                     val indented = treePositions.map { it.copy(indent = it.indent + 1) }
                     childTreePositions.value = childTreePositions.value
@@ -150,12 +151,12 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
 }
 
 @Composable
-fun ComponentItem(component: Component, modifier: Modifier = Modifier) {
-    val icon = when (component) {
-        is Component.Text -> Icons.Default.TextFields
-        is Component.Icon -> Icons.Default.Image
-        is Component.Group.Column -> vectorResource(id = R.drawable.ic_column)
-        is Component.Group.Row -> vectorResource(id = R.drawable.ic_row)
+fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier) {
+    val icon = when (component.properties) {
+        is Properties.Text -> Icons.Default.TextFields
+        is Properties.Icon -> Icons.Default.Image
+        is Properties.Group.Column -> vectorResource(id = R.drawable.ic_column)
+        is Properties.Group.Row -> vectorResource(id = R.drawable.ic_row)
     }
 
     Row(modifier = modifier, verticalGravity = Alignment.CenterVertically) {

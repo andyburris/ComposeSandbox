@@ -1,8 +1,7 @@
 package com.andb.apps.composesandbox.state
 
-import com.andb.apps.composesandbox.data.model.Component
 import com.andb.apps.composesandbox.data.model.Project
-import com.andb.apps.composesandbox.data.model.PrototypeModifier
+import com.andb.apps.composesandbox.data.model.PrototypeComponent
 
 sealed class Action
 
@@ -13,15 +12,13 @@ sealed class UserAction : Action() {
     data class OpenScreen(val screen: Screen) : UserAction()
     /** Add a [Project] to the list of saved projects */
     data class AddProject(val name: String) : UserAction()
-    /** Open the editor for [component] in [Screen.Sandbox]*/
-    data class OpenComponent(val component: Component) : UserAction()
     /** Open the list of components to add in [Screen.Sandbox]*/
     object OpenComponentList : UserAction()
-    data class MoveComponent(val moving: Component) : UserAction()
-    data class UpdateTree (val updated: Component) : UserAction()
-    /** Update a component in the currently opened tree */
-    data class UpdateComponent(val updating: Component) : UserAction()
-    data class UpdateModifier(val editingComponent: Component, val updating: PrototypeModifier) : UserAction()
-    data class OpenModifierList(val editingComponent: Component) : UserAction()
-    data class EditModifier(val editingComponent: Component, val modifier: PrototypeModifier) : UserAction()
+    data class MoveComponent(val moving: PrototypeComponent) : UserAction()
+    data class UpdateTree (val updated: PrototypeComponent) : UserAction()
+    object OpenModifierList : UserAction()
+    /** Open the editor for the component with [componentID] in [Screen.Sandbox]*/
+    data class OpenComponent(val componentID: String) : UserAction()
+    /** Open the editor for the modifier with [modifierID] in [Screen.Sandbox]*/
+    data class EditModifier(val modifierID: String) : UserAction()
 }

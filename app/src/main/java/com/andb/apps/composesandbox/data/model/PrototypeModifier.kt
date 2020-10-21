@@ -12,15 +12,16 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.VectorAsset
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.util.toHexString
+import java.util.*
 
-sealed class PrototypeModifier {
-    sealed class Padding : PrototypeModifier() {
-        data class Individual(val top: Dp, val bottom: Dp, val start: Dp, val end: Dp) : Padding()
-        data class Sides(val horizontal: Dp, val vertical: Dp) : Padding()
-        data class All(val padding: Dp) : Padding()
+sealed class PrototypeModifier(open val id: String) {
+    sealed class Padding(id: String) : PrototypeModifier(id) {
+        data class Individual(val top: Dp, val bottom: Dp, val start: Dp, val end: Dp, override val id: String = UUID.randomUUID().toString()) : Padding(id)
+        data class Sides(val horizontal: Dp, val vertical: Dp, override val id: String = UUID.randomUUID().toString()) : Padding(id)
+        data class All(val padding: Dp, override val id: String = UUID.randomUUID().toString()) : Padding(id)
     }
 
-    data class Border(val strokeWidth: Dp, val color: Color, val cornerRadius: Dp) : PrototypeModifier()
+    data class Border(val strokeWidth: Dp, val color: Color, val cornerRadius: Dp, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier(id)
 }
 
 val PrototypeModifier.icon: VectorAsset

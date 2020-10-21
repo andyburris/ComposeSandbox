@@ -1,6 +1,8 @@
 package com.andb.apps.composesandbox.state
 
-import com.andb.apps.composesandbox.data.model.*
+import com.andb.apps.composesandbox.data.model.Project
+import com.andb.apps.composesandbox.data.model.PrototypeComponent
+import com.andb.apps.composesandbox.data.model.minusChildFromTree
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -15,13 +17,11 @@ class Machine {
             UserAction.Back -> handleBack()
             is UserAction.OpenScreen -> screens.value += action.screen
             is UserAction.AddProject -> addProject(Project(action.name))
-            is UserAction.OpenComponent -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.EditComponent(action.component)) }
+            is UserAction.OpenComponent -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.EditComponent(action.componentID)) }
             is UserAction.OpenComponentList -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.AddComponent) }
-            is UserAction.OpenModifierList -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.AddModifier(action.editingComponent)) }
-            is UserAction.EditModifier -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.EditModifier(action.editingComponent, action.modifier)) }
+            is UserAction.OpenModifierList -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.AddModifier) }
+            is UserAction.EditModifier -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.EditModifier(action.modifierID)) }
             is UserAction.MoveComponent -> moveComponent(action.moving)
-            is UserAction.UpdateComponent -> updateComponent(action.updating)
-            is UserAction.UpdateModifier -> updateModifier(action.editingComponent, action.updating)
             is UserAction.UpdateTree -> updateTree(action.updated)
         }
     }
@@ -40,30 +40,13 @@ class Machine {
 
     }
 
-    private fun moveComponent(moving: Component) {
+    private fun moveComponent(moving: PrototypeComponent) {
         screens.updateSandbox { sandboxState ->
             sandboxState.copy(openedTree = sandboxState.openedTree.minusChildFromTree(moving), drawerStack = listOf(DrawerState.Tree(moving)))
         }
     }
 
-    private fun updateComponent(updating: Component) {
-        screens.updateSandbox { sandboxState ->
-            sandboxState
-                .copy(openedTree = sandboxState.openedTree.updateChildInTree(updating))
-                .withTree { DrawerState.Tree() }
-                .withEditingComponent { DrawerState.EditComponent(updating) }
-
-        }
-    }
-
-    private fun updateModifier(editingComponent: Component, updating: PrototypeModifier) {
-        updateComponent(editingComponent)
-        screens.updateSandbox { sandboxState ->
-            sandboxState.withEditingModifier { DrawerState.EditModifier(editingComponent, updating) }
-        }
-    }
-
-    private fun updateTree(updated: Component) {
+    private fun updateTree(updated: PrototypeComponent) {
         screens.updateSandbox {
             it.copy(openedTree = updated).withTree { DrawerState.Tree() }
         }

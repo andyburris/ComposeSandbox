@@ -27,7 +27,7 @@ import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.data.model.Component
+import com.andb.apps.composesandbox.data.model.PrototypeComponent
 import com.andb.apps.composesandbox.data.model.plusChildInTree
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
@@ -42,7 +42,7 @@ import com.andb.apps.composesandbox.ui.common.BottomSheetValue
  */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DrawerTree(opened: Component, sheetState: BottomSheetState, moving: Component? = null) {
+fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, moving: PrototypeComponent? = null, onTreeUpdate: (PrototypeComponent) -> Unit) {
     val actionHandler = ActionHandlerAmbient.current
     val density = DensityAmbient.current
 
@@ -54,7 +54,7 @@ fun DrawerTree(opened: Component, sheetState: BottomSheetState, moving: Componen
             // hovering item = tree item that finger is above
             // if drop position is above hovering item, add it to the same indent right above hovering item
             val updated = opened.plusChildInTree(moving!!, this.hoveringComponent, this.dropAbove)
-            actionHandler.invoke(UserAction.UpdateTree(updated))
+            onTreeUpdate(updated)
         }
     }
     Column(
@@ -100,7 +100,7 @@ fun DrawerTree(opened: Component, sheetState: BottomSheetState, moving: Componen
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun DrawerTreeHeader(opened: Component, sheetState: BottomSheetState) {
+private fun DrawerTreeHeader(opened: PrototypeComponent, sheetState: BottomSheetState) {
     val actionHandler = ActionHandlerAmbient.current
     Row(
         verticalGravity = Alignment.CenterVertically,
@@ -126,7 +126,7 @@ private fun DrawerTreeHeader(opened: Component, sheetState: BottomSheetState) {
 }
 
 @Composable
-private fun ComponentDragDropItem(component: Component, position: Position) {
+private fun ComponentDragDropItem(component: PrototypeComponent, position: Position) {
     ComponentItem(
         component = component,
         modifier = Modifier

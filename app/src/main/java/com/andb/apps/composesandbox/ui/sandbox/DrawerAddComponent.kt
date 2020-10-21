@@ -16,23 +16,22 @@ import androidx.compose.runtime.savedinstancestate.savedInstanceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.data.model.Component
-import com.andb.apps.composesandbox.data.model.Project
+import com.andb.apps.composesandbox.data.model.*
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.sandbox.tree.ComponentItem
 
 @Composable
-fun ComponentList(project: Project, onSelect: (Component) -> Unit) {
+fun ComponentList(project: Project, onSelect: (PrototypeComponent) -> Unit) {
     Column {
         ComponentListHeader()
         val searchTerm = savedInstanceState { "" }
 
         AddComponentHeader(text = "Common Components")
-        AddComponentItem(Component.Text("Text"), onSelect)
-        AddComponentItem(Component.Icon(Icons.Default.Image), onSelect)
-        AddComponentItem(Component.Group.Row(emptyList()), onSelect)
-        AddComponentItem(Component.Group.Column(emptyList()), onSelect)
+        AddComponentItem(Properties.Text("Text").toComponent(), onSelect)
+        AddComponentItem(Properties.Icon(Icons.Default.Image).toComponent(), onSelect)
+        AddComponentItem(Properties.Group.Row(emptyList()).toComponent(), onSelect)
+        AddComponentItem(Properties.Group.Column(emptyList()).toComponent(), onSelect)
     }
 }
 
@@ -42,7 +41,7 @@ fun AddComponentHeader(text: String) {
 }
 
 @Composable
-private fun AddComponentItem(component: Component, onSelect: (Component) -> Unit) {
+private fun AddComponentItem(component: PrototypeComponent, onSelect: (PrototypeComponent) -> Unit) {
     ComponentItem(
         component = component,
         modifier = Modifier

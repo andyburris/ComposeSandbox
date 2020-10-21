@@ -5,20 +5,22 @@ import androidx.compose.material.lightColors
 
 data class Project(
     val name: String,
-    val screens: List<Component> = listOf(
-        Component.Group.Column(
-            children = listOf(
-                Component.Group.Row(
-                    children = listOf(
-                        Component.Text("Hello"),
-                        Component.Text("World")
-                    )
-                ),
-                Component.Text("Hello"),
-                Component.Text("World")
+    val screens: List<PrototypeComponent> = listOf(
+        PrototypeComponent(
+            properties = Properties.Group.Column(
+                children = listOf(
+                    PrototypeComponent(
+                        properties = Properties.Group.Row(children = listOf(
+                            PrototypeComponent(properties = Properties.Text("Hello")),
+                            PrototypeComponent(properties = Properties.Text("Text")),
+                        ))
+                    ),
+                    PrototypeComponent(properties = Properties.Text("Hello")),
+                    PrototypeComponent(properties = Properties.Text("Text")),
+                )
             )
         )
     ),
-    val components: List<Component> = listOf(),
+    val components: List<PrototypeComponent> = listOf(),
     val theme: Theme = Theme(lightColors()),
 )
