@@ -72,6 +72,7 @@ fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: B
                         actionHandler.invoke(UserAction.Back)
                     }
                     is DrawerState.EditModifier -> DrawerEditModifiers(modifier = sandboxState.editingModifier) {
+                        println("edited modifier = $it")
                         val updateAction = UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it)))
                         actionHandler.invoke(updateAction)
                     }
@@ -147,12 +148,12 @@ private fun getDrawerContentTransition(
 fun DrawerHeader(title: String, icon: VectorAsset = Icons.Default.ArrowBack, onIconClick: () -> Unit, actions: (@Composable RowScope.() -> Unit)? = null) {
 
     Row(
-        verticalGravity = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.padding(32.dp).fillMaxWidth()
     ) {
         Row(
-            verticalGravity = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 asset = icon,
@@ -166,7 +167,7 @@ fun DrawerHeader(title: String, icon: VectorAsset = Icons.Default.ArrowBack, onI
         }
 
         if(actions != null) {
-            Row(verticalGravity = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 actions()
             }
         }

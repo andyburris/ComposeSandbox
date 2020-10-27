@@ -36,7 +36,7 @@ android {
     }
     composeOptions {
         kotlinCompilerExtensionVersion = Versions.compose
-        kotlinCompilerVersion = "1.4.0-dev-withExperimentalGoogleExtensions-20200720"
+        kotlinCompilerVersion = "1.4.0"
     }
 }
 
@@ -50,6 +50,7 @@ dependencies {
     implementation(Dependencies.Compose.material)
     implementation(Dependencies.Compose.icons)
     implementation(Dependencies.Compose.tooling)
+    implementation(Dependencies.Compose.compiler)
     implementation(Dependencies.Koin.android)
     implementation(Dependencies.Koin.viewModel)
     testImplementation("junit:junit:4.13")

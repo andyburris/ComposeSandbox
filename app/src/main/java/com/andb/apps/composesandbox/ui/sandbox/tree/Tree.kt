@@ -159,7 +159,7 @@ fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier) 
         is Properties.Group.Row -> vectorResource(id = R.drawable.ic_row)
     }
 
-    Row(modifier = modifier, verticalGravity = Alignment.CenterVertically) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Icon(asset = icon)
         Text(text = component.name, modifier = Modifier.padding(start = 16.dp))
     }

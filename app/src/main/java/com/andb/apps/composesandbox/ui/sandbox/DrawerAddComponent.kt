@@ -55,7 +55,7 @@ private fun AddComponentItem(component: PrototypeComponent, onSelect: (Prototype
 private fun ComponentListHeader() {
 
     Row(
-        verticalGravity = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(32.dp).fillMaxWidth()
     ) {
         val actionHandler = ActionHandlerAmbient.current

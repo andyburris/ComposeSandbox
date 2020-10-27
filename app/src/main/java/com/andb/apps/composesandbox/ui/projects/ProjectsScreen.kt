@@ -1,14 +1,12 @@
 package com.andb.apps.composesandbox.ui.projects
 
 import androidx.compose.foundation.Icon
-import androidx.compose.foundation.ScrollableColumn
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.ExperimentalLazyDsl
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
@@ -24,7 +22,7 @@ import com.andb.apps.composesandbox.state.Screen
 import com.andb.apps.composesandbox.state.UserAction
 
 @Composable
-fun ProjectsScreen(projects: List<Project>){
+fun ProjectsScreen(projects: List<Project>) {
     Scaffold(
         floatingActionButton = {
             ExtendedFloatingActionButton(
@@ -35,36 +33,46 @@ fun ProjectsScreen(projects: List<Project>){
             )
         }
     ) {
-        ScrollableColumn(modifier = Modifier.fillMaxSize()) {
-            Text(
-                text = "Compose Sandbox",
-                style = MaterialTheme.typography.h4,
-                modifier = Modifier.padding(vertical = 32.dp, horizontal = 32.dp)
-            )
-            LazyGridFor(items = projects, modifier = Modifier.padding(horizontal = 16.dp), columns = 2) { project ->
-                val handler = Handler
-                ProjectItem(
-                    project = project,
-                    modifier = Modifier.weight(1f).padding(16.dp).clickable {
-                        val screen = Screen.Sandbox(SandboxState(project))
-                        println("screen = $screen")
-                        handler.invoke(UserAction.OpenScreen(screen))
-                    }
+        LazyGridFor(
+            items = projects,
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+            columns = 2,
+            header = {
+                Text(
+                    text = "Compose Sandbox",
+                    style = MaterialTheme.typography.h4,
+                    modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp)
                 )
             }
+        ) { project ->
+            val handler = Handler
+            ProjectItem(
+                project = project,
+                modifier = Modifier.weight(1f).padding(16.dp).clickable {
+                    val screen = Screen.Sandbox(SandboxState(project))
+                    println("screen = $screen")
+                    handler.invoke(UserAction.OpenScreen(screen))
+                }
+            )
         }
     }
 }
 
+@OptIn(ExperimentalLazyDsl::class)
 @Composable
-fun <T> LazyGridFor(items: List<T>, columns: Int, modifier: Modifier = Modifier, itemContent: @Composable() (T) -> Unit) {
-    LazyColumnFor(items = items.chunked(columns), modifier = modifier) { rowItems ->
-        Row {
-            rowItems.forEach {
-                itemContent(it)
-            }
-            repeat (columns - rowItems.size) {
-                Spacer(modifier = Modifier.weight(1f))
+fun <T> LazyGridFor(items: List<T>, columns: Int, modifier: Modifier = Modifier, header: (@Composable() LazyItemScope.() -> Unit)? = null, itemContent: @Composable() RowScope.(T) -> Unit) {
+    LazyColumn(modifier = modifier) {
+        if (header != null) {
+            item(header)
+        }
+        items(items.chunked(columns)) { rowItems ->
+            Row {
+                rowItems.forEach {
+                    itemContent(it)
+                }
+                repeat(columns - rowItems.size) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
             }
         }
     }

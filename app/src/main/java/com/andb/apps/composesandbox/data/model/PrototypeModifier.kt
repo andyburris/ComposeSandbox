@@ -16,7 +16,7 @@ import java.util.*
 
 sealed class PrototypeModifier(open val id: String) {
     sealed class Padding(id: String) : PrototypeModifier(id) {
-        data class Individual(val top: Dp, val bottom: Dp, val start: Dp, val end: Dp, override val id: String = UUID.randomUUID().toString()) : Padding(id)
+        data class Individual(val start: Dp, val end: Dp, val top: Dp, val bottom: Dp, override val id: String = UUID.randomUUID().toString()) : Padding(id)
         data class Sides(val horizontal: Dp, val vertical: Dp, override val id: String = UUID.randomUUID().toString()) : Padding(id)
         data class All(val padding: Dp, override val id: String = UUID.randomUUID().toString()) : Padding(id)
     }
@@ -53,4 +53,45 @@ fun List<PrototypeModifier>.toModifier() : Modifier {
             is PrototypeModifier.Border -> Modifier.border(prototypeModifier.strokeWidth, prototypeModifier.color, shape = RoundedCornerShape(prototypeModifier.cornerRadius))
         }
     }
+}
+
+
+fun PrototypeModifier.Padding.toAll(): PrototypeModifier.Padding.All = when (this) {
+    is PrototypeModifier.Padding.All -> this
+    is PrototypeModifier.Padding.Sides -> PrototypeModifier.Padding.All(
+        listOf(this.horizontal, this.vertical)
+            .groupBy { it }
+            .maxByOrNull { it.value.size }!!
+            .key,
+        this.id
+    )
+    is PrototypeModifier.Padding.Individual -> PrototypeModifier.Padding.All(
+        listOf(this.top, this.bottom, this.start, this.end)
+            .groupBy { it }
+            .maxByOrNull { it.value.size }!!
+            .key,
+        this.id
+    )
+}
+
+fun PrototypeModifier.Padding.toSides(): PrototypeModifier.Padding.Sides = when (this) {
+    is PrototypeModifier.Padding.All -> PrototypeModifier.Padding.Sides(this.padding, this.padding, this.id)
+    is PrototypeModifier.Padding.Sides -> this
+    is PrototypeModifier.Padding.Individual -> PrototypeModifier.Padding.Sides(
+        listOf(this.start, this.end)
+            .groupBy { it }
+            .maxByOrNull { it.value.size }!!
+            .key,
+        listOf(this.top, this.bottom)
+            .groupBy { it }
+            .maxByOrNull { it.value.size }!!
+            .key,
+        this.id
+    )
+}
+
+fun PrototypeModifier.Padding.toIndividual(): PrototypeModifier.Padding.Individual = when (this) {
+    is PrototypeModifier.Padding.All -> PrototypeModifier.Padding.Individual(this.padding, this.padding, this.padding, this.padding, this.id)
+    is PrototypeModifier.Padding.Sides -> PrototypeModifier.Padding.Individual(this.horizontal, this.horizontal, this.vertical, this.vertical, this.id)
+    is PrototypeModifier.Padding.Individual -> this
 }

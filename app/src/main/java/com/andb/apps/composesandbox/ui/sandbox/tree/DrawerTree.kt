@@ -103,11 +103,11 @@ fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, moving:
 private fun DrawerTreeHeader(opened: PrototypeComponent, sheetState: BottomSheetState) {
     val actionHandler = ActionHandlerAmbient.current
     Row(
-        verticalGravity = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.padding(32.dp).fillMaxWidth()
     ) {
-        Row(verticalGravity = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             val iconRotation = animate(target = if (sheetState.targetValue != BottomSheetValue.Peek) 180f else 0f)
             Icon(
                 asset = Icons.Default.KeyboardArrowUp,

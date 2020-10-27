@@ -4,15 +4,16 @@ object Versions {
     const val compileSDK = 29
     const val kotlin = "1.4.0"
     const val koin = "2.1.5"
-    const val compose = "1.0.0-alpha02"
+    const val compose = "1.0.0-alpha05"
 }
 
 object Dependencies {
     object Compose {
-        val layout = "androidx.compose.foundation:foundation-layout:${Versions.compose}"
-        val material = "androidx.compose.material:material:${Versions.compose}"
-        val icons = "androidx.compose.material:material-icons-extended:${Versions.compose}"
-        val tooling = "androidx.ui:ui-tooling:${Versions.compose}"
+        const val layout = "androidx.compose.foundation:foundation-layout:${Versions.compose}"
+        const val material = "androidx.compose.material:material:${Versions.compose}"
+        const val icons = "androidx.compose.material:material-icons-extended:${Versions.compose}"
+        const val tooling = "androidx.ui:ui-tooling:${Versions.compose}"
+        const val compiler = "androidx.compose.compiler:compiler:${Versions.compose}"
     }
 
     object Koin {

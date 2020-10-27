@@ -259,8 +259,6 @@ fun BottomSheetLayout(
                 thresholds = { _, _ -> FixedThreshold(BottomDrawerThreshold) },
                 orientation = Orientation.Vertical,
                 enabled = gesturesEnabled,
-                resistanceFactorAtMin = 0f,
-                resistanceFactorAtMax = 0f
             )
         ) {
             Stack {

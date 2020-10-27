@@ -18,12 +18,12 @@ fun RenderComponent(component: PrototypeComponent){
     when (component.properties){
         is Properties.Text -> Text(text = component.properties.text, modifier = component.modifiers.toModifier())
         is Properties.Icon -> Icon(asset = component.properties.icon, modifier = component.modifiers.toModifier())
-        is Properties.Group.Column -> Column(modifier = component.modifiers.toModifier(), horizontalGravity = component.properties.horizontalAlignment, verticalArrangement = component.properties.verticalArrangement) {
+        is Properties.Group.Column -> Column(modifier = component.modifiers.toModifier(), horizontalAlignment = component.properties.horizontalAlignment, verticalArrangement = component.properties.verticalArrangement) {
             for (child in component.properties.children) {
                 RenderComponent(component = child)
             }
         }
-        is Properties.Group.Row -> Row(modifier = component.modifiers.toModifier(), verticalGravity = component.properties.verticalAlignment, horizontalArrangement = component.properties.horizontalArrangement) {
+        is Properties.Group.Row -> Row(modifier = component.modifiers.toModifier(), verticalAlignment = component.properties.verticalAlignment, horizontalArrangement = component.properties.horizontalArrangement) {
             for (child in component.properties.children) {
                 RenderComponent(component = child)
             }

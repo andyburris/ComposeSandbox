@@ -94,9 +94,9 @@ fun ModifierItem(prototypeModifier: PrototypeModifier, modifier: Modifier = Modi
     Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalGravity = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalGravity = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(asset = prototypeModifier.icon)
             Text(text = prototypeModifier.name, modifier = Modifier.padding(start = 16.dp))
         }

@@ -30,7 +30,7 @@ fun <T> OptionsPicker(label: String, selected: T, options: List<T>, stringify: (
     GenericPropertyEditor(label) {
         DropdownMenu(
             toggle = {
-                Row(verticalGravity = Alignment.CenterVertically, modifier = Modifier.clickable { opened.value = true }) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { opened.value = true }) {
                     Text(text = stringify(selected))
                     Icon(asset = Icons.Default.ArrowDropDown)
                 }
@@ -48,7 +48,7 @@ fun <T> OptionsPicker(label: String, selected: T, options: List<T>, stringify: (
 }
 
 @Composable
-fun NumberPicker(label: String, current: Int, onValueChange: (Int) -> Unit) {
+fun NumberPicker(label: String, current: Int, minValue: Int = 0, maxValue: Int = Int.MAX_VALUE, onValueChange: (Int) -> Unit) {
     GenericPropertyEditor(label = label) {
         Column(
             modifier = Modifier
@@ -61,18 +61,18 @@ fun NumberPicker(label: String, current: Int, onValueChange: (Int) -> Unit) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalGravity = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    asset = Icons.Default.Remove,
+                    asset = Icons.Default.Remove.copy(defaultHeight = 16.dp, defaultWidth = 16.dp),
                     tint = MaterialTheme.colors.onSecondary,
-                    modifier = Modifier.clickable { onValueChange.invoke(current - 1) }.padding(8.dp)
+                    modifier = Modifier.clickable { onValueChange.invoke((current - 1).coerceIn(minValue..maxValue)) }.padding(12.dp)
                 )
                 Text(text = current.toString())
                 Icon(
-                    asset = Icons.Default.Add,
+                    asset = Icons.Default.Add.copy(defaultHeight = 16.dp, defaultWidth = 16.dp),
                     tint = MaterialTheme.colors.onSecondary,
-                    modifier = Modifier.clickable { onValueChange.invoke(current + 1) }.padding(8.dp)
+                    modifier = Modifier.clickable { onValueChange.invoke((current + 1).coerceIn(minValue..maxValue)) }.padding(12.dp)
                 )
             }
             Box(backgroundColor = MaterialTheme.colors.onSecondary, modifier = Modifier.fillMaxWidth().height(1.dp))
@@ -84,7 +84,7 @@ fun NumberPicker(label: String, current: Int, onValueChange: (Int) -> Unit) {
 fun GenericPropertyEditor(label: String, modifier: Modifier = Modifier, widget: @Composable() () -> Unit) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalGravity = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp)
     ) {
         Text(label)
