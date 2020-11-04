@@ -252,7 +252,7 @@ fun BottomSheetLayout(
                     minValue to BottomSheetValue.Expanded
                 )
             }
-        Stack(
+        Box(
             Modifier.swipeable(
                 state = sheetState,
                 anchors = anchors,

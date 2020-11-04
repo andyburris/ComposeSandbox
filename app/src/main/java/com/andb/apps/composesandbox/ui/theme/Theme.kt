@@ -19,6 +19,7 @@ private val LightColorPalette = lightColors(
     primaryVariant = purple700,
     secondary = Color.Black.copy(alpha = .05f),
     onSecondary = Color.Black.copy(alpha = 0.5f),
+    secondaryVariant = Color.Black.copy(alpha = .25f)
 
     /* Other default colors to override
     background = Color.White,

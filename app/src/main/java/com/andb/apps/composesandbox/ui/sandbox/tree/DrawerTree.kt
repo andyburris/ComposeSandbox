@@ -22,7 +22,7 @@ import androidx.compose.ui.gesture.dragGestureFilter
 import androidx.compose.ui.gesture.rawPressStartGestureFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.globalPosition
-import androidx.compose.ui.onPositioned
+import androidx.compose.ui.onGloballyPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Position
@@ -33,6 +33,9 @@ import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.BottomSheetState
 import com.andb.apps.composesandbox.ui.common.BottomSheetValue
+import com.andb.apps.composesandbox.ui.common.DragDropAmbient
+
+data class MovingState(val component: PrototypeComponent, val position: Position)
 
 /**
  * Tree representing prototype components. Holds drag-and-drop logic currently. Uses [GenericTree] under the hood
@@ -42,18 +45,18 @@ import com.andb.apps.composesandbox.ui.common.BottomSheetValue
  */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, moving: PrototypeComponent? = null, onTreeUpdate: (PrototypeComponent) -> Unit) {
+fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, moving: MovingState?, onTreeUpdate: (PrototypeComponent) -> Unit) {
     val actionHandler = ActionHandlerAmbient.current
     val density = DensityAmbient.current
 
-    val dragPosition = remember { mutableStateOf(Position(0.dp, 0.dp)) }
+    val dragPosition = DragDropAmbient.current.positionState
     val globalPositionOffset = remember { mutableStateOf(Position(0.dp, 0.dp)) }
     val (hoverState, setHoverState) = remember { mutableStateOf<HoverState?>(null) }
     val onRelease = {
         hoverState?.run {
             // hovering item = tree item that finger is above
             // if drop position is above hovering item, add it to the same indent right above hovering item
-            val updated = opened.plusChildInTree(moving!!, this.hoveringComponent, this.dropAbove)
+            val updated = opened.plusChildInTree(moving!!.component, this.hoveringComponent, this.dropAbove)
             onTreeUpdate(updated)
         }
     }
@@ -67,6 +70,7 @@ fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, moving:
                     override fun onStart(downPosition: Offset) { dragPosition.value = downPosition.toDpPosition(density) }
                     override fun onDrag(dragDistance: Offset): Offset {
                         dragPosition.value = dragPosition.value + dragDistance.toDpPosition(density)
+                        println("dragging, value = ${dragPosition.value}")
                         return dragDistance
                     }
                     override fun onStop(velocity: Offset) { onRelease.invoke() }
@@ -74,7 +78,7 @@ fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, moving:
                 },
                 canDrag = { moving != null},
                 startDragImmediately = false
-            ).onPositioned {
+            ).onGloballyPositioned {
                 globalPositionOffset.value = it.globalPosition.toDpPosition(density)
             }
     ) {
@@ -90,7 +94,7 @@ fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, moving:
         )
     }
     if (moving != null) {
-        ComponentDragDropItem(component = moving, position = dragPosition.value)
+        ComponentDragDropItem(component = moving.component, position = dragPosition.value)
         if (hoverState != null) {
             println("hoverstate padding = ${hoverState.dropIndicatorPosition}")
             DropIndicator(hoverState)

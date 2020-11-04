@@ -17,6 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.VectorAsset
+import androidx.compose.ui.platform.DensityAmbient
+import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.updatedChildInTree
 import com.andb.apps.composesandbox.data.model.updatedModifier
@@ -24,13 +26,11 @@ import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerState
 import com.andb.apps.composesandbox.state.SandboxState
 import com.andb.apps.composesandbox.state.UserAction
-import com.andb.apps.composesandbox.ui.common.BottomSheetLayout
-import com.andb.apps.composesandbox.ui.common.BottomSheetState
-import com.andb.apps.composesandbox.ui.common.BottomSheetValue
-import com.andb.apps.composesandbox.ui.common.rememberBottomSheetState
+import com.andb.apps.composesandbox.ui.common.*
 import com.andb.apps.composesandbox.ui.sandbox.modifiers.DrawerEditModifiers
 import com.andb.apps.composesandbox.ui.sandbox.properties.DrawerEditProperties
 import com.andb.apps.composesandbox.ui.sandbox.tree.DrawerTree
+import com.andb.apps.composesandbox.ui.sandbox.tree.MovingState
 import com.andb.apps.composesandbox.ui.util.ItemTransitionState
 import com.andb.apps.composesandbox.util.plusElement
 
@@ -39,42 +39,48 @@ import com.andb.apps.composesandbox.util.plusElement
 fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: BottomSheetState) -> Unit) {
     val sheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Peek)
     val cornerRadius = animate(target = if (sheetState.targetValue == BottomSheetValue.Expanded) 16.dp else 32.dp)
+    val density = DensityAmbient.current
     BottomSheetLayout(
         sheetState = sheetState,
         closeable = false,
         peekHeight = 88.dp,
         sheetShape = RoundedCornerShape(topLeft = cornerRadius, topRight = cornerRadius),
         bodyContent = { bodyContent(sheetState) },
+        gesturesEnabled = sandboxState.drawerStack.filterIsInstance<DrawerState.Tree>().firstOrNull()?.movingComponent == null,
         sheetContent = {
             val (contentWidth, setContentWidth) = remember { mutableStateOf(0) }
 /*            ItemSwitcher(
                 current = sandboxState.drawerState,
                 transitionDefinition = getDrawerContentTransition(offsetPx = contentWidth.toFloat(), reverse = sandboxState.drawerState is DrawerState.Tree),
-                modifier = Modifier.onPositioned { setContentWidth(it.size.width) }
+                modifier = Modifier.onGloballyPositioned { setContentWidth(it.size.width) }
             ) { drawerState, transitionState ->*/
+
             val drawerState = sandboxState.drawerStack.last()
-            Stack {
-                val actionHandler = ActionHandlerAmbient.current
-                when (drawerState) {
-                    is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, moving = drawerState.movingComponent) { updated ->
-                        actionHandler.invoke(UserAction.UpdateTree(updated))
-                    }
-                    DrawerState.AddComponent -> ComponentList(project = sandboxState.project) {
-                        actionHandler.invoke(UserAction.MoveComponent(it))
-                    }
-                    is DrawerState.EditComponent -> DrawerEditProperties(sandboxState.editingComponent, actionHandler) { updatedComponent ->
-                        actionHandler.invoke(UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(updatedComponent)))
-                    }
-                    is DrawerState.AddModifier -> AddModifierList {
-                        val withModifier = sandboxState.editingComponent.copy(modifiers = sandboxState.editingComponent.modifiers.plusElement(it, 0))
-                        val updateAction = UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(withModifier))
-                        actionHandler.invoke(updateAction)
-                        actionHandler.invoke(UserAction.Back)
-                    }
-                    is DrawerState.EditModifier -> DrawerEditModifiers(modifier = sandboxState.editingModifier) {
-                        println("edited modifier = $it")
-                        val updateAction = UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it)))
-                        actionHandler.invoke(updateAction)
+            val dragPosition = remember { mutableStateOf(Position(0.dp, 0.dp)) }
+            DragDropProvider(dragDropState = DragDropState(dragPosition)) {
+                Box {
+                    val actionHandler = ActionHandlerAmbient.current
+                    when (drawerState) {
+                        is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, moving = drawerState.movingComponent?.let { MovingState(it, Position((-1).dp, (-1).dp)) }) { updated ->
+                            actionHandler.invoke(UserAction.UpdateTree(updated))
+                        }
+                        DrawerState.AddComponent -> ComponentList(project = sandboxState.project) {
+                            actionHandler.invoke(UserAction.MoveComponent(it))
+                        }
+                        is DrawerState.EditComponent -> DrawerEditProperties(sandboxState.editingComponent, actionHandler) { updatedComponent ->
+                            actionHandler.invoke(UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(updatedComponent)))
+                        }
+                        is DrawerState.AddModifier -> AddModifierList {
+                            val withModifier = sandboxState.editingComponent.copy(modifiers = sandboxState.editingComponent.modifiers.plusElement(it, 0))
+                            val updateAction = UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(withModifier))
+                            actionHandler.invoke(updateAction)
+                            actionHandler.invoke(UserAction.Back)
+                        }
+                        is DrawerState.EditModifier -> DrawerEditModifiers(modifier = sandboxState.editingModifier) {
+                            println("edited modifier = $it")
+                            val updateAction = UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it)))
+                            actionHandler.invoke(updateAction)
+                        }
                     }
                 }
             }
@@ -84,7 +90,7 @@ fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: B
 }
 
 private val Alpha = FloatPropKey()
-private val Offset = FloatPropKey()
+private val ContentOffset = FloatPropKey()
 
 @Composable
 private fun getDrawerContentTransition(
@@ -95,15 +101,15 @@ private fun getDrawerContentTransition(
     transitionDefinition {
         state(ItemTransitionState.Visible) {
             this[Alpha] = 1f
-            this[Offset] = 0f
+            this[ContentOffset] = 0f
         }
         state(ItemTransitionState.BecomingVisible) {
             this[Alpha] = 0f
-            this[Offset] = if (reverse) -offsetPx else offsetPx
+            this[ContentOffset] = if (reverse) -offsetPx else offsetPx
         }
         state(ItemTransitionState.BecomingNotVisible) {
             this[Alpha] = 0f
-            this[Offset] = if (reverse) offsetPx else -offsetPx
+            this[ContentOffset] = if (reverse) offsetPx else -offsetPx
         }
 
         val halfDuration = duration / 2
@@ -119,7 +125,7 @@ private fun getDrawerContentTransition(
                 delayMillis = halfDuration,
                 easing = LinearEasing
             )
-            Offset using tween(
+            ContentOffset using tween(
                 durationMillis = halfDuration,
                 delayMillis = halfDuration,
                 easing = LinearOutSlowInEasing
@@ -135,7 +141,7 @@ private fun getDrawerContentTransition(
                 easing = LinearEasing,
                 delayMillis = 24
             )
-            Offset using tween(
+            ContentOffset using tween(
                 durationMillis = halfDuration,
                 easing = LinearOutSlowInEasing,
                 delayMillis = 24
@@ -166,7 +172,7 @@ fun DrawerHeader(title: String, icon: VectorAsset = Icons.Default.ArrowBack, onI
             )
         }
 
-        if(actions != null) {
+        if (actions != null) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 actions()
             }

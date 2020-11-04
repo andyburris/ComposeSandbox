@@ -1,11 +1,8 @@
 package com.andb.apps.composesandbox.ui.sandbox.properties
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.InternalLayoutApi
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import com.andb.apps.composesandbox.data.model.Properties
+import com.andb.apps.composesandbox.data.model.*
 
 @Composable
 fun TextProperties(properties: Properties.Text, onUpdate: (Properties.Text) -> Unit) {
@@ -23,47 +20,6 @@ fun IconProperties(properties: Properties.Icon, onUpdate: (Properties.Icon) -> U
     }
 }
 
-val horizontalArrangements = listOf(Arrangement.Start, Arrangement.Center, Arrangement.End)
-val verticalArrangements = listOf(Arrangement.Top, Arrangement.Center, Arrangement.Bottom)
-val bothArrangements = listOf(Arrangement.SpaceBetween, Arrangement.SpaceEvenly, Arrangement.SpaceAround)
-val verticalAlignments = listOf(Alignment.Top, Alignment.CenterVertically, Alignment.Bottom)
-val horizontalAlignments = listOf(Alignment.Start, Alignment.CenterHorizontally, Alignment.End)
-
-@OptIn(InternalLayoutApi::class)
-fun Arrangement.Horizontal.toReadableString() = when (this) {
-    Arrangement.Start -> "Start"
-    Arrangement.Center -> "Center"
-    Arrangement.End -> "End"
-    Arrangement.SpaceBetween -> "Space Between"
-    Arrangement.SpaceAround -> "Space Around"
-    Arrangement.SpaceEvenly -> "Space Evenly"
-    else -> ""
-}
-
-@OptIn(InternalLayoutApi::class)
-fun Arrangement.Vertical.toReadableString() = when (this) {
-    Arrangement.Top -> "Top"
-    Arrangement.Center -> "Center"
-    Arrangement.Bottom -> "Bottom"
-    Arrangement.SpaceBetween -> "Space Between"
-    Arrangement.SpaceAround -> "Space Around"
-    Arrangement.SpaceEvenly -> "Space Evenly"
-    else -> ""
-}
-
-fun Alignment.Vertical.toReadableString() = when (this){
-    Alignment.Top -> "Top"
-    Alignment.CenterVertically -> "Center Vertically"
-    Alignment.Bottom -> "Bottom"
-    else -> ""
-}
-
-fun Alignment.Horizontal.toReadableString() = when (this) {
-    Alignment.Start -> "Start"
-    Alignment.CenterHorizontally -> "Center Horizontally"
-    Alignment.End -> "End"
-    else -> ""
-}
 
 @Composable
 fun ColumnProperties(properties: Properties.Group.Column, onUpdate: (Properties.Group.Column) -> Unit) {

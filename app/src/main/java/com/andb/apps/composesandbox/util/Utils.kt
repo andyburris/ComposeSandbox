@@ -6,3 +6,8 @@ fun <T> List<T>.plusElement(element: T, index: Int): List<T> {
     result.add(index, element)
     return result
 }
+
+fun String.prependIndentLevel(level: Int): String {
+    val indents = "    ".repeat(level)
+    return this.prependIndent(indents)
+}

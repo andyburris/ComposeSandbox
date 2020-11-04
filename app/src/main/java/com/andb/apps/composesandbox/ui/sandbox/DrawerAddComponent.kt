@@ -15,11 +15,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.savedinstancestate.savedInstanceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.gesture.longPressGestureFilter
+import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.data.model.*
+import com.andb.apps.composesandbox.data.model.Project
+import com.andb.apps.composesandbox.data.model.Properties
+import com.andb.apps.composesandbox.data.model.PrototypeComponent
+import com.andb.apps.composesandbox.data.model.toComponent
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
+import com.andb.apps.composesandbox.ui.common.DragDropAmbient
 import com.andb.apps.composesandbox.ui.sandbox.tree.ComponentItem
+import com.andb.apps.composesandbox.ui.sandbox.tree.toDpPosition
 
 @Composable
 fun ComponentList(project: Project, onSelect: (PrototypeComponent) -> Unit) {
@@ -42,10 +49,15 @@ fun AddComponentHeader(text: String) {
 
 @Composable
 private fun AddComponentItem(component: PrototypeComponent, onSelect: (PrototypeComponent) -> Unit) {
+    val dragDropState = DragDropAmbient.current
+    val density = DensityAmbient.current
     ComponentItem(
         component = component,
         modifier = Modifier
-            .clickable(onLongClick = {onSelect.invoke(component)}){}
+            .longPressGestureFilter {
+                dragDropState.positionState.value = it.toDpPosition(density)
+                onSelect.invoke(component)
+            }
             .padding(horizontal = 32.dp, vertical = 8.dp)
             .fillMaxWidth()
     )

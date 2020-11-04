@@ -95,3 +95,19 @@ fun PrototypeModifier.Padding.toIndividual(): PrototypeModifier.Padding.Individu
     is PrototypeModifier.Padding.Sides -> PrototypeModifier.Padding.Individual(this.horizontal, this.horizontal, this.vertical, this.vertical, this.id)
     is PrototypeModifier.Padding.Individual -> this
 }
+
+fun List<PrototypeModifier>.toCode(): String {
+    if (isEmpty()) return ""
+
+    return buildString {
+        append(", modifier = Modifier.")
+        append(this@toCode.joinToString(".") { it.toCode() })
+    }
+}
+
+fun PrototypeModifier.toCode() = when (this) {
+    is PrototypeModifier.Border -> "border(width = $strokeWidth, color = $color)"
+    is PrototypeModifier.Padding.Individual -> "padding(start = $start, end = $end, top = $top, bottom = $bottom)"
+    is PrototypeModifier.Padding.Sides -> "padding(horizontal = $horizontal, vertical = $vertical)"
+    is PrototypeModifier.Padding.All -> "padding($padding)"
+}

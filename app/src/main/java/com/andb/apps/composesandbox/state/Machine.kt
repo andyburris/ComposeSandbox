@@ -42,13 +42,13 @@ class Machine {
 
     private fun moveComponent(moving: PrototypeComponent) {
         screens.updateSandbox { sandboxState ->
-            sandboxState.copy(openedTree = sandboxState.openedTree.minusChildFromTree(moving), drawerStack = listOf(DrawerState.Tree(moving)))
+            sandboxState.updatedTree(sandboxState.openedTree.minusChildFromTree(moving)).copy(drawerStack = listOf(DrawerState.Tree(moving)))
         }
     }
 
     private fun updateTree(updated: PrototypeComponent) {
-        screens.updateSandbox {
-            it.copy(openedTree = updated).withTree { DrawerState.Tree() }
+        screens.updateSandbox { sandboxState ->
+            sandboxState.updatedTree(updated)
         }
     }
 }
@@ -73,7 +73,21 @@ private inline fun MutableStateFlow<List<Screen>>.updateSandbox(transform: (sand
     updateScreen<Screen.Sandbox> { it.copy(state = transform(it.state)) }
 }
 
-private fun SandboxState.withTree(transform: (DrawerState.Tree) -> DrawerState.Tree): SandboxState = this.copy(
+private fun SandboxState.updatedTree(updated: PrototypeComponent): SandboxState {
+    return this.copy(
+        openedTree = updated,
+        project = project.copy(
+            screens = project.screens.map {
+                when (it.id) {
+                    updated.id -> updated
+                    else -> it
+                }
+            }
+        )
+    ).withDrawerTree { DrawerState.Tree() }
+}
+
+private fun SandboxState.withDrawerTree(transform: (DrawerState.Tree) -> DrawerState.Tree): SandboxState = this.copy(
     drawerStack = drawerStack.map {
         return@map when (it) {
             is DrawerState.Tree -> transform(it)

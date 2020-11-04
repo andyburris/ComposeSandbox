@@ -138,3 +138,17 @@ fun PrototypeComponent.findModifierByIDInTree(id: String): PrototypeModifier? {
     }
     return null
 }
+
+fun PrototypeComponent.toCode(indent: Boolean = false): String = when(this.properties) {
+    is Properties.Text -> "Text(text = \"${properties.text}\"${modifiers.toCode()})"
+    is Properties.Icon -> "Icon(asset = Icons.Default.Image${modifiers.toCode()})"
+    is Properties.Group.Row ->
+        """Row(horizontalArrangement = ${properties.horizontalArrangement.toCodeString()}, verticalAlignment = ${properties.verticalAlignment.toCodeString()}${modifiers.toCode()}) {
+${properties.children.joinToString("\n") { it.toCode(true) }}
+}"""
+    is Properties.Group.Column ->
+        """Column(verticalArrangement = ${properties.verticalArrangement.toCodeString()}, horizontalAlignment = ${properties.horizontalAlignment.toCodeString()}${modifiers.toCode()}) {
+${properties.children.joinToString("\n") { it.toCode(true) }}
+}"""
+}.prependIndent(if (indent) "    " else "")
+

@@ -14,10 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.TransformOrigin
 import androidx.compose.ui.drawLayer
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.onPositioned
+import androidx.compose.ui.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.Project
+import com.andb.apps.composesandbox.state.Handler
 import com.andb.apps.composesandbox.state.SandboxState
+import com.andb.apps.composesandbox.state.Screen
+import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.RenderComponent
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -44,10 +47,10 @@ fun SandboxScreen(sandboxState: SandboxState) {
                     val (height, setHeight) = remember { mutableStateOf(0) }
                     val scale = (sheetState.offset.value / height).coerceIn(0.5f..1f)
 
-                    Stack(
+                    Box(
                         modifier = Modifier
                             .drawLayer(scaleX = scale, scaleY = scale, transformOrigin = TransformOrigin(0.5f, 0f))
-                            .onPositioned { setHeight(it.size.height) }
+                            .onGloballyPositioned { setHeight(it.size.height) }
                             .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 100.dp)
                             .background(MaterialTheme.colors.background)
                             .fillMaxSize()
@@ -62,6 +65,8 @@ fun SandboxScreen(sandboxState: SandboxState) {
 
 @Composable
 private fun SandboxAppBar(project: Project, iconState: BackdropState, onToggle: () -> Unit) {
+    val actionHandler = Handler
+    val menuShowing = remember { mutableStateOf(false) }
     TopAppBar(
         navigationIcon = {
             IconToggleButton(
@@ -74,8 +79,27 @@ private fun SandboxAppBar(project: Project, iconState: BackdropState, onToggle: 
         title = { Text(text = project.name) },
         actions = {
             IconButton(onClick = {}) { Icon(asset = Icons.Default.Palette) }
-            IconButton(onClick = {}) { Icon(asset = Icons.Default.PlayCircleFilled) }
-            IconButton(onClick = {}) { Icon(asset = Icons.Default.MoreVert) }
+            IconButton(onClick = { actionHandler.invoke(UserAction.OpenScreen(Screen.Preview(project.screens.first()))) }) { Icon(asset = Icons.Default.PlayCircleFilled) }
+            DropdownMenu(
+                toggle = {
+                    IconButton(onClick = { menuShowing.value = true }) {
+                        Icon(asset = Icons.Default.MoreVert)
+                    }
+                },
+                expanded = menuShowing.value,
+                onDismissRequest = {
+                    menuShowing.value = false
+                }
+            ) {
+                DropdownMenuItem(
+                    onClick = {
+                        val action = UserAction.OpenScreen(Screen.Code(project))
+                        actionHandler.invoke(action)
+                    }
+                ) {
+                    Text("Export Code")
+                }
+            }
         },
         elevation = 0.dp
     )
