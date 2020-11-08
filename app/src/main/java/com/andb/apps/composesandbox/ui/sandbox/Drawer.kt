@@ -16,10 +16,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.drawLayer
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.gesture.DragObserver
+import androidx.compose.ui.gesture.dragGestureFilter
 import androidx.compose.ui.graphics.vector.VectorAsset
+import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.layout.globalPosition
+import androidx.compose.ui.onGloballyPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
+import com.andb.apps.composesandbox.data.model.plusChildInTree
 import com.andb.apps.composesandbox.data.model.updatedChildInTree
 import com.andb.apps.composesandbox.data.model.updatedModifier
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
@@ -30,7 +38,8 @@ import com.andb.apps.composesandbox.ui.common.*
 import com.andb.apps.composesandbox.ui.sandbox.modifiers.DrawerEditModifiers
 import com.andb.apps.composesandbox.ui.sandbox.properties.DrawerEditProperties
 import com.andb.apps.composesandbox.ui.sandbox.tree.DrawerTree
-import com.andb.apps.composesandbox.ui.sandbox.tree.MovingState
+import com.andb.apps.composesandbox.ui.sandbox.tree.toDpPosition
+import com.andb.apps.composesandbox.ui.util.ItemSwitcher
 import com.andb.apps.composesandbox.ui.util.ItemTransitionState
 import com.andb.apps.composesandbox.util.plusElement
 
@@ -40,6 +49,7 @@ fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: B
     val sheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Peek)
     val cornerRadius = animate(target = if (sheetState.targetValue == BottomSheetValue.Expanded) 16.dp else 32.dp)
     val density = DensityAmbient.current
+    val actionHandler = ActionHandlerAmbient.current
     BottomSheetLayout(
         sheetState = sheetState,
         closeable = false,
@@ -49,42 +59,109 @@ fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: B
         gesturesEnabled = sandboxState.drawerStack.filterIsInstance<DrawerState.Tree>().firstOrNull()?.movingComponent == null,
         sheetContent = {
             val (contentWidth, setContentWidth) = remember { mutableStateOf(0) }
-/*            ItemSwitcher(
-                current = sandboxState.drawerState,
-                transitionDefinition = getDrawerContentTransition(offsetPx = contentWidth.toFloat(), reverse = sandboxState.drawerState is DrawerState.Tree),
-                modifier = Modifier.onGloballyPositioned { setContentWidth(it.size.width) }
-            ) { drawerState, transitionState ->*/
-
             val drawerState = sandboxState.drawerStack.last()
             val dragPosition = remember { mutableStateOf(Position(0.dp, 0.dp)) }
-            DragDropProvider(dragDropState = DragDropState(dragPosition)) {
-                Box {
-                    val actionHandler = ActionHandlerAmbient.current
-                    when (drawerState) {
-                        is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, moving = drawerState.movingComponent?.let { MovingState(it, Position((-1).dp, (-1).dp)) }) { updated ->
+            val dragDropState = remember(sandboxState.openedTree, drawerState) {
+                DragDropState(dragPosition, mutableStateOf(Position(0.dp, 0.dp)), mutableListOf()) { dropState ->
+                    when (dropState) {
+                        is DropState.OverTreeItem -> {
+                            println("dropping, drawerState = $drawerState")
+                            val treeDrawerState: DrawerState.Tree = (drawerState as? DrawerState.Tree)
+                                ?: return@DragDropState
+                            println("dropping, movingComponent? = ${treeDrawerState.movingComponent}")
+                            val moving = treeDrawerState.movingComponent ?: return@DragDropState
+                            val updated = sandboxState.openedTree.plusChildInTree(moving, dropState.hoveringComponent, dropState.dropAbove)
                             actionHandler.invoke(UserAction.UpdateTree(updated))
                         }
-                        DrawerState.AddComponent -> ComponentList(project = sandboxState.project) {
-                            actionHandler.invoke(UserAction.MoveComponent(it))
-                        }
-                        is DrawerState.EditComponent -> DrawerEditProperties(sandboxState.editingComponent, actionHandler) { updatedComponent ->
-                            actionHandler.invoke(UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(updatedComponent)))
-                        }
-                        is DrawerState.AddModifier -> AddModifierList {
-                            val withModifier = sandboxState.editingComponent.copy(modifiers = sandboxState.editingComponent.modifiers.plusElement(it, 0))
-                            val updateAction = UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(withModifier))
-                            actionHandler.invoke(updateAction)
-                            actionHandler.invoke(UserAction.Back)
-                        }
-                        is DrawerState.EditModifier -> DrawerEditModifiers(modifier = sandboxState.editingModifier) {
-                            println("edited modifier = $it")
-                            val updateAction = UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it)))
-                            actionHandler.invoke(updateAction)
+                        is DropState.OverNone -> {
+                            actionHandler.invoke(UserAction.UpdateTree(sandboxState.openedTree))
+                            // TODO: detect delete
                         }
                     }
                 }
             }
-            //}
+            DragDropProvider(dragDropState = dragDropState) {
+                val oldState = remember { mutableStateOf<DrawerState?>(null) }
+                val transitionDefinition = getDrawerContentTransition(
+                    offsetPx = contentWidth.toFloat(),
+                    reverse = when(drawerState) {
+                        is DrawerState.Tree -> true // always at bottom of stack
+                        is DrawerState.AddComponent, is DrawerState.AddModifier, is DrawerState.EditModifier -> false // always at top of stack
+                        is DrawerState.EditComponent -> oldState.value !is DrawerState.Tree
+                    },
+                    enabled = oldState.value != null && oldState.value!!::class != drawerState::class
+                )
+                oldState.value = drawerState
+                ItemSwitcher(
+                    current = drawerState,
+                    transitionDefinition = transitionDefinition,
+                    modifier = Modifier
+                        .dragGestureFilter(
+                            dragObserver = object : DragObserver {
+                                override fun onDrag(dragDistance: Offset): Offset {
+                                    dragDropState.dragPosition.value = dragDropState.dragPosition.value + dragDistance.toDpPosition(density)
+                                    println("dragging, value = ${dragDropState.dragPosition.value}")
+                                    return dragDistance
+                                }
+
+                                override fun onStop(velocity: Offset) {
+                                    dragDropState.drop()
+                                }
+
+                                override fun onCancel() {
+                                    dragDropState.drop()
+                                }
+                            },
+                            canDrag = { drawerState is DrawerState.Tree && drawerState.movingComponent != null },
+                            startDragImmediately = false
+                        )
+                        .pointerInteropFilter { event ->
+                            println("pointerEvent = $event")
+                            dragDropState.dragPosition.value = Offset(event.x, event.y).toDpPosition(density)
+                            false
+                        }
+                        .onGloballyPositioned {
+                            setContentWidth(it.size.width)
+                            dragDropState.globalPosition.value = it.globalPosition.toDpPosition(density)
+                        }
+                ) { drawerState, transitionState ->
+                    Box(
+                        modifier = Modifier.drawLayer(
+                            translationX = transitionState[ContentOffset],
+                            alpha = transitionState[Alpha]
+                        )
+                    ) {
+                        when (drawerState) {
+                            is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = drawerState.movingComponent?.let { dragDropState.getHoverState(it) })
+                            DrawerState.AddComponent -> ComponentList(project = sandboxState.project) {
+                                actionHandler.invoke(UserAction.MoveComponent(it))
+                            }
+                            is DrawerState.EditComponent -> {
+                                val editingComponent = drawerState.editingComponent(sandboxState.openedTree)
+                                    ?: return@Box //editing component doesn't exist
+                                DrawerEditProperties(editingComponent, actionHandler) { updatedComponent ->
+                                    actionHandler.invoke(UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(updatedComponent)))
+                                }
+                            }
+                            is DrawerState.AddModifier -> AddModifierList {
+                                val withModifier = sandboxState.editingComponent.copy(modifiers = sandboxState.editingComponent.modifiers.plusElement(it, 0))
+                                val updateAction = UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(withModifier))
+                                actionHandler.invoke(updateAction)
+                                actionHandler.invoke(UserAction.Back)
+                            }
+                            is DrawerState.EditModifier -> {
+                                val editingModifier = drawerState.editingModifier(sandboxState.openedTree)
+                                    ?: return@Box //editing component doesn't exist
+                                DrawerEditModifiers(prototypeModifier = editingModifier) {
+                                    println("edited modifier = $it")
+                                    val updateAction = UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it)))
+                                    actionHandler.invoke(updateAction)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         },
     )
 }
@@ -96,8 +173,10 @@ private val ContentOffset = FloatPropKey()
 private fun getDrawerContentTransition(
     duration: Int = 183,
     offsetPx: Float,
-    reverse: Boolean = false
-): TransitionDefinition<ItemTransitionState> = remember(reverse, offsetPx, duration) {
+    reverse: Boolean = false,
+    enabled: Boolean = true
+): TransitionDefinition<ItemTransitionState> = remember(reverse, offsetPx, duration, enabled) {
+    val enabledDuration: Int = if (enabled) duration else 0
     transitionDefinition {
         state(ItemTransitionState.Visible) {
             this[Alpha] = 1f
@@ -112,7 +191,7 @@ private fun getDrawerContentTransition(
             this[ContentOffset] = if (reverse) offsetPx else -offsetPx
         }
 
-        val halfDuration = duration / 2
+        val halfDuration = enabledDuration / 2
 
         transition(
             fromState = ItemTransitionState.BecomingVisible,

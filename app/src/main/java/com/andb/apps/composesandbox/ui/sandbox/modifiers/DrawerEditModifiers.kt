@@ -18,14 +18,14 @@ import com.andb.apps.composesandbox.ui.sandbox.DrawerHeader
 import com.andb.apps.composesandbox.ui.sandbox.properties.NumberPicker
 
 @Composable
-fun DrawerEditModifiers(modifier: PrototypeModifier, onEdit: (PrototypeModifier) -> Unit) {
+fun DrawerEditModifiers(prototypeModifier: PrototypeModifier, onEdit: (PrototypeModifier) -> Unit) {
     val actionHandler = ActionHandlerAmbient.current
     Column {
         DrawerHeader(title = "Edit Modifier", onIconClick = { actionHandler.invoke(UserAction.Back) })
 
-        when (modifier) {
-            is PrototypeModifier.Padding -> PaddingModifierEditor(prototypeModifier = modifier, onEdit)
-            is PrototypeModifier.Border -> BorderModifierEditor(prototypeModifier = modifier, onEdit)
+        when (prototypeModifier) {
+            is PrototypeModifier.Padding -> PaddingModifierEditor(prototypeModifier = prototypeModifier, onEdit)
+            is PrototypeModifier.Border -> BorderModifierEditor(prototypeModifier = prototypeModifier, onEdit)
         }
     }
 }

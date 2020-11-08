@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.WrapText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.Project
 import com.andb.apps.composesandbox.data.model.PrototypeComponent
@@ -44,6 +46,13 @@ fun CodeScreen(project: Project) {
         },
         bodyContent = {
             CodeCard(screen = project.screens.first())
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                icon = { Icon(asset = Icons.Default.Share) },
+                text = { Text(text = "Export Code") },
+                onClick = {}
+            )
         }
     )
 }
@@ -57,7 +66,7 @@ private fun CodeCard(screen: PrototypeComponent) {
                 val code = screen.toCode()
                 Text(
                     text = (1..code.lines().size).joinToString("\n"),
-                    style = codeStyle,
+                    style = codeStyle.copy(textAlign = TextAlign.End),
                     color = MaterialTheme.colors.onSecondary,
                     modifier = Modifier.endBorder(1.dp, MaterialTheme.colors.secondary).padding(end = 8.dp)
                 )

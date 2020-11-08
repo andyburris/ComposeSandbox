@@ -10,30 +10,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawShadow
 import androidx.compose.ui.drawLayer
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.gesture.DragObserver
-import androidx.compose.ui.gesture.dragGestureFilter
-import androidx.compose.ui.gesture.rawPressStartGestureFilter
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.globalPosition
-import androidx.compose.ui.onGloballyPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.PrototypeComponent
-import com.andb.apps.composesandbox.data.model.plusChildInTree
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.BottomSheetState
 import com.andb.apps.composesandbox.ui.common.BottomSheetValue
 import com.andb.apps.composesandbox.ui.common.DragDropAmbient
+import com.andb.apps.composesandbox.ui.common.HoverState
 
 data class MovingState(val component: PrototypeComponent, val position: Position)
 
@@ -41,63 +34,29 @@ data class MovingState(val component: PrototypeComponent, val position: Position
  * Tree representing prototype components. Holds drag-and-drop logic currently. Uses [GenericTree] under the hood
  * @param opened the top-level component opened in the editor
  * @param sheetState the state of the bottom sheet, used to calculate the global position of each [TreeItem]
- * @param moving the component currently in the drag state of drag-and-drop. null if no component is currently being dragged
+ * @param hovering the component currently in the drag state of drag-and-drop. null if no component is currently being dragged
  */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, moving: MovingState?, onTreeUpdate: (PrototypeComponent) -> Unit) {
+fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, hovering: HoverState?) {
     val actionHandler = ActionHandlerAmbient.current
     val density = DensityAmbient.current
 
-    val dragPosition = DragDropAmbient.current.positionState
-    val globalPositionOffset = remember { mutableStateOf(Position(0.dp, 0.dp)) }
-    val (hoverState, setHoverState) = remember { mutableStateOf<HoverState?>(null) }
-    val onRelease = {
-        hoverState?.run {
-            // hovering item = tree item that finger is above
-            // if drop position is above hovering item, add it to the same indent right above hovering item
-            val updated = opened.plusChildInTree(moving!!.component, this.hoveringComponent, this.dropAbove)
-            onTreeUpdate(updated)
-        }
-    }
+    val dragPosition = DragDropAmbient.current.dragPosition
     Column(
         modifier = Modifier
-            .rawPressStartGestureFilter(onPressStart = { pointer ->
-                dragPosition.value = pointer.toDpPosition(density)
-            })
-            .dragGestureFilter(
-                dragObserver = object : DragObserver {
-                    override fun onStart(downPosition: Offset) { dragPosition.value = downPosition.toDpPosition(density) }
-                    override fun onDrag(dragDistance: Offset): Offset {
-                        dragPosition.value = dragPosition.value + dragDistance.toDpPosition(density)
-                        println("dragging, value = ${dragPosition.value}")
-                        return dragDistance
-                    }
-                    override fun onStop(velocity: Offset) { onRelease.invoke() }
-                    override fun onCancel() { onRelease.invoke() }
-                },
-                canDrag = { moving != null},
-                startDragImmediately = false
-            ).onGloballyPositioned {
-                globalPositionOffset.value = it.globalPosition.toDpPosition(density)
-            }
     ) {
         DrawerTreeHeader(opened, sheetState)
         Tree(
             parent = opened,
-            modifier = Modifier.padding(start = 32.dp, end = 32.dp),
-            globalPositionOffset = globalPositionOffset.value,
-            movingPosition = moving?.let { dragPosition.value },
-            onMove = { hoverState ->
-                setHoverState(hoverState)
-            }
+            modifier = Modifier.padding(start = 32.dp, end = 32.dp)
         )
     }
-    if (moving != null) {
-        ComponentDragDropItem(component = moving.component, position = dragPosition.value)
-        if (hoverState != null) {
-            println("hoverstate padding = ${hoverState.dropIndicatorPosition}")
-            DropIndicator(hoverState)
+    if (hovering != null) {
+        ComponentDragDropItem(component = hovering.draggingComponent, position = dragPosition.value)
+        if (hovering is HoverState.OverTreeItem) {
+            println("hoverstate padding = ${hovering.dropIndicatorPosition}")
+            DropIndicator(hovering)
         }
     }
 }
@@ -142,7 +101,7 @@ private fun ComponentDragDropItem(component: PrototypeComponent, position: Posit
 }
 
 @Composable
-private fun DropIndicator(hoverState: HoverState) {
+private fun DropIndicator(hoverState: HoverState.OverTreeItem) {
     val position = hoverState.dropIndicatorPosition
     Row(modifier = Modifier.padding(start = 24.dp, top = position).fillMaxWidth()) {
         repeat(hoverState.indent) {

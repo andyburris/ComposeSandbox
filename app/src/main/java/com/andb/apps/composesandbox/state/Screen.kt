@@ -26,7 +26,11 @@ data class SandboxState(val project: Project, val openedTree: PrototypeComponent
 sealed class DrawerState {
     data class Tree(val movingComponent: PrototypeComponent? = null) : DrawerState()
     object AddComponent : DrawerState()
-    data class EditComponent (val componentID: String) : DrawerState()
+    data class EditComponent (val componentID: String) : DrawerState() {
+        fun editingComponent(openedTree: PrototypeComponent) = openedTree.findByIDInTree(componentID)
+    }
     object AddModifier : DrawerState()
-    data class EditModifier(val modifierID: String) : DrawerState()
+    data class EditModifier(val modifierID: String) : DrawerState() {
+        fun editingModifier(openedTree: PrototypeComponent) = openedTree.findModifierByIDInTree(modifierID)
+    }
 }

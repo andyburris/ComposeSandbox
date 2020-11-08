@@ -12,10 +12,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.savedinstancestate.savedInstanceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.gesture.longPressGestureFilter
+import androidx.compose.ui.layout.globalPosition
+import androidx.compose.ui.onGloballyPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.Project
@@ -26,7 +31,6 @@ import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.DragDropAmbient
 import com.andb.apps.composesandbox.ui.sandbox.tree.ComponentItem
-import com.andb.apps.composesandbox.ui.sandbox.tree.toDpPosition
 
 @Composable
 fun ComponentList(project: Project, onSelect: (PrototypeComponent) -> Unit) {
@@ -51,12 +55,16 @@ fun AddComponentHeader(text: String) {
 private fun AddComponentItem(component: PrototypeComponent, onSelect: (PrototypeComponent) -> Unit) {
     val dragDropState = DragDropAmbient.current
     val density = DensityAmbient.current
+    val globalPositionOffset = remember { mutableStateOf(Offset.Zero) }
     ComponentItem(
         component = component,
         modifier = Modifier
             .longPressGestureFilter {
-                dragDropState.positionState.value = it.toDpPosition(density)
+                //dragDropState.dragPosition.value = it.toDpPosition(density) + globalPositionOffset.value.toDpPosition(density) - dragDropState.globalPosition.value
                 onSelect.invoke(component)
+            }
+            .onGloballyPositioned {
+                globalPositionOffset.value = it.globalPosition
             }
             .padding(horizontal = 32.dp, vertical = 8.dp)
             .fillMaxWidth()

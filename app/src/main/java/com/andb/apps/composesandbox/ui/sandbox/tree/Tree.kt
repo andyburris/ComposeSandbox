@@ -21,7 +21,6 @@ import androidx.compose.ui.onGloballyPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.R
 import com.andb.apps.composesandbox.data.model.Properties
@@ -29,73 +28,34 @@ import com.andb.apps.composesandbox.data.model.PrototypeComponent
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.DragDropAmbient
+import com.andb.apps.composesandbox.ui.common.TreeHoverItem
 
-data class HoverState(val dropIndicatorPosition: Dp, val indent: Int, val hoveringComponent: PrototypeComponent, val dropAbove: Boolean)
-private data class TreeHoverItem(val component: PrototypeComponent, val position: Position, val height: Dp, val indent: Int = 0) {
-    fun isHovering(hoverPosition: Position): Boolean =
-        hoverPosition.y in position.y..(position.y + height)
 
-    fun getHoverState(hoverPosition: Position): HoverState {
-        val hoverInTopHalf = hoverPosition.y < (position.y + height / 2) && indent > 0
-        val dropIndicatorPosition = when {
-            hoverInTopHalf -> position
-            else -> position.copy(y = position.y + height)
-        }
-        val indent = this.indent + if (component.properties is Properties.Group && component.properties.children.isEmpty() && !hoverInTopHalf) 1 else 0
-        return HoverState(dropIndicatorPosition.y, indent, component, hoverInTopHalf)
-    }
+@Composable
+fun Tree(parent: PrototypeComponent, modifier: Modifier = Modifier) {
+    TreeItem(component = parent, modifier)
 }
 
 @Composable
-fun Tree(parent: PrototypeComponent, modifier: Modifier = Modifier, globalPositionOffset: Position, movingPosition: Position?, onMove: (HoverState) -> Unit) {
-    val (treePositions, setTreePositions) = remember { mutableStateOf<List<TreeHoverItem>>(emptyList()) }
-    TreeItem(component = parent, modifier) { newPositions ->
-        setTreePositions(newPositions.map { it.copy(position = it.position - globalPositionOffset) }.sortedByDescending { it.indent })
-        //println("new tree positions (size = ${treePositions.size}) = $treePositions")
-    }
-    if (movingPosition != null) {
-        val treeTop = treePositions.maxOfOrNull { it.position.y } ?: 0.dp
-        val treeBottom = treePositions.maxOfOrNull { it.position.y + it.height } ?: 0.dp
-        val above = movingPosition.y < treeTop
-        val below = movingPosition.y > treeBottom
-        val hovering = treePositions.find { it.isHovering(movingPosition) }
-        //println("finding hover at $movingPosition, hover positions = ${treePositions.map { it.position.y..(it.position.y + it.height) }} hovering = $hovering")
-        when {
-            /*below -> {
-                val indent = (movingPosition.x / 40.dp).toInt().coerceAtMost(treePositions.maxByOrNull { it.position.y }?.indent ?: 0)
-                val hoverState = HoverState(treeBottom, indent)
-                onMove.invoke(hoverState)
-            } TODO: decide whether multiple top-levels can be used in a tree, include this code if yes */
-            hovering != null -> {
-                //val parent = treePositions.maxByOrNull { it.position.y < hovering.position.y && it.indent == hovering.indent - 1 }
-                onMove.invoke(hovering.getHoverState(movingPosition))
-            }
-        }
-    }
-}
-
-@Composable
-private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifier, hoistTreePositions: (List<TreeHoverItem>) -> Unit) {
+private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifier, indent: Int = 0) {
     val actionHandler = ActionHandlerAmbient.current
     val density = DensityAmbient.current
     val dragDropState = DragDropAmbient.current
-    val childTreePositions = remember(component) { mutableStateOf<List<TreeHoverItem>>(emptyList()) }
     Column(
         modifier = modifier
             .onGloballyPositioned {
                 val hoverItem = TreeHoverItem(
                     component,
                     it.globalPosition.toDpPosition(density),
-                    with(density) { it.size.height.toDp() }
+                    with(density) { it.size.height.toDp() },
+                    indent
                 )
-                hoistTreePositions.invoke(childTreePositions.value.plusElement(hoverItem))
+                dragDropState.updateTreeItem(hoverItem)
             }
             .clickable(
                 onClick = { actionHandler.invoke(UserAction.OpenComponent(component.id)) }
             )
-
             .longPressGestureFilter {
-                dragDropState.positionState.value = it.toDpPosition(density)
                 actionHandler.invoke(UserAction.MoveComponent(component))
             }
             .fillMaxWidth()
@@ -106,12 +66,7 @@ private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifie
         )
         if (component.properties is Properties.Group) {
             GenericTree(items = component.properties.children) { child ->
-                TreeItem(child) { treePositions ->
-                    val indented = treePositions.map { it.copy(indent = it.indent + 1) }
-                    childTreePositions.value = childTreePositions.value
-                        .plus(indented)
-                        .distinctBy { it.component.id }
-                }
+                TreeItem(child, indent = indent + 1)
             }
         }
     }
