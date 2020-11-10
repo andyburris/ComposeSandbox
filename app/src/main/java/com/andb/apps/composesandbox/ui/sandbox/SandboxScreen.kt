@@ -16,6 +16,7 @@ import androidx.compose.ui.drawLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.onGloballyPositioned
 import androidx.compose.ui.unit.dp
+import com.andb.apps.composesandbox.BuildConfig
 import com.andb.apps.composesandbox.data.model.Project
 import com.andb.apps.composesandbox.state.Handler
 import com.andb.apps.composesandbox.state.SandboxState
@@ -98,6 +99,16 @@ private fun SandboxAppBar(project: Project, iconState: BackdropState, onToggle: 
                     }
                 ) {
                     Text("Export Code")
+                }
+                if (BuildConfig.DEBUG) {
+                    DropdownMenuItem(
+                        onClick = {
+                            val action = UserAction.OpenScreen(Screen.Test)
+                            actionHandler.invoke(action)
+                        }
+                    ) {
+                        Text("Open Test Screen")
+                    }
                 }
             }
         },

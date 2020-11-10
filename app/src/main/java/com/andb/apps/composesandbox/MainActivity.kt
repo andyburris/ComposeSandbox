@@ -14,6 +14,7 @@ import com.andb.apps.composesandbox.ui.code.CodeScreen
 import com.andb.apps.composesandbox.ui.preview.PreviewScreen
 import com.andb.apps.composesandbox.ui.projects.ProjectsScreen
 import com.andb.apps.composesandbox.ui.sandbox.SandboxScreen
+import com.andb.apps.composesandbox.ui.test.TestScreen
 import com.andb.apps.composesandbox.ui.theme.AppTheme
 import org.koin.android.viewmodel.ext.android.viewModel
 
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
                             is Screen.Sandbox -> SandboxScreen(screen.state)
                             is Screen.Preview -> PreviewScreen(screen.prototypeScreen)
                             is Screen.Code -> CodeScreen(screen.project)
+                            is Screen.Test -> TestScreen()
                         }
                     }
                 }

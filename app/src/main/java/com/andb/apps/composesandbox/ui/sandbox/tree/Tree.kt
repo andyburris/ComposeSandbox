@@ -77,6 +77,8 @@ data class TreeConfig(
     val horizontalLineLength: Dp = 20.dp,
     val horizontalPaddingStart: Dp = 12.dp,
     val horizontalPaddingEnd: Dp = 8.dp,
+    val verticalPaddingTop: Dp = 0.dp,
+    val verticalPositionOnItem: Dp = 20.dp,
 )
 
 @Composable
@@ -94,7 +96,7 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
                 ) {
                     Box(
                         modifier = Modifier
-                            .padding(start = treeConfig.horizontalPaddingStart, top = 20.dp, end = treeConfig.horizontalPaddingEnd)
+                            .padding(start = treeConfig.horizontalPaddingStart, top = treeConfig.verticalPositionOnItem, end = treeConfig.horizontalPaddingEnd)
                             .size(treeConfig.horizontalLineLength, treeConfig.lineWidth)
                             .background(Color.Black.copy(alpha = .25f))
                     )
@@ -105,8 +107,8 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
         if (items.isNotEmpty()){
             Box(
                 modifier = Modifier
-                    .padding(start = treeConfig.horizontalPaddingStart - 1.dp)
-                    .size(1.dp, (with(DensityAmbient.current) { height.toDp() } - (with(DensityAmbient.current) { lastItemHeight.toDp() } - 20.dp) + 1.dp).coerceAtLeast(0.dp))
+                    .padding(start = treeConfig.horizontalPaddingStart - 1.dp, top = treeConfig.verticalPaddingTop)
+                    .size(1.dp, (with(DensityAmbient.current) { height.toDp() } - (with(DensityAmbient.current) { lastItemHeight.toDp() } - treeConfig.verticalPositionOnItem) + 1.dp).coerceAtLeast(0.dp) - treeConfig.verticalPaddingTop)
                     .background(MaterialTheme.colors.secondaryVariant)
             )
         }

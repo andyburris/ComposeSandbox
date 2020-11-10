@@ -7,6 +7,7 @@ sealed class Screen {
     data class Sandbox(val state: SandboxState) : Screen()
     data class Preview(val prototypeScreen: PrototypeComponent) : Screen()
     data class Code(val project: Project) : Screen()
+    object Test : Screen()
 }
 
 data class SandboxState(val project: Project, val openedTree: PrototypeComponent = project.screens.first(), val drawerStack: List<DrawerState> = listOf(DrawerState.Tree())) {
