@@ -51,7 +51,8 @@ fun CodeScreen(project: Project) {
             ExtendedFloatingActionButton(
                 icon = { Icon(asset = Icons.Default.Share) },
                 text = { Text(text = "Export Code") },
-                onClick = {}
+                onClick = {},
+                backgroundColor = MaterialTheme.colors.primary
             )
         }
     )
@@ -62,7 +63,7 @@ private fun CodeCard(screen: PrototypeComponent) {
     Card(Modifier.padding(8.dp)) {
         Column(Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp)) {
             FileItem(screen = screen, modifier = Modifier.padding(end = 16.dp, bottom = 16.dp))
-            Row() {
+            Row {
                 val code = screen.toCode()
                 Text(
                     text = (1..code.lines().size).joinToString("\n"),

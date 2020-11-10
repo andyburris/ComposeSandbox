@@ -24,6 +24,10 @@ fun AddModifierList(onSelect: (PrototypeModifier) -> Unit) {
         AddComponentHeader(text = "Common Components")
         AddModifierItem(PrototypeModifier.Padding.All(16.dp), onSelect)
         AddModifierItem(PrototypeModifier.Border(1.dp, Color.Black, 0.dp), onSelect)
+        AddModifierItem(PrototypeModifier.Width(32.dp), onSelect)
+        AddModifierItem(PrototypeModifier.Height(32.dp), onSelect)
+        AddModifierItem(PrototypeModifier.FillMaxWidth(), onSelect)
+        AddModifierItem(PrototypeModifier.FillMaxHeight(), onSelect)
     }
 }
 
