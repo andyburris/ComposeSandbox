@@ -32,8 +32,11 @@ class MainActivity : AppCompatActivity() {
                     Surface(color = MaterialTheme.colors.background) {
                         when(val screen = screens.value.last()){
                             is Screen.Projects -> ProjectsScreen(screen.projects)
-                            is Screen.Sandbox -> SandboxScreen(screen.state)
-                            is Screen.Preview -> PreviewScreen(screen.prototypeScreen)
+                            is Screen.Sandbox -> SandboxScreen(screen.state) {
+                                val action = UserAction.UpdateScreen(screen.copy(state = it))
+                                handler.invoke(action)
+                            }
+                            is Screen.Preview -> PreviewScreen(screen.project, screen.prototypeScreen)
                             is Screen.Code -> CodeScreen(screen.project)
                             is Screen.Test -> TestScreen()
                         }

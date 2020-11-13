@@ -1,22 +1,30 @@
-package com.andb.apps.composesandbox.ui.sandbox.properties
+package com.andb.apps.composesandbox.ui.sandbox.drawer.properties
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.Icon
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import com.andb.apps.composesandbox.data.model.PrototypeColor
+import com.andb.apps.composesandbox.data.model.projectColor
+import com.andb.apps.composesandbox.ui.common.ColorPickerCircle
+import com.andb.apps.composesandbox.ui.common.ColorPickerWithTheme
+import com.andb.apps.composesandbox.util.isDark
 
 @Composable
 fun TextPicker(label: String, value: String, onValueChange: (String) -> Unit) {
@@ -75,7 +83,7 @@ fun NumberPicker(label: String, current: Int, minValue: Int = 0, maxValue: Int =
                     modifier = Modifier.clickable { onValueChange.invoke((current + 1).coerceIn(minValue..maxValue)) }.padding(12.dp)
                 )
             }
-            Box(backgroundColor = MaterialTheme.colors.onSecondary, modifier = Modifier.fillMaxWidth().height(1.dp))
+            Box(modifier = Modifier.background(MaterialTheme.colors.onSecondary).fillMaxWidth().height(1.dp))
         }
     }
 }
@@ -89,5 +97,48 @@ fun GenericPropertyEditor(label: String, modifier: Modifier = Modifier, widget: 
     ) {
         Text(label)
         widget()
+    }
+}
+
+@Composable
+fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Modifier, onSelect: (PrototypeColor)->Unit) {
+    val pickingColor = remember { mutableStateOf(false) }
+    GenericPropertyEditor(label = label, modifier) {
+        Box {
+            ColorPickerCircle(color = current.projectColor()) {
+                pickingColor.value = true
+            }
+            if (current is PrototypeColor.ThemeColor) {
+                Icon(
+                    asset = Icons.Default.Link.copy(defaultWidth = 20.dp, defaultHeight = 20.dp),
+                    modifier = Modifier.align(Alignment.Center),
+                    tint = if (current.projectColor().isDark()) Color.White else Color.Black)
+            }
+        }
+    }
+    if (pickingColor.value) {
+        AlertDialog(
+            onDismissRequest = { pickingColor.value = false },
+            title = { Text(text = "Pick Color") },
+            text = {
+                ColorPickerWithTheme(current = current, onSelect = onSelect)
+            },
+            buttons = {
+                Button(onClick = { pickingColor.value = false }) {
+                    Text(text = "Select")
+                }
+            },
+        )
+        Dialog(onDismissRequest = { pickingColor.value = false }) {
+            Column(Modifier.background(MaterialTheme.colors.background, RoundedCornerShape(16.dp))) {
+                Text(text = "Pick Color", style = MaterialTheme.typography.h6, modifier = Modifier.padding(32.dp))
+                ColorPickerWithTheme(current = current ,onSelect = onSelect)
+                Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
+                    Button(onClick = { pickingColor.value = false }, backgroundColor = Color.Transparent, elevation = 0.dp, contentColor = MaterialTheme.colors.primary) {
+                        Text(text = "Select".toUpperCase())
+                    }
+                }
+            }
+        }
     }
 }

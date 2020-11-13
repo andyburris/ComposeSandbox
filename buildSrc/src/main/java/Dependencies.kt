@@ -5,9 +5,11 @@ object Versions {
     const val kotlin = "1.4.0"
     const val koin = "2.1.5"
     const val compose = "1.0.0-alpha05"
+    const val colorPicker = "0.1.0"
 }
 
 object Dependencies {
+    const val colorPicker = "com.github.andb3:compose-color-picker:${Versions.colorPicker}"
     object Compose {
         const val layout = "androidx.compose.foundation:foundation-layout:${Versions.compose}"
         const val material = "androidx.compose.material:material:${Versions.compose}"

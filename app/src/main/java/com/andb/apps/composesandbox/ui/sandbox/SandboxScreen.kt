@@ -22,50 +22,55 @@ import com.andb.apps.composesandbox.state.Handler
 import com.andb.apps.composesandbox.state.SandboxState
 import com.andb.apps.composesandbox.state.Screen
 import com.andb.apps.composesandbox.state.UserAction
+import com.andb.apps.composesandbox.ui.common.ProjectThemeProvider
 import com.andb.apps.composesandbox.ui.common.RenderComponent
+import com.andb.apps.composesandbox.ui.sandbox.drawer.Drawer
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SandboxScreen(sandboxState: SandboxState) {
-    val (backdropState, setBackdropState) = remember { mutableStateOf(BackdropState.CONCEALED) }
-    Backdrop(
-        backdropState = backdropState,
-        modifier = Modifier.fillMaxSize(),
-        peekContent = { state ->
-            SandboxAppBar(
-                project = sandboxState.project,
-                iconState = backdropState,
-                onToggle = { setBackdropState(backdropState.other()) }
-            )
-        },
-        backdropContent = {
-            SandboxBackdrop(project = sandboxState.project)
-        },
-        bodyColor = Color(229, 229, 229),
-        bodyContent = {
-            Drawer(sandboxState = sandboxState) { sheetState ->
-                MaterialTheme(colors = sandboxState.project.theme.colors) {
-                    val (height, setHeight) = remember { mutableStateOf(0) }
-                    val scale = (sheetState.offset.value / height).coerceIn(0.5f..1f)
+fun SandboxScreen(sandboxState: SandboxState, onUpdate: (SandboxState) -> Unit) {
+    ProjectThemeProvider(projectTheme = sandboxState.project.theme) {
+        val (backdropState, setBackdropState) = remember { mutableStateOf(BackdropState.CONCEALED) }
+        Backdrop(
+            backdropState = backdropState,
+            modifier = Modifier.fillMaxSize(),
+            peekContent = { state ->
+                SandboxAppBar(
+                    sandboxState = sandboxState,
+                    project = sandboxState.project,
+                    iconState = backdropState,
+                    onToggle = { setBackdropState(backdropState.other()) }
+                )
+            },
+            backdropContent = {
+                SandboxBackdrop(project = sandboxState.project)
+            },
+            bodyColor = Color(229, 229, 229),
+            bodyContent = {
+                Drawer(sandboxState = sandboxState, onUpdate = onUpdate) { sheetState ->
+                    MaterialTheme(colors = sandboxState.project.theme.colors) {
+                        val (height, setHeight) = remember { mutableStateOf(0) }
+                        val scale = (sheetState.offset.value / height).coerceIn(0.5f..1f)
 
-                    Box(
-                        modifier = Modifier
-                            .drawLayer(scaleX = scale, scaleY = scale, transformOrigin = TransformOrigin(0.5f, 0f))
-                            .onGloballyPositioned { setHeight(it.size.height) }
-                            .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 100.dp)
-                            .background(MaterialTheme.colors.background)
-                            .fillMaxSize()
-                    ) {
-                        RenderComponent(component = sandboxState.openedTree)
+                        Box(
+                            modifier = Modifier
+                                .drawLayer(scaleX = scale, scaleY = scale, transformOrigin = TransformOrigin(0.5f, 0f))
+                                .onGloballyPositioned { setHeight(it.size.height) }
+                                .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 100.dp)
+                                .background(MaterialTheme.colors.background)
+                                .fillMaxSize()
+                        ) {
+                            RenderComponent(component = sandboxState.openedTree)
+                        }
                     }
                 }
             }
-        }
-    )
+        )
+    }
 }
 
 @Composable
-private fun SandboxAppBar(project: Project, iconState: BackdropState, onToggle: () -> Unit) {
+private fun SandboxAppBar(sandboxState: SandboxState, project: Project, iconState: BackdropState, onToggle: () -> Unit) {
     val actionHandler = Handler
     val menuShowing = remember { mutableStateOf(false) }
     TopAppBar(
@@ -79,8 +84,8 @@ private fun SandboxAppBar(project: Project, iconState: BackdropState, onToggle: 
         },
         title = { Text(text = project.name) },
         actions = {
-            IconButton(onClick = {}) { Icon(asset = Icons.Default.Palette) }
-            IconButton(onClick = { actionHandler.invoke(UserAction.OpenScreen(Screen.Preview(project.screens.first()))) }) { Icon(asset = Icons.Default.PlayCircleFilled) }
+            IconButton(onClick = { actionHandler.invoke(UserAction.OpenThemeEditor)}) { Icon(asset = Icons.Default.Palette) }
+            IconButton(onClick = { actionHandler.invoke(UserAction.OpenScreen(Screen.Preview(project, sandboxState.openedTree))) }) { Icon(asset = Icons.Default.PlayCircleFilled) }
             DropdownMenu(
                 toggle = {
                     IconButton(onClick = { menuShowing.value = true }) {

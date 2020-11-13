@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.sandbox
+package com.andb.apps.composesandbox.ui.sandbox.drawer
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -7,12 +7,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.savedinstancestate.savedInstanceState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.andb.apps.composesandbox.data.model.PrototypeColor
 import com.andb.apps.composesandbox.data.model.PrototypeModifier
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
-import com.andb.apps.composesandbox.ui.sandbox.properties.ModifierItem
+import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.ModifierItem
 
 @Composable
 fun AddModifierList(onSelect: (PrototypeModifier) -> Unit) {
@@ -23,7 +23,7 @@ fun AddModifierList(onSelect: (PrototypeModifier) -> Unit) {
 
         AddComponentHeader(text = "Common Components")
         AddModifierItem(PrototypeModifier.Padding.All(16.dp), onSelect)
-        AddModifierItem(PrototypeModifier.Border(1.dp, Color.Black, 0.dp), onSelect)
+        AddModifierItem(PrototypeModifier.Border(1.dp, PrototypeColor.ThemeColor.OnBackground, 0.dp), onSelect)
         AddModifierItem(PrototypeModifier.Width(32.dp), onSelect)
         AddModifierItem(PrototypeModifier.Height(32.dp), onSelect)
         AddModifierItem(PrototypeModifier.FillMaxWidth(), onSelect)

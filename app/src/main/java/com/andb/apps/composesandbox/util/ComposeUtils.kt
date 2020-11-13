@@ -19,3 +19,8 @@ fun Modifier.endBorder(width: Dp, color: Color) = drawBehind {
         size = this.size.copy(width.toPx())
     )
 }
+
+fun Color.isDark(): Boolean {
+    val darkness: Double = 1 - (0.299 * this.red + 0.587 * this.green + 0.114 * this.blue)
+    return darkness >= 0.3
+}

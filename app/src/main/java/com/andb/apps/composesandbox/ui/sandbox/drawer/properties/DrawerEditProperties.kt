@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.sandbox.properties
+package com.andb.apps.composesandbox.ui.sandbox.drawer.properties
 
 import androidx.compose.foundation.Icon
 import androidx.compose.foundation.layout.Column
@@ -11,7 +11,7 @@ import com.andb.apps.composesandbox.data.model.PrototypeComponent
 import com.andb.apps.composesandbox.state.ActionHandler
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
-import com.andb.apps.composesandbox.ui.sandbox.DrawerHeader
+import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
 
 @Composable
 fun DrawerEditProperties(component: PrototypeComponent, actionHandler: ActionHandler, onUpdate: (PrototypeComponent) -> Unit) {

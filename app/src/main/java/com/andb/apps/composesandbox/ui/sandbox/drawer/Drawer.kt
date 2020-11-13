@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.sandbox
+package com.andb.apps.composesandbox.ui.sandbox.drawer
 
 import androidx.compose.animation.animate
 import androidx.compose.animation.core.*
@@ -30,22 +30,19 @@ import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.plusChildInTree
 import com.andb.apps.composesandbox.data.model.updatedChildInTree
 import com.andb.apps.composesandbox.data.model.updatedModifier
-import com.andb.apps.composesandbox.state.ActionHandlerAmbient
-import com.andb.apps.composesandbox.state.DrawerState
-import com.andb.apps.composesandbox.state.SandboxState
-import com.andb.apps.composesandbox.state.UserAction
+import com.andb.apps.composesandbox.state.*
 import com.andb.apps.composesandbox.ui.common.*
-import com.andb.apps.composesandbox.ui.sandbox.modifiers.DrawerEditModifiers
-import com.andb.apps.composesandbox.ui.sandbox.properties.DrawerEditProperties
-import com.andb.apps.composesandbox.ui.sandbox.tree.DrawerTree
-import com.andb.apps.composesandbox.ui.sandbox.tree.toDpPosition
+import com.andb.apps.composesandbox.ui.sandbox.drawer.modifiers.DrawerEditModifiers
+import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.DrawerEditProperties
+import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.DrawerTree
+import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.toDpPosition
 import com.andb.apps.composesandbox.ui.util.ItemSwitcher
 import com.andb.apps.composesandbox.ui.util.ItemTransitionState
 import com.andb.apps.composesandbox.util.plusElement
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: BottomSheetState) -> Unit) {
+fun Drawer(sandboxState: SandboxState, onUpdate: (SandboxState) -> Unit, bodyContent: @Composable() (sheetState: BottomSheetState) -> Unit) {
     val sheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Peek)
     val cornerRadius = animate(target = if (sheetState.targetValue == BottomSheetValue.Expanded) 16.dp else 32.dp)
     val density = DensityAmbient.current
@@ -70,11 +67,11 @@ fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: B
                                 ?: return@DragDropState
                             println("dropping, movingComponent? = ${treeDrawerState.movingComponent}")
                             val moving = treeDrawerState.movingComponent ?: return@DragDropState
-                            val updated = sandboxState.openedTree.plusChildInTree(moving, dropState.hoveringComponent, dropState.dropAbove)
-                            actionHandler.invoke(UserAction.UpdateTree(updated))
+                            val updatedTree = sandboxState.openedTree.plusChildInTree(moving, dropState.hoveringComponent, dropState.dropAbove)
+                            onUpdate.invoke(sandboxState.updatedTree(updatedTree))
                         }
                         is DropState.OverNone -> {
-                            actionHandler.invoke(UserAction.UpdateTree(sandboxState.openedTree))
+                            onUpdate.invoke(sandboxState.copy(drawerStack = listOf(DrawerState.Tree())))
                             // TODO: detect delete
                         }
                     }
@@ -84,9 +81,9 @@ fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: B
                 val oldState = remember { mutableStateOf<DrawerState?>(null) }
                 val transitionDefinition = getDrawerContentTransition(
                     offsetPx = contentWidth.toFloat(),
-                    reverse = when(drawerState) {
+                    reverse = when (drawerState) {
                         is DrawerState.Tree -> true // always at bottom of stack
-                        is DrawerState.AddComponent, is DrawerState.AddModifier, is DrawerState.EditModifier -> false // always at top of stack
+                        is DrawerState.AddComponent, is DrawerState.AddModifier, is DrawerState.EditModifier, is DrawerState.EditTheme -> false // always at top of stack
                         is DrawerState.EditComponent -> oldState.value !is DrawerState.Tree
                     },
                     enabled = oldState.value != null && oldState.value!!::class != drawerState::class
@@ -134,19 +131,20 @@ fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: B
                         when (drawerState) {
                             is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = drawerState.movingComponent?.let { dragDropState.getHoverState(it) })
                             DrawerState.AddComponent -> ComponentList(project = sandboxState.project) {
-                                actionHandler.invoke(UserAction.MoveComponent(it))
+                                onUpdate.invoke(sandboxState.copy(drawerStack = listOf(DrawerState.Tree(movingComponent = it))))
                             }
                             is DrawerState.EditComponent -> {
                                 val editingComponent = drawerState.editingComponent(sandboxState.openedTree)
                                     ?: return@Box //editing component doesn't exist
                                 DrawerEditProperties(editingComponent, actionHandler) { updatedComponent ->
-                                    actionHandler.invoke(UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(updatedComponent)))
+                                    val updatedTree = sandboxState.openedTree.updatedChildInTree(updatedComponent)
+                                    onUpdate.invoke(sandboxState.updatedTree(updatedTree))
                                 }
                             }
                             is DrawerState.AddModifier -> AddModifierList {
                                 val withModifier = sandboxState.editingComponent.copy(modifiers = sandboxState.editingComponent.modifiers.plusElement(it, 0))
-                                val updateAction = UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(withModifier))
-                                actionHandler.invoke(updateAction)
+                                val updatedTree = sandboxState.openedTree.updatedChildInTree(withModifier)
+                                onUpdate.invoke(sandboxState.updatedTree(updatedTree))
                                 actionHandler.invoke(UserAction.Back)
                             }
                             is DrawerState.EditModifier -> {
@@ -154,9 +152,12 @@ fun Drawer(sandboxState: SandboxState, bodyContent: @Composable() (sheetState: B
                                     ?: return@Box //editing component doesn't exist
                                 DrawerEditModifiers(prototypeModifier = editingModifier) {
                                     println("edited modifier = $it")
-                                    val updateAction = UserAction.UpdateTree(sandboxState.openedTree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it)))
-                                    actionHandler.invoke(updateAction)
+                                    val updatedTree = sandboxState.openedTree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it))
+                                    onUpdate.invoke(sandboxState.updatedTree(updatedTree))
                                 }
+                            }
+                            is DrawerState.EditTheme -> DrawerEditTheme(theme = sandboxState.project.theme) {
+                                onUpdate.invoke(sandboxState.copy(project = sandboxState.project.copy(theme = it)))
                             }
                         }
                     }

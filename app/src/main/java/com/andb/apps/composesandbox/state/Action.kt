@@ -10,6 +10,8 @@ sealed class UserAction : Action() {
     object Back : UserAction()
     /** Add a [Screen] to the top of the navigation stack */
     data class OpenScreen(val screen: Screen) : UserAction()
+    data class UpdateScreen(val screen: Screen) : UserAction()
+
     /** Add a [Project] to the list of saved projects */
     data class AddProject(val name: String) : UserAction()
     /** Open the list of components to add in [Screen.Sandbox]*/
@@ -21,4 +23,5 @@ sealed class UserAction : Action() {
     data class OpenComponent(val componentID: String) : UserAction()
     /** Open the editor for the modifier with [modifierID] in [Screen.Sandbox]*/
     data class EditModifier(val modifierID: String) : UserAction()
+    object OpenThemeEditor : UserAction()
 }

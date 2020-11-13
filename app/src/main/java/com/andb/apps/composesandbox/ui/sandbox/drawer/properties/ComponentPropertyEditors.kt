@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.sandbox.properties
+package com.andb.apps.composesandbox.ui.sandbox.drawer.properties
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable

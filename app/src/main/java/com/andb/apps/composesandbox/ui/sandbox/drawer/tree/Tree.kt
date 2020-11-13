@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.sandbox.tree
+package com.andb.apps.composesandbox.ui.sandbox.drawer.tree
 
 import androidx.compose.foundation.Icon
 import androidx.compose.foundation.Text

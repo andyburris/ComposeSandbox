@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.sandbox.modifiers
+package com.andb.apps.composesandbox.ui.sandbox.drawer.modifiers
 
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
@@ -17,8 +17,9 @@ import com.andb.apps.composesandbox.data.model.toSides
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.Chip
-import com.andb.apps.composesandbox.ui.sandbox.DrawerHeader
-import com.andb.apps.composesandbox.ui.sandbox.properties.NumberPicker
+import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
+import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.ColorPicker
+import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.NumberPicker
 
 @Composable
 fun DrawerEditModifiers(prototypeModifier: PrototypeModifier, onEdit: (PrototypeModifier) -> Unit) {
@@ -96,6 +97,9 @@ private fun BorderModifierEditor(prototypeModifier: PrototypeModifier.Border, on
     }
     NumberPicker(label = "Corner Radius", current = prototypeModifier.cornerRadius.value.toInt()) {
         onEdit.invoke(prototypeModifier.copy(cornerRadius = it.dp))
+    }
+    ColorPicker(label = "Stroke Color", current = prototypeModifier.color) {
+        onEdit.invoke(prototypeModifier.copy(color = it))
     }
 }
 

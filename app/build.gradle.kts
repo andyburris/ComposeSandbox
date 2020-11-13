@@ -53,6 +53,7 @@ dependencies {
     implementation(Dependencies.Compose.compiler)
     implementation(Dependencies.Koin.android)
     implementation(Dependencies.Koin.viewModel)
+    implementation(Dependencies.colorPicker)
     testImplementation("junit:junit:4.13")
     androidTestImplementation("androidx.test.ext:junit:1.1.2")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")

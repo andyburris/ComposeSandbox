@@ -16,6 +16,8 @@ class Machine {
         when(action){
             UserAction.Back -> handleBack()
             is UserAction.OpenScreen -> screens.value += action.screen
+            is UserAction.UpdateScreen -> screens.value = screens.value.map { if (it::class == action.screen::class) action.screen else it }
+
             is UserAction.AddProject -> addProject(Project(action.name))
             is UserAction.OpenComponent -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.EditComponent(action.componentID)) }
             is UserAction.OpenComponentList -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.AddComponent) }
@@ -23,6 +25,7 @@ class Machine {
             is UserAction.EditModifier -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.EditModifier(action.modifierID)) }
             is UserAction.MoveComponent -> moveComponent(action.moving)
             is UserAction.UpdateTree -> updateTree(action.updated)
+            else -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.EditTheme) }
         }
     }
 
@@ -73,7 +76,7 @@ private inline fun MutableStateFlow<List<Screen>>.updateSandbox(transform: (sand
     updateScreen<Screen.Sandbox> { it.copy(state = transform(it.state)) }
 }
 
-private fun SandboxState.updatedTree(updated: PrototypeComponent): SandboxState {
+fun SandboxState.updatedTree(updated: PrototypeComponent): SandboxState {
     return this.copy(
         openedTree = updated,
         project = project.copy(

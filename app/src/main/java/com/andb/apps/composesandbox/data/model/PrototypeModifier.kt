@@ -10,12 +10,9 @@ import androidx.compose.material.icons.filled.Height
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.VectorAsset
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.util.toHexString
 import com.andb.apps.composesandbox.R
 import java.util.*
 
@@ -25,7 +22,7 @@ sealed class PrototypeModifier(open val id: String) {
         data class Sides(val horizontal: Dp, val vertical: Dp, override val id: String = UUID.randomUUID().toString()) : Padding(id)
         data class All(val padding: Dp, override val id: String = UUID.randomUUID().toString()) : Padding(id)
     }
-    data class Border(val strokeWidth: Dp, val color: Color, val cornerRadius: Dp, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier(id)
+    data class Border(val strokeWidth: Dp, val color: PrototypeColor, val cornerRadius: Dp, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier(id)
     data class Width(val width: Dp, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier(id)
     data class Height(val height: Dp, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier(id)
     data class FillMaxWidth(override val id: String = UUID.randomUUID().toString()) : PrototypeModifier(id)
@@ -58,20 +55,21 @@ val PrototypeModifier.summary: String
         is PrototypeModifier.Padding.Individual -> "Start: $start, End: $end, Top: $top, Bottom: $bottom"
         is PrototypeModifier.Padding.Sides -> "Horizontal: $horizontal, Vertical: $vertical"
         is PrototypeModifier.Padding.All -> "All: $padding"
-        is PrototypeModifier.Border -> "Stroke: $strokeWidth, Corners: $cornerRadius, Color: ${color.toArgb().toHexString()}"
+        is PrototypeModifier.Border -> "Stroke: $strokeWidth, Corners: $cornerRadius"
         is PrototypeModifier.Height -> "$height"
         is PrototypeModifier.Width -> "$width"
         is PrototypeModifier.FillMaxWidth -> ""
         is PrototypeModifier.FillMaxHeight -> ""
     }
 
+@Composable
 fun List<PrototypeModifier>.toModifier() : Modifier {
     return this.fold<PrototypeModifier, Modifier>(Modifier) { acc, prototypeModifier ->
         acc then when (prototypeModifier) {
             is PrototypeModifier.Padding.Individual -> Modifier.padding(start = prototypeModifier.start, end = prototypeModifier.end, top = prototypeModifier.top, bottom = prototypeModifier.bottom)
             is PrototypeModifier.Padding.Sides -> Modifier.padding(horizontal = prototypeModifier.horizontal, vertical = prototypeModifier.vertical)
             is PrototypeModifier.Padding.All -> Modifier.padding(all = prototypeModifier.padding)
-            is PrototypeModifier.Border -> Modifier.border(prototypeModifier.strokeWidth, prototypeModifier.color, shape = RoundedCornerShape(prototypeModifier.cornerRadius))
+            is PrototypeModifier.Border -> Modifier.border(prototypeModifier.strokeWidth, prototypeModifier.color.renderColor(), shape = RoundedCornerShape(prototypeModifier.cornerRadius))
             is PrototypeModifier.Height -> Modifier.height(prototypeModifier.height)
             is PrototypeModifier.Width -> Modifier.width(prototypeModifier.width)
             is PrototypeModifier.FillMaxWidth -> Modifier.fillMaxWidth()
@@ -131,7 +129,7 @@ fun List<PrototypeModifier>.toCode(): String {
 }
 
 fun PrototypeModifier.toCode() = when (this) {
-    is PrototypeModifier.Border -> "border(width = $strokeWidth, color = $color)"
+    is PrototypeModifier.Border -> "border(width = $strokeWidth, color = ${color.toCode()})"
     is PrototypeModifier.Padding.Individual -> "padding(start = $start, end = $end, top = $top, bottom = $bottom)"
     is PrototypeModifier.Padding.Sides -> "padding(horizontal = $horizontal, vertical = $vertical)"
     is PrototypeModifier.Padding.All -> "padding($padding)"

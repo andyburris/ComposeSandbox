@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.sandbox
+package com.andb.apps.composesandbox.ui.sandbox.drawer
 
 import androidx.compose.foundation.Icon
 import androidx.compose.foundation.Text
@@ -30,7 +30,7 @@ import com.andb.apps.composesandbox.data.model.toComponent
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.DragDropAmbient
-import com.andb.apps.composesandbox.ui.sandbox.tree.ComponentItem
+import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.ComponentItem
 
 @Composable
 fun ComponentList(project: Project, onSelect: (PrototypeComponent) -> Unit) {

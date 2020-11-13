@@ -5,7 +5,7 @@ import com.andb.apps.composesandbox.data.model.*
 sealed class Screen {
     data class Projects(val projects: List<Project>) : Screen()
     data class Sandbox(val state: SandboxState) : Screen()
-    data class Preview(val prototypeScreen: PrototypeComponent) : Screen()
+    data class Preview(val project: Project, val prototypeScreen: PrototypeComponent) : Screen()
     data class Code(val project: Project) : Screen()
     object Test : Screen()
 }
@@ -34,4 +34,5 @@ sealed class DrawerState {
     data class EditModifier(val modifierID: String) : DrawerState() {
         fun editingModifier(openedTree: PrototypeComponent) = openedTree.findModifierByIDInTree(modifierID)
     }
+    object EditTheme : DrawerState()
 }
