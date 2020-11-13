@@ -1,8 +1,7 @@
 package com.andb.apps.composesandbox.ui.code
 
-import androidx.compose.material.Icon
+import android.content.Intent
 import androidx.compose.foundation.ScrollableRow
-import androidx.compose.material.Text
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -12,6 +11,7 @@ import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.WrapText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ContextAmbient
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -48,10 +48,20 @@ fun CodeScreen(project: Project) {
             CodeCard(screen = project.screens.first())
         },
         floatingActionButton = {
+            val context = ContextAmbient.current
             ExtendedFloatingActionButton(
                 icon = { Icon(asset = Icons.Default.Share) },
                 text = { Text(text = "Export Code") },
-                onClick = {},
+                onClick = {
+                    val sendIntent: Intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, project.screens.first().toCode())
+                        type = "text/plain"
+                    }
+
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    context.startActivity(shareIntent)
+                },
                 backgroundColor = MaterialTheme.colors.primary
             )
         }

@@ -77,7 +77,7 @@ val PrototypeColor.ThemeColor.name get() = when (this) {
 }
 
 fun PrototypeColor.toCode() = when (this) {
-    is PrototypeColor.FixedColor -> "Color(0xFF${this.color.toArgb().toHexString()})"
+    is PrototypeColor.FixedColor -> "Color(${this.color.toArgb().toHexString()})"
     is PrototypeColor.ThemeColor.Primary -> "MaterialTheme.colors.primary"
     is PrototypeColor.ThemeColor.PrimaryVariant -> "MaterialTheme.colors.primaryVariant"
     is PrototypeColor.ThemeColor.OnPrimary -> "MaterialTheme.colors.onPrimary"

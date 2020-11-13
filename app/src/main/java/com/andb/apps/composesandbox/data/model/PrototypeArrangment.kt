@@ -70,9 +70,9 @@ fun Alignment.Horizontal.toReadableString() = when (this) {
 }
 
 fun Alignment.Vertical.toCodeString() = when (this){
-    Alignment.Top -> "Top"
-    Alignment.CenterVertically -> "Center Vertically"
-    Alignment.Bottom -> "Bottom"
+    Alignment.Top -> "Alignment.Top"
+    Alignment.CenterVertically -> "Alignment.CenterVertically"
+    Alignment.Bottom -> "Alignment.Bottom"
     else -> ""
 }
 
