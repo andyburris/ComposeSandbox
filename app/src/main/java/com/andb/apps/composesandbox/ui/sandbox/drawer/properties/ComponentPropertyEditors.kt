@@ -1,6 +1,7 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.properties
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayout
 import androidx.compose.runtime.Composable
 import com.andb.apps.composesandbox.data.model.*
 
@@ -13,10 +14,16 @@ fun TextProperties(properties: Properties.Text, onUpdate: (Properties.Text) -> U
     }
 }
 
+@OptIn(ExperimentalLayout::class)
 @Composable
 fun IconProperties(properties: Properties.Icon, onUpdate: (Properties.Icon) -> Unit) {
     Column {
-        OptionsPicker(label = "Icon", selected = null, options = listOf(), onValueChange = {})
+        IconPicker(icon = properties.icon){
+            onUpdate.invoke(properties.copy(icon = it))
+        }
+        ColorPicker(label = "Icon Tint", current = properties.tint) {
+            onUpdate.invoke(properties.copy(tint = it))
+        }
     }
 }
 

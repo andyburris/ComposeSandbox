@@ -1,13 +1,13 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer
 
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
@@ -23,10 +23,7 @@ import androidx.compose.ui.layout.globalPosition
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.data.model.Project
-import com.andb.apps.composesandbox.data.model.Properties
-import com.andb.apps.composesandbox.data.model.PrototypeComponent
-import com.andb.apps.composesandbox.data.model.toComponent
+import com.andb.apps.composesandbox.data.model.*
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.DragDropAmbient
@@ -40,7 +37,7 @@ fun ComponentList(project: Project, onSelect: (PrototypeComponent) -> Unit) {
 
         AddComponentHeader(text = "Common Components")
         AddComponentItem(Properties.Text("Text").toComponent(), onSelect)
-        AddComponentItem(Properties.Icon(Icons.Default.Image).toComponent(), onSelect)
+        AddComponentItem(Properties.Icon(Icons.Default.Image, PrototypeColor.ThemeColor.OnBackground).toComponent(), onSelect)
         AddComponentItem(Properties.Group.Row(emptyList()).toComponent(), onSelect)
         AddComponentItem(Properties.Group.Column(emptyList()).toComponent(), onSelect)
     }

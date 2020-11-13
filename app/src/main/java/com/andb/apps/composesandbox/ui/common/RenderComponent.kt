@@ -1,12 +1,13 @@
 package com.andb.apps.composesandbox.ui.common
 
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import com.andb.apps.composesandbox.data.model.Properties
 import com.andb.apps.composesandbox.data.model.PrototypeComponent
+import com.andb.apps.composesandbox.data.model.renderColor
 import com.andb.apps.composesandbox.data.model.toModifier
 
 /**
@@ -17,7 +18,7 @@ import com.andb.apps.composesandbox.data.model.toModifier
 fun RenderComponent(component: PrototypeComponent){
     when (component.properties){
         is Properties.Text -> Text(text = component.properties.text, modifier = component.modifiers.toModifier())
-        is Properties.Icon -> Icon(asset = component.properties.icon, modifier = component.modifiers.toModifier())
+        is Properties.Icon -> Icon(asset = component.properties.icon, tint = component.properties.tint.renderColor(), modifier = component.modifiers.toModifier())
         is Properties.Group.Column -> Column(modifier = component.modifiers.toModifier(), horizontalAlignment = component.properties.horizontalAlignment, verticalArrangement = component.properties.verticalArrangement) {
             for (child in component.properties.children) {
                 RenderComponent(component = child)

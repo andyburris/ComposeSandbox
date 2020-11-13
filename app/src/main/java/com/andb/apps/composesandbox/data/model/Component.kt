@@ -9,7 +9,7 @@ import java.util.*
 
 sealed class Properties {
     data class Text (val text: String) : Properties()
-    data class Icon (val icon: VectorAsset) : Properties()
+    data class Icon (val icon: VectorAsset, val tint: PrototypeColor) : Properties()
     sealed class Group (open val children: List<PrototypeComponent>) : Properties() {
         @OptIn(InternalLayoutApi::class)
         data class Row (
@@ -141,7 +141,7 @@ fun PrototypeComponent.findModifierByIDInTree(id: String): PrototypeModifier? {
 
 fun PrototypeComponent.toCode(indent: Boolean = false): String = when(this.properties) {
     is Properties.Text -> "Text(text = \"${properties.text}\"${modifiers.toCode()})"
-    is Properties.Icon -> "Icon(asset = Icons.Default.Image${modifiers.toCode()})"
+    is Properties.Icon -> "Icon(asset = Icons.Default.${properties.icon.readableName}, tint = ${properties.tint.toCode()}${modifiers.toCode()})"
     is Properties.Group.Row ->
         """Row(horizontalArrangement = ${properties.horizontalArrangement.toCodeString()}, verticalAlignment = ${properties.verticalAlignment.toCodeString()}${modifiers.toCode()}) {
 ${properties.children.joinToString("\n") { it.toCode(true) }}

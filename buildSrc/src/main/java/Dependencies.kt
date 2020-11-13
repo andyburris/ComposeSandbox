@@ -5,7 +5,7 @@ object Versions {
     const val kotlin = "1.4.0"
     const val koin = "2.1.5"
     const val compose = "1.0.0-alpha07"
-    const val colorPicker = "0.1.0"
+    const val colorPicker = "0.1.1"
 }
 
 object Dependencies {
