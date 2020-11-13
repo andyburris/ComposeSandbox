@@ -4,13 +4,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animate
 import androidx.compose.foundation.*
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Tab
-import androidx.compose.material.TabRow
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExpandMore
@@ -50,7 +49,7 @@ fun MaterialThemeEditor(theme: Theme, modifier: Modifier = Modifier, onSelect: (
                     onSelect.invoke(theme.updateColor(pickingColor, it))
                 }
                 Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
-                    Button(onClick = { picking.value = null }, backgroundColor = Color.Transparent, elevation = 0.dp, contentColor = MaterialTheme.colors.primary) {
+                    TextButton(onClick = { picking.value = null }) {
                         Text(text = "Select".toUpperCase())
                     }
                 }

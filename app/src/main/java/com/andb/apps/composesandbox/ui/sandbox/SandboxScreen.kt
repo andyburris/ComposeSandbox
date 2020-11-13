@@ -1,7 +1,7 @@
 package com.andb.apps.composesandbox.ui.sandbox
 
-import androidx.compose.foundation.Icon
-import androidx.compose.foundation.Text
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -12,9 +12,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.TransformOrigin
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.drawLayer
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.onGloballyPositioned
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.BuildConfig
 import com.andb.apps.composesandbox.data.model.Project
@@ -57,6 +58,7 @@ fun SandboxScreen(sandboxState: SandboxState, onUpdate: (SandboxState) -> Unit) 
                                 .drawLayer(scaleX = scale, scaleY = scale, transformOrigin = TransformOrigin(0.5f, 0f))
                                 .onGloballyPositioned { setHeight(it.size.height) }
                                 .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 100.dp)
+                                .clipToBounds()
                                 .background(MaterialTheme.colors.background)
                                 .fillMaxSize()
                         ) {

@@ -1,7 +1,7 @@
 package com.andb.apps.composesandbox.ui.projects
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Text
+import androidx.compose.material.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth

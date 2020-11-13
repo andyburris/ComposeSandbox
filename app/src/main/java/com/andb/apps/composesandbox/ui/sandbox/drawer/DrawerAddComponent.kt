@@ -1,7 +1,7 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer
 
-import androidx.compose.foundation.Icon
-import androidx.compose.foundation.Text
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.gesture.longPressGestureFilter
 import androidx.compose.ui.layout.globalPosition
-import androidx.compose.ui.onGloballyPositioned
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.Project

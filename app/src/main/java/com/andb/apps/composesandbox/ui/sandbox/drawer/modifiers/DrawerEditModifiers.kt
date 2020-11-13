@@ -1,6 +1,6 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.modifiers
 
-import androidx.compose.foundation.Text
+import androidx.compose.material.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

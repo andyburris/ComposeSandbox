@@ -1,7 +1,7 @@
 package com.andb.apps.composesandbox.ui.common
 
-import androidx.compose.foundation.Icon
-import androidx.compose.foundation.Text
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row

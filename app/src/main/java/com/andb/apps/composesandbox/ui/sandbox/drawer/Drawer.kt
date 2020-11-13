@@ -2,11 +2,12 @@ package com.andb.apps.composesandbox.ui.sandbox.drawer
 
 import androidx.compose.animation.animate
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Icon
-import androidx.compose.foundation.Text
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.BottomDrawerLayout
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
@@ -23,7 +24,7 @@ import androidx.compose.ui.gesture.dragGestureFilter
 import androidx.compose.ui.graphics.vector.VectorAsset
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.globalPosition
-import androidx.compose.ui.onGloballyPositioned
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp

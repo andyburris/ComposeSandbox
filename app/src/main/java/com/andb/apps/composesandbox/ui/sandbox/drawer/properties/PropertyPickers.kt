@@ -1,9 +1,9 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.properties
 
-import androidx.compose.foundation.Icon
-import androidx.compose.foundation.Text
+import androidx.compose.material.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.gesture.scrollorientationlocking.Orientation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -58,12 +59,35 @@ fun <T> OptionsPicker(label: String, selected: T, options: List<T>, stringify: (
 @Composable
 fun NumberPicker(label: String, current: Int, minValue: Int = 0, maxValue: Int = Int.MAX_VALUE, onValueChange: (Int) -> Unit) {
     GenericPropertyEditor(label = label) {
+        val dragged = remember { mutableStateOf(Pair(current, 0f)) }
         Column(
             modifier = Modifier
                 .width(108.dp)
                 .background(
                     MaterialTheme.colors.secondary,
                     shape = RoundedCornerShape(topLeft = 8.dp, topRight = 8.dp)
+                )
+                .draggable(
+                    orientation = Orientation.Vertical,
+                    onDragStopped = {
+                        dragged.value = Pair(current, 0f)
+                    },
+                    onDrag = { delta ->
+                        dragged.value = dragged.value.copy(second = dragged.value.second - delta) // minus since dragging down is a positive delta, but should make numbers go down
+                        val numbersDragged = dragged.value.second.toDp().value
+                        onValueChange.invoke((dragged.value.first + numbersDragged).toInt().coerceIn(minValue..maxValue))
+                    }
+                )
+                .draggable(
+                    orientation = Orientation.Horizontal,
+                    onDragStopped = {
+                        dragged.value = Pair(current, 0f)
+                    },
+                    onDrag = { delta ->
+                        dragged.value = dragged.value.copy(second = dragged.value.second + delta) // minus since dragging down is a positive delta, but should make numbers go down
+                        val numbersDragged = dragged.value.second.toDp().value
+                        onValueChange.invoke((dragged.value.first + numbersDragged).toInt().coerceIn(minValue..maxValue))
+                    }
                 )
         ) {
             Row(
@@ -134,7 +158,7 @@ fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Mod
                 Text(text = "Pick Color", style = MaterialTheme.typography.h6, modifier = Modifier.padding(32.dp))
                 ColorPickerWithTheme(current = current ,onSelect = onSelect)
                 Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
-                    Button(onClick = { pickingColor.value = false }, backgroundColor = Color.Transparent, elevation = 0.dp, contentColor = MaterialTheme.colors.primary) {
+                    TextButton(onClick = { pickingColor.value = false }) {
                         Text(text = "Select".toUpperCase())
                     }
                 }

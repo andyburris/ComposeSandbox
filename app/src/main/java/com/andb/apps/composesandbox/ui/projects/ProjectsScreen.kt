@@ -1,15 +1,10 @@
 package com.andb.apps.composesandbox.ui.projects
 
-import androidx.compose.foundation.Icon
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.ExperimentalLazyDsl
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.material.ExtendedFloatingActionButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
@@ -58,7 +53,6 @@ fun ProjectsScreen(projects: List<Project>) {
     }
 }
 
-@OptIn(ExperimentalLazyDsl::class)
 @Composable
 fun <T> LazyGridFor(items: List<T>, columns: Int, modifier: Modifier = Modifier, header: (@Composable() LazyItemScope.() -> Unit)? = null, itemContent: @Composable() RowScope.(T) -> Unit) {
     LazyColumn(modifier = modifier) {

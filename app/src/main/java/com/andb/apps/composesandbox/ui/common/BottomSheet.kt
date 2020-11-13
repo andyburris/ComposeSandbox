@@ -12,11 +12,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.savedinstancestate.Saver
 import androidx.compose.runtime.savedinstancestate.rememberSavedInstanceState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.WithConstraints
 import androidx.compose.ui.gesture.scrollorientationlocking.Orientation
 import androidx.compose.ui.gesture.tapGestureFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.WithConstraints
 import androidx.compose.ui.platform.AnimationClockAmbient
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.Dp
@@ -223,9 +223,6 @@ fun BottomSheetLayout(
         if (!constraints.hasBoundedHeight) {
             throw IllegalStateException("Drawer shouldn't have infinite height")
         }
-        val dpConstraints = with(DensityAmbient.current) {
-            DpConstraints(constraints)
-        }
         val minValue = 0f
         val maxValue = constraints.maxHeight.toFloat()
 
@@ -261,7 +258,7 @@ fun BottomSheetLayout(
                 enabled = gesturesEnabled,
             )
         ) {
-            Stack {
+            Box {
                 bodyContent()
             }
 /*            Scrim(
@@ -274,9 +271,14 @@ fun BottomSheetLayout(
                 color = scrimColor
             )*/
             Surface(
-                modifier = Modifier
-                    .preferredSizeIn(dpConstraints)
-                    .offsetPx(y = sheetState.offset),
+                modifier = with(DensityAmbient.current) {
+                    Modifier.preferredSizeIn(
+                        minWidth = constraints.minWidth.toDp(),
+                        minHeight = constraints.minHeight.toDp(),
+                        maxWidth = constraints.maxWidth.toDp(),
+                        maxHeight = constraints.maxHeight.toDp()
+                    ).offsetPx(y = sheetState.offset)
+                },
                 shape = sheetShape,
                 color = sheetBackgroundColor,
                 contentColor = sheetContentColor,
