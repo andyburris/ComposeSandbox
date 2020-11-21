@@ -1,37 +1,36 @@
-package com.andb.apps.composesandbox.data.model
+package com.andb.apps.composesandbox.model
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.InternalLayoutApi
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.vector.VectorAsset
-import com.andb.apps.composesandbox.util.plusElement
+import com.andb.apps.composesandbox.plusElement
+import kotlinx.serialization.Serializable
 import java.util.*
 
+@Serializable
 sealed class Properties {
-    data class Text (val text: String) : Properties()
-    data class Icon (val icon: VectorAsset, val tint: PrototypeColor) : Properties()
-    sealed class Group (open val children: List<PrototypeComponent>) : Properties() {
-        @OptIn(InternalLayoutApi::class)
-        data class Row (
+    @Serializable data class Text (val text: String) : Properties()
+    @Serializable data class Icon (val icon: PrototypeIcon, val tint: PrototypeColor) : Properties()
+    @Serializable sealed class Group : Properties() {
+        abstract val children: List<PrototypeComponent>
+        @Serializable data class Row (
             override val children: List<PrototypeComponent>,
-            val horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
-            val verticalAlignment: Alignment.Vertical = Alignment.Top
-        ) : Group(children)
-        @OptIn(InternalLayoutApi::class)
-        data class Column (
+            val horizontalArrangement: PrototypeArrangement = PrototypeArrangement.Horizontal.Start,
+            val verticalAlignment: PrototypeAlignment.Vertical = PrototypeAlignment.Vertical.Top
+        ) : Group()
+        @Serializable data class Column (
             override val children: List<PrototypeComponent>,
-            val verticalArrangement: Arrangement.Vertical = Arrangement.Top,
-            val horizontalAlignment: Alignment.Horizontal = Alignment.Start
-        ) : Group(children)
+            val verticalArrangement: PrototypeArrangement = PrototypeArrangement.Vertical.Top,
+            val horizontalAlignment: PrototypeAlignment.Horizontal = PrototypeAlignment.Horizontal.Start
+        ) : Group()
     }
 }
 
+@Serializable
 data class PrototypeComponent(
     val id: String = UUID.randomUUID().toString(),
     val modifiers: List<PrototypeModifier> = emptyList(),
     val properties: Properties,
+) {
     val name: String = properties.componentName()
-)
+}
 
 private fun Properties.Group.withChildren(children: List<PrototypeComponent> = this.children): Properties.Group {
     return when(this) {
@@ -141,7 +140,7 @@ fun PrototypeComponent.findModifierByIDInTree(id: String): PrototypeModifier? {
 
 fun PrototypeComponent.toCode(indent: Boolean = false): String = when(this.properties) {
     is Properties.Text -> "Text(text = \"${properties.text}\"${modifiers.toCode()})"
-    is Properties.Icon -> "Icon(asset = Icons.Default.${properties.icon.readableName}, tint = ${properties.tint.toCode()}${modifiers.toCode()})"
+    is Properties.Icon -> "Icon(asset = Icons.Default.${properties.icon.name}, tint = ${properties.tint.toCode()}${modifiers.toCode()})"
     is Properties.Group.Row ->
         """Row(horizontalArrangement = ${properties.horizontalArrangement.toCodeString()}, verticalAlignment = ${properties.verticalAlignment.toCodeString()}${modifiers.toCode()}) {
 ${properties.children.joinToString("\n") { it.toCode(true) }}

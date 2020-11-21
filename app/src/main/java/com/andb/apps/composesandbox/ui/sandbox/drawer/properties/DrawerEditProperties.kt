@@ -1,13 +1,13 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.properties
 
-import androidx.compose.material.Icon
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ControlPointDuplicate
 import androidx.compose.runtime.Composable
-import com.andb.apps.composesandbox.data.model.Properties
-import com.andb.apps.composesandbox.data.model.PrototypeComponent
+import com.andb.apps.composesandbox.model.Properties
+import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.state.ActionHandler
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
@@ -17,17 +17,17 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
 fun DrawerEditProperties(component: PrototypeComponent, actionHandler: ActionHandler, onUpdate: (PrototypeComponent) -> Unit) {
     Column {
         DrawerEditPropertiesHeader(component)
-        when (component.properties) {
-            is Properties.Text -> TextProperties(component.properties) {
+        when (val properties = component.properties) {
+            is Properties.Text -> TextProperties(properties) {
                 onUpdate(component.copy(properties = it))
             }
-            is Properties.Icon -> IconProperties(component.properties) {
+            is Properties.Icon -> IconProperties(properties) {
                 onUpdate(component.copy(properties = it))
             }
-            is Properties.Group.Column -> ColumnProperties(component.properties) {
+            is Properties.Group.Column -> ColumnProperties(properties) {
                 onUpdate(component.copy(properties = it))
             }
-            is Properties.Group.Row -> RowProperties(component.properties) {
+            is Properties.Group.Row -> RowProperties(properties) {
                 onUpdate(component.copy(properties = it))
             }
         }

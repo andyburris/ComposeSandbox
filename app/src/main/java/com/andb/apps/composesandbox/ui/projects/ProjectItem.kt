@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.data.model.Project
+import com.andb.apps.composesandbox.model.Project
 import com.andb.apps.composesandbox.ui.common.RenderComponent
 
 @Composable

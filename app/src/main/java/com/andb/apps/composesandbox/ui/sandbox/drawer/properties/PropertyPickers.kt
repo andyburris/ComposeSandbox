@@ -20,14 +20,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.gesture.scrollorientationlocking.Orientation
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.VectorAsset
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.andb.apps.composesandbox.data.model.PrototypeColor
-import com.andb.apps.composesandbox.data.model.icons
 import com.andb.apps.composesandbox.data.model.projectColor
-import com.andb.apps.composesandbox.data.model.readableName
+import com.andb.apps.composesandbox.data.model.vectorAsset
+import com.andb.apps.composesandbox.model.PrototypeColor
+import com.andb.apps.composesandbox.model.PrototypeIcon
+import com.andb.apps.composesandbox.model.icons
 import com.andb.apps.composesandbox.ui.common.ColorPickerCircle
 import com.andb.apps.composesandbox.ui.common.ColorPickerWithTheme
 import com.andb.apps.composesandbox.util.isDark
@@ -173,7 +173,7 @@ fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Mod
 }
 
 @Composable
-fun IconPicker(icon: VectorAsset, onSelect: (VectorAsset) -> Unit) {
+fun IconPicker(icon: PrototypeIcon, onSelect: (PrototypeIcon) -> Unit) {
     val picking = remember { mutableStateOf(false) }
     GenericPropertyEditor(label = "Icon") {
         Row(
@@ -182,9 +182,9 @@ fun IconPicker(icon: VectorAsset, onSelect: (VectorAsset) -> Unit) {
                 .background(MaterialTheme.colors.secondary, CircleShape)
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
-            Icon(asset = icon)
+            Icon(asset = icon.vectorAsset)
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = icon.readableName, color = MaterialTheme.colors.onSecondary)
+            Text(text = icon.name, color = MaterialTheme.colors.onSecondary)
         }
     }
     if(picking.value) {
@@ -206,7 +206,7 @@ fun IconPicker(icon: VectorAsset, onSelect: (VectorAsset) -> Unit) {
 }
 
 @Composable
-private fun IconPickerDialogContent(selected: VectorAsset, modifier: Modifier, onSelect: (VectorAsset) -> Unit) {
+private fun IconPickerDialogContent(selected: PrototypeIcon, modifier: Modifier, onSelect: (PrototypeIcon) -> Unit) {
     val searchTerm = remember { mutableStateOf("") }
 
     Column(modifier) {
@@ -230,7 +230,7 @@ private fun IconPickerDialogContent(selected: VectorAsset, modifier: Modifier, o
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
                 val rowSize = 3
-                iconSection.icons.filter { searchTerm.value in it.readableName }.chunked(rowSize).forEach { icons ->
+                iconSection.icons.filter { searchTerm.value in it.name }.chunked(rowSize).forEach { icons ->
                     Row(Modifier.padding(bottom = 8.dp)) {
                         icons.forEach { icon ->
                             IconPickerItem(icon = icon, selected = icon == selected) {
@@ -248,7 +248,7 @@ private fun IconPickerDialogContent(selected: VectorAsset, modifier: Modifier, o
 }
 
 @Composable
-private fun RowScope.IconPickerItem(icon: VectorAsset, modifier: Modifier = Modifier, selected: Boolean, onClick: () -> Unit) {
+private fun RowScope.IconPickerItem(icon: PrototypeIcon, modifier: Modifier = Modifier, selected: Boolean, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
@@ -257,8 +257,8 @@ private fun RowScope.IconPickerItem(icon: VectorAsset, modifier: Modifier = Modi
             .weight(1f)
             .padding(horizontal = 8.dp)
     ) {
-        Icon(asset = icon.copy(defaultHeight = 36.dp, defaultWidth = 36.dp))
-        Text(text = icon.readableName, style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Icon(asset = icon.vectorAsset.copy(defaultHeight = 36.dp, defaultWidth = 36.dp))
+        Text(text = icon.name, style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 
 }

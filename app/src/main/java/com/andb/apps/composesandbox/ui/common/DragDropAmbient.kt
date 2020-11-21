@@ -6,8 +6,8 @@ import androidx.compose.runtime.Providers
 import androidx.compose.runtime.staticAmbientOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Position
-import com.andb.apps.composesandbox.data.model.Properties
-import com.andb.apps.composesandbox.data.model.PrototypeComponent
+import com.andb.apps.composesandbox.model.Properties
+import com.andb.apps.composesandbox.model.PrototypeComponent
 
 
 data class DragDropState(val dragPosition: MutableState<Position>, val globalPosition: MutableState<Position>, val treeItems: MutableList<TreeHoverItem>, val onDrop: (DropState)->Unit) {
@@ -38,7 +38,7 @@ data class DragDropState(val dragPosition: MutableState<Position>, val globalPos
             hoverInTopHalf -> hoveringTreeItem.position
             else -> hoveringTreeItem.position.copy(y = hoveringTreeItem.position.y + hoveringTreeItem.height)
         }
-        val indent = hoveringTreeItem.indent + if (hoveringTreeItem.component.properties is Properties.Group && hoveringTreeItem.component.properties.children.isEmpty() && !hoverInTopHalf) 1 else 0
+        val indent = hoveringTreeItem.indent + if (hoveringTreeItem.component.properties is Properties.Group && (hoveringTreeItem.component.properties as Properties.Group).children.isEmpty() && !hoverInTopHalf) 1 else 0
         return HoverState.OverTreeItem(draggingComponent, dropIndicatorPosition.y, indent)
     }
 }

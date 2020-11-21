@@ -10,7 +10,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,7 +22,7 @@ import androidx.compose.ui.layout.globalPosition
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.data.model.*
+import com.andb.apps.composesandbox.model.*
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.DragDropAmbient
@@ -37,7 +36,7 @@ fun ComponentList(project: Project, onSelect: (PrototypeComponent) -> Unit) {
 
         AddComponentHeader(text = "Common Components")
         AddComponentItem(Properties.Text("Text").toComponent(), onSelect)
-        AddComponentItem(Properties.Icon(Icons.Default.Image, PrototypeColor.ThemeColor.OnBackground).toComponent(), onSelect)
+        AddComponentItem(Properties.Icon(PrototypeIcon.Image, PrototypeColor.ThemeColor.OnBackground).toComponent(), onSelect)
         AddComponentItem(Properties.Group.Row(emptyList()).toComponent(), onSelect)
         AddComponentItem(Properties.Group.Column(emptyList()).toComponent(), onSelect)
     }

@@ -3,7 +3,7 @@ package com.andb.apps.composesandbox.ui.common
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Providers
 import androidx.compose.runtime.staticAmbientOf
-import com.andb.apps.composesandbox.data.model.Theme
+import com.andb.apps.composesandbox.model.Theme
 
 val ProjectThemeAmbient = staticAmbientOf<Theme>()
 

@@ -1,14 +1,24 @@
 package com.andb.apps.composesandbox.state
 
-import com.andb.apps.composesandbox.data.model.Project
-import com.andb.apps.composesandbox.data.model.PrototypeComponent
-import com.andb.apps.composesandbox.data.model.minusChildFromTree
+import androidx.compose.material.lightColors
+import com.andb.apps.composesandbox.data.model.toTheme
+import com.andb.apps.composesandbox.model.Project
+import com.andb.apps.composesandbox.model.PrototypeComponent
+import com.andb.apps.composesandbox.model.minusChildFromTree
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class Machine {
-    val screens: MutableStateFlow<List<Screen>> = MutableStateFlow(listOf(Screen.Projects(listOf(Project("Demo Project"), Project("Hello World")))))
+    val screens: MutableStateFlow<List<Screen>> = MutableStateFlow(
+        listOf(
+            Screen.Projects(
+                listOf(
+                    Project("Demo Project", theme = lightColors().toTheme()),
+                    Project("Hello World", theme = lightColors().toTheme()))
+            )
+        )
+    )
 
     operator fun plusAssign(action: Action) = handleAction(action)
 
@@ -17,8 +27,7 @@ class Machine {
             UserAction.Back -> handleBack()
             is UserAction.OpenScreen -> screens.value += action.screen
             is UserAction.UpdateScreen -> screens.value = screens.value.map { if (it::class == action.screen::class) action.screen else it }
-
-            is UserAction.AddProject -> addProject(Project(action.name))
+            is UserAction.AddProject -> addProject(Project(action.name, theme = lightColors().toTheme()))
             is UserAction.OpenComponent -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.EditComponent(action.componentID)) }
             is UserAction.OpenComponentList -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.AddComponent) }
             is UserAction.OpenModifierList -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.AddModifier) }

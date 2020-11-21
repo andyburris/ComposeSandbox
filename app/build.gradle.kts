@@ -5,7 +5,6 @@ plugins {
 
 android {
     compileSdkVersion(Versions.compileSDK)
-    buildToolsVersion = "30.0.0"
 
     defaultConfig {
         applicationId = "com.andb.apps.composesandbox"
@@ -57,6 +56,7 @@ dependencies {
     testImplementation("junit:junit:4.13")
     androidTestImplementation("androidx.test.ext:junit:1.1.2")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
+    implementation(project(":shared"))
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).configureEach {

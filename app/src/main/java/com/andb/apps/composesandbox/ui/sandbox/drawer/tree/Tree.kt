@@ -1,11 +1,11 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.tree
 
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.TextFields
@@ -23,8 +23,8 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.R
-import com.andb.apps.composesandbox.data.model.Properties
-import com.andb.apps.composesandbox.data.model.PrototypeComponent
+import com.andb.apps.composesandbox.model.Properties
+import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.DragDropAmbient
@@ -65,7 +65,7 @@ private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifie
             modifier = Modifier.padding(vertical = 8.dp)
         )
         if (component.properties is Properties.Group) {
-            GenericTree(items = component.properties.children) { child ->
+            GenericTree(items = (component.properties as Properties.Group).children) { child ->
                 TreeItem(child, indent = indent + 1)
             }
         }

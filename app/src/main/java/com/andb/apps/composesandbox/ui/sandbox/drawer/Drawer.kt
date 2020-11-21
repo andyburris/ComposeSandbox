@@ -7,7 +7,6 @@ import androidx.compose.material.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.BottomDrawerLayout
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
@@ -28,9 +27,10 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.data.model.plusChildInTree
-import com.andb.apps.composesandbox.data.model.updatedChildInTree
-import com.andb.apps.composesandbox.data.model.updatedModifier
+import com.andb.apps.composesandbox.model.plusChildInTree
+import com.andb.apps.composesandbox.model.updatedChildInTree
+import com.andb.apps.composesandbox.model.updatedModifier
+import com.andb.apps.composesandbox.plusElement
 import com.andb.apps.composesandbox.state.*
 import com.andb.apps.composesandbox.ui.common.*
 import com.andb.apps.composesandbox.ui.sandbox.drawer.modifiers.DrawerEditModifiers
@@ -39,7 +39,6 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.DrawerTree
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.toDpPosition
 import com.andb.apps.composesandbox.ui.util.ItemSwitcher
 import com.andb.apps.composesandbox.ui.util.ItemTransitionState
-import com.andb.apps.composesandbox.util.plusElement
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

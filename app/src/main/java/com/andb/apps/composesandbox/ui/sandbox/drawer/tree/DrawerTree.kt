@@ -20,7 +20,7 @@ import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.data.model.PrototypeComponent
+import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.BottomSheetState

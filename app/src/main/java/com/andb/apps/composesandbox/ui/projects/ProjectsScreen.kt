@@ -10,7 +10,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.data.model.Project
+import com.andb.apps.composesandbox.model.Project
 import com.andb.apps.composesandbox.state.Handler
 import com.andb.apps.composesandbox.state.SandboxState
 import com.andb.apps.composesandbox.state.Screen

@@ -1,7 +1,7 @@
 package com.andb.apps.composesandbox.state
 
-import com.andb.apps.composesandbox.data.model.Project
-import com.andb.apps.composesandbox.data.model.PrototypeComponent
+import com.andb.apps.composesandbox.model.Project
+import com.andb.apps.composesandbox.model.PrototypeComponent
 
 sealed class Action
 

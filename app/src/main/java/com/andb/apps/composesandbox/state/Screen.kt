@@ -1,6 +1,6 @@
 package com.andb.apps.composesandbox.state
 
-import com.andb.apps.composesandbox.data.model.*
+import com.andb.apps.composesandbox.model.*
 
 sealed class Screen {
     data class Projects(val projects: List<Project>) : Screen()

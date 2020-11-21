@@ -26,7 +26,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.andb.apps.composecolorpicker.ui.ExpandedColorPicker
 import com.andb.apps.composecolorpicker.ui.MaterialPalette
-import com.andb.apps.composesandbox.data.model.*
+import com.andb.apps.composesandbox.Platform
+import com.andb.apps.composesandbox.data.model.name
+import com.andb.apps.composesandbox.data.model.projectColor
+import com.andb.apps.composesandbox.data.model.toColor
+import com.andb.apps.composesandbox.data.model.toPrototypeColor
+import com.andb.apps.composesandbox.model.*
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.GenericTree
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.TreeConfig
 import com.andb.apps.composesandbox.util.isDark
@@ -45,8 +50,8 @@ fun MaterialThemeEditor(theme: Theme, modifier: Modifier = Modifier, onSelect: (
         Dialog(onDismissRequest = { picking.value = null }) {
             Column(Modifier.background(MaterialTheme.colors.background, RoundedCornerShape(16.dp))) {
                 Text(text = "Pick Color", style = MaterialTheme.typography.h6, modifier = Modifier.padding(32.dp))
-                ColorPickerWithoutTheme(current = theme.getColor(pickingColor)) {
-                    onSelect.invoke(theme.updateColor(pickingColor, it))
+                ColorPickerWithoutTheme(current = theme.getColor(pickingColor).toColor()) {
+                    onSelect.invoke(theme.updateColor(pickingColor, it.toPrototypeColor()))
                 }
                 Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
                     TextButton(onClick = { picking.value = null }) {
@@ -214,12 +219,12 @@ fun ColorPickerWithTheme(current: PrototypeColor, modifier: Modifier = Modifier,
                 onSelect.invoke(it)
             }
             Tabs.PICKER -> ExpandedColorPicker(selected = current.projectColor(), modifier = Modifier.padding(24.dp)) {
-                onSelect.invoke(PrototypeColor.FixedColor(it))
+                onSelect.invoke(it.toPrototypeColor())
             }
             Tabs.PALETTE -> {
                 MaterialTheme(typography = MaterialTheme.typography.copy(overline = MaterialTheme.typography.overline.copy(letterSpacing = 0.sp))) {
                     MaterialPalette (selected = current.projectColor(), modifier = Modifier.padding(24.dp)) {
-                        onSelect.invoke(PrototypeColor.FixedColor(it))
+                        onSelect.invoke(it.toPrototypeColor())
                     }
                 }
             }

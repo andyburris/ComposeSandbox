@@ -8,8 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.savedinstancestate.savedInstanceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.data.model.PrototypeColor
-import com.andb.apps.composesandbox.data.model.PrototypeModifier
+import com.andb.apps.composesandbox.model.PrototypeColor
+import com.andb.apps.composesandbox.model.PrototypeModifier
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.ModifierItem
@@ -22,10 +22,10 @@ fun AddModifierList(onSelect: (PrototypeModifier) -> Unit) {
         val searchTerm = savedInstanceState { "" }
 
         AddComponentHeader(text = "Common Components")
-        AddModifierItem(PrototypeModifier.Padding.All(16.dp), onSelect)
-        AddModifierItem(PrototypeModifier.Border(1.dp, PrototypeColor.ThemeColor.OnBackground, 0.dp), onSelect)
-        AddModifierItem(PrototypeModifier.Width(32.dp), onSelect)
-        AddModifierItem(PrototypeModifier.Height(32.dp), onSelect)
+        AddModifierItem(PrototypeModifier.Padding.All(16), onSelect)
+        AddModifierItem(PrototypeModifier.Border(1, PrototypeColor.ThemeColor.OnBackground, 0), onSelect)
+        AddModifierItem(PrototypeModifier.Width(32), onSelect)
+        AddModifierItem(PrototypeModifier.Height(32), onSelect)
         AddModifierItem(PrototypeModifier.FillMaxWidth(), onSelect)
         AddModifierItem(PrototypeModifier.FillMaxHeight(), onSelect)
     }

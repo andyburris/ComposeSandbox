@@ -5,10 +5,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import com.andb.apps.composesandbox.data.model.Properties
-import com.andb.apps.composesandbox.data.model.PrototypeComponent
-import com.andb.apps.composesandbox.data.model.renderColor
-import com.andb.apps.composesandbox.data.model.toModifier
+import com.andb.apps.composesandbox.data.model.*
+import com.andb.apps.composesandbox.model.Properties
+import com.andb.apps.composesandbox.model.PrototypeComponent
 
 /**
  * Composable that renders a prototype component. Can be used recursively to render nested prototype components
@@ -16,16 +15,16 @@ import com.andb.apps.composesandbox.data.model.toModifier
  */
 @Composable
 fun RenderComponent(component: PrototypeComponent){
-    when (component.properties){
-        is Properties.Text -> Text(text = component.properties.text, modifier = component.modifiers.toModifier())
-        is Properties.Icon -> Icon(asset = component.properties.icon, tint = component.properties.tint.renderColor(), modifier = component.modifiers.toModifier())
-        is Properties.Group.Column -> Column(modifier = component.modifiers.toModifier(), horizontalAlignment = component.properties.horizontalAlignment, verticalArrangement = component.properties.verticalArrangement) {
-            for (child in component.properties.children) {
+    when (val properties = component.properties){
+        is Properties.Text -> Text(text = properties.text, modifier = component.modifiers.toModifier())
+        is Properties.Icon -> Icon(asset = properties.icon.vectorAsset, tint = properties.tint.renderColor(), modifier = component.modifiers.toModifier())
+        is Properties.Group.Column -> Column(modifier = component.modifiers.toModifier(), horizontalAlignment = properties.horizontalAlignment.toAlignment(), verticalArrangement = properties.verticalArrangement.toVerticalArrangement()) {
+            for (child in properties.children) {
                 RenderComponent(component = child)
             }
         }
-        is Properties.Group.Row -> Row(modifier = component.modifiers.toModifier(), verticalAlignment = component.properties.verticalAlignment, horizontalArrangement = component.properties.horizontalArrangement) {
-            for (child in component.properties.children) {
+        is Properties.Group.Row -> Row(modifier = component.modifiers.toModifier(), verticalAlignment = properties.verticalAlignment.toAlignment(), horizontalArrangement = properties.horizontalArrangement.toHorizontalArrangement()) {
+            for (child in properties.children) {
                 RenderComponent(component = child)
             }
         }

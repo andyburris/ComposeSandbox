@@ -3,7 +3,8 @@ package com.andb.apps.composesandbox.ui.sandbox.drawer.properties
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayout
 import androidx.compose.runtime.Composable
-import com.andb.apps.composesandbox.data.model.*
+import com.andb.apps.composesandbox.data.model.toReadableString
+import com.andb.apps.composesandbox.model.*
 
 @Composable
 fun TextProperties(properties: Properties.Text, onUpdate: (Properties.Text) -> Unit) {

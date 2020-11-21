@@ -1,8 +1,8 @@
-package com.andb.apps.composesandbox.data.model
+package com.andb.apps.composesandbox.model
 
-import androidx.compose.material.lightColors
+import kotlinx.serialization.Serializable
 
-
+@Serializable
 data class Project(
     val name: String,
     val screens: List<PrototypeComponent> = listOf(
@@ -22,5 +22,5 @@ data class Project(
         )
     ),
     val components: List<PrototypeComponent> = listOf(),
-    val theme: Theme = Theme(lightColors()),
+    val theme: Theme,
 )

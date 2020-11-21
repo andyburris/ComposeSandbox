@@ -18,7 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.BuildConfig
-import com.andb.apps.composesandbox.data.model.Project
+import com.andb.apps.composesandbox.data.model.toColors
+import com.andb.apps.composesandbox.model.Project
 import com.andb.apps.composesandbox.state.Handler
 import com.andb.apps.composesandbox.state.SandboxState
 import com.andb.apps.composesandbox.state.Screen
@@ -49,7 +50,7 @@ fun SandboxScreen(sandboxState: SandboxState, onUpdate: (SandboxState) -> Unit) 
             bodyColor = Color(229, 229, 229),
             bodyContent = {
                 Drawer(sandboxState = sandboxState, onUpdate = onUpdate) { sheetState ->
-                    MaterialTheme(colors = sandboxState.project.theme.colors) {
+                    MaterialTheme(colors = sandboxState.project.theme.toColors()) {
                         val (height, setHeight) = remember { mutableStateOf(0) }
                         val scale = (sheetState.offset.value / height).coerceIn(0.5f..1f)
 
