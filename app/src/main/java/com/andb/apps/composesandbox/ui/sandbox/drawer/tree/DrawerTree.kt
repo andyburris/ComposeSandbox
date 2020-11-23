@@ -1,11 +1,14 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.tree
 
 import androidx.compose.animation.animate
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -16,19 +19,17 @@ import androidx.compose.ui.draw.drawShadow
 import androidx.compose.ui.drawLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
+import com.andb.apps.composesandbox.state.DrawerScreen
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.BottomSheetState
 import com.andb.apps.composesandbox.ui.common.BottomSheetValue
 import com.andb.apps.composesandbox.ui.common.DragDropAmbient
 import com.andb.apps.composesandbox.ui.common.HoverState
-
-data class MovingState(val component: PrototypeComponent, val position: Position)
 
 /**
  * Tree representing prototype components. Holds drag-and-drop logic currently. Uses [GenericTree] under the hood
@@ -36,11 +37,8 @@ data class MovingState(val component: PrototypeComponent, val position: Position
  * @param sheetState the state of the bottom sheet, used to calculate the global position of each [TreeItem]
  * @param hovering the component currently in the drag state of drag-and-drop. null if no component is currently being dragged
  */
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, hovering: HoverState?) {
-    val actionHandler = ActionHandlerAmbient.current
-    val density = DensityAmbient.current
+fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, hovering: HoverState?, onMoveComponent: (PrototypeComponent) -> Unit) {
 
     val dragPosition = DragDropAmbient.current.dragPosition
     Column(
@@ -49,7 +47,8 @@ fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, hoverin
         DrawerTreeHeader(opened, sheetState)
         Tree(
             parent = opened,
-            modifier = Modifier.padding(start = 32.dp, end = 32.dp)
+            modifier = Modifier.padding(start = 32.dp, end = 32.dp),
+            onMoveComponent = onMoveComponent
         )
     }
     if (hovering != null) {
@@ -84,7 +83,7 @@ private fun DrawerTreeHeader(opened: PrototypeComponent, sheetState: BottomSheet
                 modifier = Modifier.padding(start = 16.dp)
             )
         }
-        Icon(asset = Icons.Default.Add, modifier = Modifier.clickable { actionHandler.invoke(UserAction.OpenComponentList) })
+        Icon(asset = Icons.Default.Add, modifier = Modifier.clickable { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.AddComponent)) })
     }
 }
 
@@ -106,13 +105,11 @@ private fun DropIndicator(hoverState: HoverState.OverTreeItem) {
     Row(modifier = Modifier.padding(start = 24.dp, top = position).fillMaxWidth()) {
         repeat(hoverState.indent) {
             Box(
-                Modifier.size(40.dp, 2.dp).padding(end = 2.dp),
-                backgroundColor = MaterialTheme.colors.primary.copy(alpha = .5f)
+                Modifier.size(40.dp, 2.dp).padding(end = 2.dp).background(MaterialTheme.colors.primary.copy(alpha = .5f)),
             )
         }
         Box(
-            Modifier.height(2.dp).weight(1f),
-            backgroundColor = MaterialTheme.colors.primary
+            Modifier.height(2.dp).weight(1f).background(MaterialTheme.colors.primary),
         )
     }
 }

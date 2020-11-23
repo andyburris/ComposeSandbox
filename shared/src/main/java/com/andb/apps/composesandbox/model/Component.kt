@@ -13,13 +13,14 @@ sealed class Properties {
         @Serializable data class Row (
             override val children: List<PrototypeComponent>,
             val horizontalArrangement: PrototypeArrangement = PrototypeArrangement.Horizontal.Start,
-            val verticalAlignment: PrototypeAlignment.Vertical = PrototypeAlignment.Vertical.Top
+            val verticalAlignment: PrototypeAlignment.Vertical = PrototypeAlignment.Vertical.Top,
         ) : Group()
         @Serializable data class Column (
             override val children: List<PrototypeComponent>,
             val verticalArrangement: PrototypeArrangement = PrototypeArrangement.Vertical.Top,
-            val horizontalAlignment: PrototypeAlignment.Horizontal = PrototypeAlignment.Horizontal.Start
-        ) : Group()
+            val horizontalAlignment: PrototypeAlignment.Horizontal = PrototypeAlignment.Horizontal.Start,
+            val number: Int = 0,
+            ) : Group()
     }
 }
 

@@ -1,67 +1,76 @@
 package com.andb.apps.composesandbox.state
 
-import androidx.compose.material.lightColors
-import com.andb.apps.composesandbox.data.model.toTheme
+import com.andb.apps.composesandbox.local.DatabaseHelper
 import com.andb.apps.composesandbox.model.Project
-import com.andb.apps.composesandbox.model.PrototypeComponent
-import com.andb.apps.composesandbox.model.minusChildFromTree
+import com.andb.apps.composesandbox.model.findByIDInTree
+import com.andb.apps.composesandbox.model.findModifierByIDInTree
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class Machine {
-    val screens: MutableStateFlow<List<Screen>> = MutableStateFlow(
-        listOf(
-            Screen.Projects(
-                listOf(
-                    Project("Demo Project", theme = lightColors().toTheme()),
-                    Project("Hello World", theme = lightColors().toTheme()))
-            )
-        )
-    )
+class Machine(coroutineScope: CoroutineScope) {
+    private val allProjects: Flow<List<Project>> = DatabaseHelper.allProjects
+    private val screens = MutableStateFlow(listOf<Screen>(Screen.Projects))
+
+    val stack: StateFlow<List<ViewState>> = combine(allProjects, screens) { projects, screens ->
+        screens.map { screen ->
+            when (screen) {
+                Screen.Projects -> ViewState.ProjectsState(projects)
+                is Screen.Sandbox -> {
+                    val project = projects.first { it.id == screen.projectID }
+                    val openedTree = project.screens.first { it.id == screen.openedTreeID }
+                    val drawerStack = screen.drawerScreens.map { drawerScreen ->
+                        when (drawerScreen) {
+                            DrawerScreen.Tree -> DrawerState.Tree
+                            DrawerScreen.AddComponent -> DrawerState.AddComponent
+                            is DrawerScreen.EditComponent -> DrawerState.EditComponent(openedTree.findByIDInTree(drawerScreen.componentID)!!)
+                            DrawerScreen.AddModifier -> DrawerState.AddModifier
+                            is DrawerScreen.EditModifier -> DrawerState.EditModifier(openedTree.findModifierByIDInTree(drawerScreen.modifierID)!!)
+                            DrawerScreen.EditTheme -> DrawerState.EditTheme
+                        }
+                    }
+                    ViewState.SandboxState(project, openedTree, drawerStack)
+                }
+                is Screen.Preview -> {
+                    val project = projects.first { it.id == screen.projectID }
+                    val currentScreen = project.screens.first { it.id == screen.currentScreenID }
+                    ViewState.PreviewState(project, currentScreen)
+                }
+                is Screen.Code -> ViewState.CodeState(projects.first { it.id == screen.projectID })
+                is Screen.Test -> ViewState.TestState
+            }
+        }
+    }.stateIn(coroutineScope, SharingStarted.Lazily, listOf(ViewState.ProjectsState(listOf())))
 
     operator fun plusAssign(action: Action) = handleAction(action)
 
-    fun handleAction(action: Action){
-        when(action){
+    fun handleAction(action: Action) {
+        when (action) {
             UserAction.Back -> handleBack()
             is UserAction.OpenScreen -> screens.value += action.screen
-            is UserAction.UpdateScreen -> screens.value = screens.value.map { if (it::class == action.screen::class) action.screen else it }
-            is UserAction.AddProject -> addProject(Project(action.name, theme = lightColors().toTheme()))
-            is UserAction.OpenComponent -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.EditComponent(action.componentID)) }
-            is UserAction.OpenComponentList -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.AddComponent) }
-            is UserAction.OpenModifierList -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.AddModifier) }
-            is UserAction.EditModifier -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.EditModifier(action.modifierID)) }
-            is UserAction.MoveComponent -> moveComponent(action.moving)
-            is UserAction.UpdateTree -> updateTree(action.updated)
-            else -> screens.updateSandbox { it.copy(drawerStack = it.drawerStack + DrawerState.EditTheme) }
+            is UserAction.OpenDrawerScreen -> screens.updateSandbox {
+                it.copy(drawerScreens = it.drawerScreens + action.drawerScreen)
+            }
+            is UserAction.AddProject -> addProject(action.project)
+            is UserAction.UpdateProject -> {
+                DatabaseHelper.upsertProject(action.updated)
+            }
         }
     }
 
     private fun handleBack() {
         val currentScreen = screens.value.last()
         when {
-            currentScreen is Screen.Sandbox && currentScreen.state.drawerStack.last() !is DrawerState.Tree -> {
-                screens.updateSandbox { it.copy(drawerStack = it.drawerStack.dropLast(1)) }
+            currentScreen is Screen.Sandbox && currentScreen.drawerScreens.last() !is DrawerScreen.Tree -> {
+                screens.updateSandbox { it.copy(drawerScreens = it.drawerScreens.dropLast(1)) }
             }
             screens.value.size > 1 -> screens.value = screens.value.dropLast(1)
         }
     }
 
-    private fun addProject(project: Project){
-
-    }
-
-    private fun moveComponent(moving: PrototypeComponent) {
-        screens.updateSandbox { sandboxState ->
-            sandboxState.updatedTree(sandboxState.openedTree.minusChildFromTree(moving)).copy(drawerStack = listOf(DrawerState.Tree(moving)))
-        }
-    }
-
-    private fun updateTree(updated: PrototypeComponent) {
-        screens.updateSandbox { sandboxState ->
-            sandboxState.updatedTree(updated)
-        }
+    private fun addProject(project: Project) {
+        DatabaseHelper.upsertProject(project)
     }
 }
 
@@ -81,47 +90,6 @@ private inline fun <reified T> MutableStateFlow<List<Screen>>.updateScreen(trans
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-private inline fun MutableStateFlow<List<Screen>>.updateSandbox(transform: (sandboxState: SandboxState) -> SandboxState) {
-    updateScreen<Screen.Sandbox> { it.copy(state = transform(it.state)) }
+private inline fun MutableStateFlow<List<Screen>>.updateSandbox(transform: (Screen.Sandbox) -> Screen.Sandbox) {
+    updateScreen<Screen.Sandbox> { transform(it) }
 }
-
-fun SandboxState.updatedTree(updated: PrototypeComponent): SandboxState {
-    return this.copy(
-        openedTree = updated,
-        project = project.copy(
-            screens = project.screens.map {
-                when (it.id) {
-                    updated.id -> updated
-                    else -> it
-                }
-            }
-        )
-    ).withDrawerTree { DrawerState.Tree() }
-}
-
-private fun SandboxState.withDrawerTree(transform: (DrawerState.Tree) -> DrawerState.Tree): SandboxState = this.copy(
-    drawerStack = drawerStack.map {
-        return@map when (it) {
-            is DrawerState.Tree -> transform(it)
-            else -> it
-        }
-    }
-)
-
-private fun SandboxState.withEditingComponent(transform: (DrawerState.EditComponent) -> DrawerState.EditComponent): SandboxState = this.copy(
-    drawerStack = drawerStack.map {
-        return@map when (it) {
-            is DrawerState.EditComponent -> transform(it)
-            else -> it
-        }
-    }
-)
-
-private fun SandboxState.withEditingModifier(transform: (DrawerState.EditModifier) -> DrawerState.EditModifier): SandboxState = this.copy(
-    drawerStack = drawerStack.map {
-        return@map when (it) {
-            is DrawerState.EditModifier -> transform(it)
-            else -> it
-        }
-    }
-)

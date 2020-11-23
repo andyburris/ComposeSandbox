@@ -1,0 +1,25 @@
+CREATE TABLE projectData (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    screens TEXT NOT NULL,
+    components TEXT NOT NULL,
+    theme TEXT NOT NULL
+);
+
+CREATE INDEX project_id ON projectData(id);
+
+selectAll:
+SELECT *
+FROM projectData;
+
+selectById:
+SELECT *
+FROM projectData
+WHERE id = ?;
+
+insert:
+INSERT OR REPLACE INTO projectData(id, name, screens, components, theme)
+VALUES (?, ?, ?, ?, ?);
+
+
+

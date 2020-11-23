@@ -10,13 +10,14 @@ class App : Application() {
 
     private val module = module {
         viewModel { MainActivityViewModel() }
+
     }
 
     override fun onCreate() {
         super.onCreate()
         startKoin {
             androidContext(this@App)
-            modules(module)
+            modules(dataModule, module)
         }
     }
 }

@@ -1,38 +1,53 @@
 package com.andb.apps.composesandbox.state
 
-import com.andb.apps.composesandbox.model.*
+import com.andb.apps.composesandbox.model.Project
+import com.andb.apps.composesandbox.model.PrototypeComponent
+import com.andb.apps.composesandbox.model.PrototypeModifier
 
 sealed class Screen {
-    data class Projects(val projects: List<Project>) : Screen()
-    data class Sandbox(val state: SandboxState) : Screen()
-    data class Preview(val project: Project, val prototypeScreen: PrototypeComponent) : Screen()
-    data class Code(val project: Project) : Screen()
+    object Projects : Screen()
+    data class Sandbox(val projectID: String, val openedTreeID: String, val drawerScreens: List<DrawerScreen> = listOf(DrawerScreen.Tree)) : Screen() {
+
+    }
+    data class Preview(val projectID: String, val currentScreenID: String) : Screen()
+    data class Code(val projectID: String) : Screen()
     object Test : Screen()
 }
 
-data class SandboxState(val project: Project, val openedTree: PrototypeComponent = project.screens.first(), val drawerStack: List<DrawerState> = listOf(DrawerState.Tree())) {
-    val editingComponent: PrototypeComponent get() {
-        if (drawerStack.none { it is DrawerState.EditComponent }) throw Error("Can't access editingComponent until drawerStack contains a DrawerState.EditComponent, currently is $drawerStack")
-        val id = drawerStack.filterIsInstance<DrawerState.EditComponent>().first().componentID
-        return openedTree.findByIDInTree(id) ?: throw Error("Can't find componentID in tree, make sure DrawerState.EditComponent only ever edits a component in the current tree")
+sealed class ViewState {
+    data class SandboxState(val project: Project, val openedTree: PrototypeComponent = project.screens.first(), val drawerStack: List<DrawerState>) : ViewState() {
+        val editingComponent: PrototypeComponent get() {
+            if (drawerStack.none { it is DrawerState.EditComponent }) throw Error("Can't access editingComponent until drawerStack contains a DrawerState.EditComponent, currently is $drawerStack")
+            return drawerStack.filterIsInstance<DrawerState.EditComponent>().first().component
+        }
+        val editingModifier: PrototypeModifier get() {
+            if (drawerStack.none { it is DrawerState.EditModifier }) throw Error("Can't access editingModifier until drawerStack contains a DrawerState.EditModifier, currently is $drawerStack")
+            return drawerStack.filterIsInstance<DrawerState.EditModifier>().first().modifier
+        }
     }
-    val editingModifier: PrototypeModifier get() {
-        if (drawerStack.none { it is DrawerState.EditModifier }) throw Error("Can't access editingModifier until drawerStack contains a DrawerState.EditModifier, currently is $drawerStack")
-        val id = drawerStack.filterIsInstance<DrawerState.EditModifier>().first().modifierID
-        return openedTree.findModifierByIDInTree(id) ?: throw Error("Can't find modifierID in tree, make sure DrawerState.EditModifier only ever edits a modifier in the current tree")
-    }
+    data class PreviewState(val project: Project, val currentScreen: PrototypeComponent) : ViewState()
+    data class ProjectsState (val projects: List<Project>) : ViewState()
+    data class CodeState(val project: Project) : ViewState()
+    object TestState : ViewState()
+}
+
+
+sealed class DrawerScreen {
+    object Tree : DrawerScreen()
+    object AddComponent : DrawerScreen()
+    data class EditComponent (val componentID: String) : DrawerScreen()
+    object AddModifier : DrawerScreen()
+    data class EditModifier(val modifierID: String) : DrawerScreen()
+    object EditTheme : DrawerScreen()
 }
 
 
 sealed class DrawerState {
-    data class Tree(val movingComponent: PrototypeComponent? = null) : DrawerState()
+    object Tree : DrawerState()
     object AddComponent : DrawerState()
-    data class EditComponent (val componentID: String) : DrawerState() {
-        fun editingComponent(openedTree: PrototypeComponent) = openedTree.findByIDInTree(componentID)
-    }
+    data class EditComponent (val component: PrototypeComponent) : DrawerState()
     object AddModifier : DrawerState()
-    data class EditModifier(val modifierID: String) : DrawerState() {
-        fun editingModifier(openedTree: PrototypeComponent) = openedTree.findModifierByIDInTree(modifierID)
-    }
+    data class EditModifier(val modifier: PrototypeModifier) : DrawerState()
     object EditTheme : DrawerState()
 }
+

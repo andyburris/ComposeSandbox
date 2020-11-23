@@ -130,7 +130,7 @@ fun GenericPropertyEditor(label: String, modifier: Modifier = Modifier, widget: 
 }
 
 @Composable
-fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Modifier, onSelect: (PrototypeColor)->Unit) {
+fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Modifier, onSelect: (PrototypeColor) -> Unit) {
     val pickingColor = remember { mutableStateOf(false) }
     GenericPropertyEditor(label = label, modifier) {
         Box {

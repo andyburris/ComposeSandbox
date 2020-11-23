@@ -2,6 +2,7 @@ plugins {
     id("com.android.library")
     kotlin("android")
     kotlin("plugin.serialization") version "1.4.10"
+    id("com.squareup.sqldelight")
 }
 
 android {
@@ -35,4 +36,8 @@ android {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlin}")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
+    implementation(Dependencies.SQLDelight.android)
+    implementation(Dependencies.SQLDelight.coroutines)
+    implementation(Dependencies.Koin.android)
+    implementation(Dependencies.coroutines)
 }

@@ -43,6 +43,7 @@ dependencies {
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlin}")
     implementation("androidx.core:core-ktx:1.3.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0")
     implementation("androidx.appcompat:appcompat:1.2.0")
     implementation("com.google.android.material:material:1.2.1")
     implementation(Dependencies.Compose.layout)
@@ -53,6 +54,7 @@ dependencies {
     implementation(Dependencies.Koin.android)
     implementation(Dependencies.Koin.viewModel)
     implementation(Dependencies.colorPicker)
+    implementation(Dependencies.coroutines)
     testImplementation("junit:junit:4.13")
     androidTestImplementation("androidx.test.ext:junit:1.1.2")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")

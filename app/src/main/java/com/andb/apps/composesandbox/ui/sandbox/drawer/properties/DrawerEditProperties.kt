@@ -10,6 +10,7 @@ import com.andb.apps.composesandbox.model.Properties
 import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.state.ActionHandler
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
+import com.andb.apps.composesandbox.state.DrawerScreen
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
 
@@ -33,8 +34,8 @@ fun DrawerEditProperties(component: PrototypeComponent, actionHandler: ActionHan
         }
         ModifiersEditor(
             modifiers = component.modifiers,
-            onAdd = { actionHandler.invoke(UserAction.OpenModifierList) },
-            onOpenModifier = { actionHandler.invoke(UserAction.EditModifier(it.id))},
+            onAdd = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.AddModifier)) },
+            onOpenModifier = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditModifier(it.id))) },
             onUpdate = {
                 onUpdate(component.copy(modifiers = it))
             }

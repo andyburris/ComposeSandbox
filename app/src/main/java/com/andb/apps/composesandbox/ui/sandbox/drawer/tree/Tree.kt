@@ -26,18 +26,19 @@ import com.andb.apps.composesandbox.R
 import com.andb.apps.composesandbox.model.Properties
 import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
+import com.andb.apps.composesandbox.state.DrawerScreen
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.DragDropAmbient
 import com.andb.apps.composesandbox.ui.common.TreeHoverItem
 
 
 @Composable
-fun Tree(parent: PrototypeComponent, modifier: Modifier = Modifier) {
-    TreeItem(component = parent, modifier)
+fun Tree(parent: PrototypeComponent, modifier: Modifier = Modifier, onMoveComponent: (PrototypeComponent) -> Unit) {
+    TreeItem(component = parent, modifier, onMoveComponent = onMoveComponent)
 }
 
 @Composable
-private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifier, indent: Int = 0) {
+private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifier, indent: Int = 0, onMoveComponent: (PrototypeComponent) -> Unit) {
     val actionHandler = ActionHandlerAmbient.current
     val density = DensityAmbient.current
     val dragDropState = DragDropAmbient.current
@@ -53,10 +54,10 @@ private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifie
                 dragDropState.updateTreeItem(hoverItem)
             }
             .clickable(
-                onClick = { actionHandler.invoke(UserAction.OpenComponent(component.id)) }
+                onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditComponent(component.id))) }
             )
             .longPressGestureFilter {
-                actionHandler.invoke(UserAction.MoveComponent(component))
+                onMoveComponent.invoke(component)
             }
             .fillMaxWidth()
     ) {
@@ -66,7 +67,7 @@ private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifie
         )
         if (component.properties is Properties.Group) {
             GenericTree(items = (component.properties as Properties.Group).children) { child ->
-                TreeItem(child, indent = indent + 1)
+                TreeItem(child, indent = indent + 1, onMoveComponent = onMoveComponent)
             }
         }
     }

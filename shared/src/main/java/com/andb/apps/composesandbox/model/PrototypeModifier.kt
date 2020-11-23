@@ -4,17 +4,18 @@ import kotlinx.serialization.Serializable
 import java.util.*
 
 @Serializable
-sealed class PrototypeModifier(open val id: String) {
-    sealed class Padding(id: String) : PrototypeModifier(id) {
-        data class Individual(val start: Int, val end: Int, val top: Int, val bottom: Int, override val id: String = UUID.randomUUID().toString()) : Padding(id)
-        data class Sides(val horizontal: Int, val vertical: Int, override val id: String = UUID.randomUUID().toString()) : Padding(id)
-        data class All(val padding: Int, override val id: String = UUID.randomUUID().toString()) : Padding(id)
+sealed class PrototypeModifier {
+    abstract val id: String
+    @Serializable sealed class Padding : PrototypeModifier() {
+        @Serializable data class Individual(val start: Int, val end: Int, val top: Int, val bottom: Int, override val id: String = UUID.randomUUID().toString()) : Padding()
+        @Serializable data class Sides(val horizontal: Int, val vertical: Int, override val id: String = UUID.randomUUID().toString()) : Padding()
+        @Serializable data class All(val padding: Int, override val id: String = UUID.randomUUID().toString()) : Padding()
     }
-    data class Border(val strokeWidth: Int, val color: PrototypeColor, val cornerRadius: Int, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier(id)
-    data class Width(val width: Int, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier(id)
-    data class Height(val height: Int, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier(id)
-    data class FillMaxWidth(override val id: String = UUID.randomUUID().toString()) : PrototypeModifier(id)
-    data class FillMaxHeight(override val id: String = UUID.randomUUID().toString()) : PrototypeModifier(id)
+    @Serializable data class Border(val strokeWidth: Int, val color: PrototypeColor, val cornerRadius: Int, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
+    @Serializable data class Width(val width: Int, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
+    @Serializable data class Height(val height: Int, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
+    @Serializable data class FillMaxWidth(override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
+    @Serializable data class FillMaxHeight(override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
 }
 
 val PrototypeModifier.name: String

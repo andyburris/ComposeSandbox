@@ -1,7 +1,5 @@
 package com.andb.apps.composesandbox.ui.sandbox
 
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -20,17 +18,15 @@ import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.BuildConfig
 import com.andb.apps.composesandbox.data.model.toColors
 import com.andb.apps.composesandbox.model.Project
-import com.andb.apps.composesandbox.state.Handler
-import com.andb.apps.composesandbox.state.SandboxState
-import com.andb.apps.composesandbox.state.Screen
-import com.andb.apps.composesandbox.state.UserAction
+import com.andb.apps.composesandbox.model.updatedTree
+import com.andb.apps.composesandbox.state.*
 import com.andb.apps.composesandbox.ui.common.ProjectThemeProvider
 import com.andb.apps.composesandbox.ui.common.RenderComponent
 import com.andb.apps.composesandbox.ui.sandbox.drawer.Drawer
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SandboxScreen(sandboxState: SandboxState, onUpdate: (SandboxState) -> Unit) {
+fun SandboxScreen(sandboxState: ViewState.SandboxState, onUpdateProject: (Project) -> Unit) {
     ProjectThemeProvider(projectTheme = sandboxState.project.theme) {
         val (backdropState, setBackdropState) = remember { mutableStateOf(BackdropState.CONCEALED) }
         Backdrop(
@@ -49,7 +45,11 @@ fun SandboxScreen(sandboxState: SandboxState, onUpdate: (SandboxState) -> Unit) 
             },
             bodyColor = Color(229, 229, 229),
             bodyContent = {
-                Drawer(sandboxState = sandboxState, onUpdate = onUpdate) { sheetState ->
+                Drawer(
+                    sandboxState = sandboxState,
+                    onTreeUpdate = { onUpdateProject.invoke(sandboxState.project.updatedTree(it)) },
+                    onThemeUpdate = { onUpdateProject.invoke(sandboxState.project.copy(theme = it)) }
+                ) { sheetState ->
                     MaterialTheme(colors = sandboxState.project.theme.toColors()) {
                         val (height, setHeight) = remember { mutableStateOf(0) }
                         val scale = (sheetState.offset.value / height).coerceIn(0.5f..1f)
@@ -73,7 +73,7 @@ fun SandboxScreen(sandboxState: SandboxState, onUpdate: (SandboxState) -> Unit) 
 }
 
 @Composable
-private fun SandboxAppBar(sandboxState: SandboxState, project: Project, iconState: BackdropState, onToggle: () -> Unit) {
+private fun SandboxAppBar(sandboxState: ViewState.SandboxState, project: Project, iconState: BackdropState, onToggle: () -> Unit) {
     val actionHandler = Handler
     val menuShowing = remember { mutableStateOf(false) }
     TopAppBar(
@@ -87,8 +87,8 @@ private fun SandboxAppBar(sandboxState: SandboxState, project: Project, iconStat
         },
         title = { Text(text = project.name) },
         actions = {
-            IconButton(onClick = { actionHandler.invoke(UserAction.OpenThemeEditor)}) { Icon(asset = Icons.Default.Palette) }
-            IconButton(onClick = { actionHandler.invoke(UserAction.OpenScreen(Screen.Preview(project, sandboxState.openedTree))) }) { Icon(asset = Icons.Default.PlayCircleFilled) }
+            IconButton(onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditTheme))}) { Icon(asset = Icons.Default.Palette) }
+            IconButton(onClick = { actionHandler.invoke(UserAction.OpenScreen(Screen.Preview(project.id, sandboxState.openedTree.id))) }) { Icon(asset = Icons.Default.PlayCircleFilled) }
             DropdownMenu(
                 toggle = {
                     IconButton(onClick = { menuShowing.value = true }) {
@@ -102,7 +102,7 @@ private fun SandboxAppBar(sandboxState: SandboxState, project: Project, iconStat
             ) {
                 DropdownMenuItem(
                     onClick = {
-                        val action = UserAction.OpenScreen(Screen.Code(project))
+                        val action = UserAction.OpenScreen(Screen.Code(project.id))
                         actionHandler.invoke(action)
                     }
                 ) {

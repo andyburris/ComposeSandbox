@@ -5,32 +5,32 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class PrototypeArrangement {
     @Serializable sealed class Horizontal : PrototypeArrangement() {
-        object Start : Horizontal()
-        object Center : Horizontal()
-        object End : Horizontal()
+        @Serializable object Start : Horizontal()
+        @Serializable object Center : Horizontal()
+        @Serializable object End : Horizontal()
     }
     @Serializable sealed class Vertical : PrototypeArrangement() {
-        object Top : Vertical()
-        object Center : Vertical()
-        object Bottom : Vertical()
+        @Serializable object Top : Vertical()
+        @Serializable object Center : Vertical()
+        @Serializable object Bottom : Vertical()
     }
     @Serializable sealed class Both : PrototypeArrangement() {
-        object SpaceBetween : Both()
-        object SpaceEvenly : Both()
-        object SpaceAround : Both()
+        @Serializable object SpaceBetween : Both()
+        @Serializable object SpaceEvenly : Both()
+        @Serializable object SpaceAround : Both()
     }
 }
 
 sealed class PrototypeAlignment {
     @Serializable sealed class Horizontal : PrototypeAlignment() {
-        object Start : Horizontal()
-        object CenterHorizontally : Horizontal()
-        object End : Horizontal()
+        @Serializable object Start : Horizontal()
+        @Serializable object CenterHorizontally : Horizontal()
+        @Serializable object End : Horizontal()
     }
     @Serializable sealed class Vertical : PrototypeAlignment() {
-        object Top : Vertical()
-        object CenterVertically : Vertical()
-        object Bottom : Vertical()
+        @Serializable object Top : Vertical()
+        @Serializable object CenterVertically : Vertical()
+        @Serializable object Bottom : Vertical()
     }
 }
 

@@ -10,21 +10,25 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.andb.apps.composesandbox.data.model.toTheme
 import com.andb.apps.composesandbox.model.Project
 import com.andb.apps.composesandbox.state.Handler
-import com.andb.apps.composesandbox.state.SandboxState
 import com.andb.apps.composesandbox.state.Screen
 import com.andb.apps.composesandbox.state.UserAction
 
 @Composable
 fun ProjectsScreen(projects: List<Project>) {
+    val handler = Handler
     Scaffold(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 text = { Text("Add Project".toUpperCase()) },
                 icon = { Icon(asset = Icons.Default.Add) },
                 backgroundColor = MaterialTheme.colors.primary,
-                onClick = {}
+                onClick = {
+                    val project = Project(name = "Hello World", theme = lightColors().toTheme())
+                    handler.invoke(UserAction.AddProject(project))
+                }
             )
         }
     ) {
@@ -40,11 +44,10 @@ fun ProjectsScreen(projects: List<Project>) {
                 )
             }
         ) { project ->
-            val handler = Handler
             ProjectItem(
                 project = project,
                 modifier = Modifier.weight(1f).padding(16.dp).clickable {
-                    val screen = Screen.Sandbox(SandboxState(project))
+                    val screen = Screen.Sandbox(project.id, project.screens.first().id)
                     println("screen = $screen")
                     handler.invoke(UserAction.OpenScreen(screen))
                 }

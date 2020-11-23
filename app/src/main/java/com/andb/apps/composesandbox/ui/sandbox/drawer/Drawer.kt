@@ -2,13 +2,13 @@ package com.andb.apps.composesandbox.ui.sandbox.drawer
 
 import androidx.compose.animation.animate
 import androidx.compose.animation.core.*
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
@@ -27,14 +27,16 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.model.plusChildInTree
-import com.andb.apps.composesandbox.model.updatedChildInTree
-import com.andb.apps.composesandbox.model.updatedModifier
+import com.andb.apps.composesandbox.model.*
 import com.andb.apps.composesandbox.plusElement
-import com.andb.apps.composesandbox.state.*
+import com.andb.apps.composesandbox.state.ActionHandlerAmbient
+import com.andb.apps.composesandbox.state.DrawerState
+import com.andb.apps.composesandbox.state.UserAction
+import com.andb.apps.composesandbox.state.ViewState
 import com.andb.apps.composesandbox.ui.common.*
 import com.andb.apps.composesandbox.ui.sandbox.drawer.modifiers.DrawerEditModifiers
 import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.DrawerEditProperties
+import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.NumberPicker
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.DrawerTree
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.toDpPosition
 import com.andb.apps.composesandbox.ui.util.ItemSwitcher
@@ -42,37 +44,43 @@ import com.andb.apps.composesandbox.ui.util.ItemTransitionState
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Drawer(sandboxState: SandboxState, onUpdate: (SandboxState) -> Unit, bodyContent: @Composable() (sheetState: BottomSheetState) -> Unit) {
+fun Drawer(sandboxState: ViewState.SandboxState, onTreeUpdate: (PrototypeComponent) -> Unit, onThemeUpdate: (Theme) -> Unit, bodyContent: @Composable() (sheetState: BottomSheetState) -> Unit) {
     val sheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Peek)
     val cornerRadius = animate(target = if (sheetState.targetValue == BottomSheetValue.Expanded) 16.dp else 32.dp)
     val density = DensityAmbient.current
     val actionHandler = ActionHandlerAmbient.current
+    val movingComponent = remember { mutableStateOf<PrototypeComponent?>(null) }
     BottomSheetLayout(
         sheetState = sheetState,
         closeable = false,
         peekHeight = 88.dp,
         sheetShape = RoundedCornerShape(topLeft = cornerRadius, topRight = cornerRadius),
         bodyContent = { bodyContent(sheetState) },
-        gesturesEnabled = sandboxState.drawerStack.filterIsInstance<DrawerState.Tree>().firstOrNull()?.movingComponent == null,
+        gesturesEnabled = movingComponent.value == null,
         sheetContent = {
+
+            val number = remember { mutableStateOf(0) }
+            NumberPicker(label = "Test", current = number.value) {
+                number.value = it
+                onTreeUpdate.invoke(sandboxState.openedTree.copy(properties = (sandboxState.openedTree.properties as Properties.Group.Column).copy(number = it)))
+            }
+
             val (contentWidth, setContentWidth) = remember { mutableStateOf(0) }
             val drawerState = sandboxState.drawerStack.last()
+            println("drawerState = $drawerState")
             val dragPosition = remember { mutableStateOf(Position(0.dp, 0.dp)) }
             val dragDropState = remember(sandboxState.openedTree, drawerState) {
                 DragDropState(dragPosition, mutableStateOf(Position(0.dp, 0.dp)), mutableListOf()) { dropState ->
                     when (dropState) {
                         is DropState.OverTreeItem -> {
-                            println("dropping, drawerState = $drawerState")
-                            val treeDrawerState: DrawerState.Tree = (drawerState as? DrawerState.Tree)
-                                ?: return@DragDropState
-                            println("dropping, movingComponent? = ${treeDrawerState.movingComponent}")
-                            val moving = treeDrawerState.movingComponent ?: return@DragDropState
+                            println("dropping, movingComponent? = ${movingComponent.value}")
+                            val moving = movingComponent.value ?: return@DragDropState
                             val updatedTree = sandboxState.openedTree.plusChildInTree(moving, dropState.hoveringComponent, dropState.dropAbove)
-                            onUpdate.invoke(sandboxState.updatedTree(updatedTree))
+                            movingComponent.value = null
+                            onTreeUpdate.invoke(updatedTree)
                         }
                         is DropState.OverNone -> {
-                            onUpdate.invoke(sandboxState.copy(drawerStack = listOf(DrawerState.Tree())))
-                            // TODO: detect delete
+                            movingComponent.value = null
                         }
                     }
                 }
@@ -91,6 +99,8 @@ fun Drawer(sandboxState: SandboxState, onUpdate: (SandboxState) -> Unit, bodyCon
                 oldState.value = drawerState
                 ItemSwitcher(
                     current = drawerState,
+                    animateIf = { old, current -> old != null && old::class != current::class },
+                    keyFinder = { it::class },
                     transitionDefinition = transitionDefinition,
                     modifier = Modifier
                         .dragGestureFilter(
@@ -109,7 +119,7 @@ fun Drawer(sandboxState: SandboxState, onUpdate: (SandboxState) -> Unit, bodyCon
                                     dragDropState.drop()
                                 }
                             },
-                            canDrag = { drawerState is DrawerState.Tree && drawerState.movingComponent != null },
+                            canDrag = { drawerState is DrawerState.Tree && movingComponent.value != null },
                             startDragImmediately = false
                         )
                         .pointerInteropFilter { event ->
@@ -129,35 +139,30 @@ fun Drawer(sandboxState: SandboxState, onUpdate: (SandboxState) -> Unit, bodyCon
                         )
                     ) {
                         when (drawerState) {
-                            is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = drawerState.movingComponent?.let { dragDropState.getHoverState(it) })
-                            DrawerState.AddComponent -> ComponentList(project = sandboxState.project) {
-                                onUpdate.invoke(sandboxState.copy(drawerStack = listOf(DrawerState.Tree(movingComponent = it))))
+                            is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = movingComponent.value?.let { dragDropState.getHoverState(it) }) {
+                                movingComponent.value = it
+                                onTreeUpdate.invoke(sandboxState.openedTree.minusChildFromTree(it))
                             }
-                            is DrawerState.EditComponent -> {
-                                val editingComponent = drawerState.editingComponent(sandboxState.openedTree)
-                                    ?: return@Box //editing component doesn't exist
-                                DrawerEditProperties(editingComponent, actionHandler) { updatedComponent ->
-                                    val updatedTree = sandboxState.openedTree.updatedChildInTree(updatedComponent)
-                                    onUpdate.invoke(sandboxState.updatedTree(updatedTree))
-                                }
+                            DrawerState.AddComponent -> ComponentList(project = sandboxState.project) {
+                                movingComponent.value = it
+                            }
+                            is DrawerState.EditComponent -> DrawerEditProperties(drawerState.component, actionHandler) { updatedComponent ->
+                                val updatedTree = sandboxState.openedTree.updatedChildInTree(updatedComponent)
+                                onTreeUpdate.invoke(updatedTree)
                             }
                             is DrawerState.AddModifier -> AddModifierList {
                                 val withModifier = sandboxState.editingComponent.copy(modifiers = sandboxState.editingComponent.modifiers.plusElement(it, 0))
                                 val updatedTree = sandboxState.openedTree.updatedChildInTree(withModifier)
-                                onUpdate.invoke(sandboxState.updatedTree(updatedTree))
+                                onTreeUpdate.invoke(updatedTree)
                                 actionHandler.invoke(UserAction.Back)
                             }
-                            is DrawerState.EditModifier -> {
-                                val editingModifier = drawerState.editingModifier(sandboxState.openedTree)
-                                    ?: return@Box //editing component doesn't exist
-                                DrawerEditModifiers(prototypeModifier = editingModifier) {
-                                    println("edited modifier = $it")
-                                    val updatedTree = sandboxState.openedTree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it))
-                                    onUpdate.invoke(sandboxState.updatedTree(updatedTree))
-                                }
+                            is DrawerState.EditModifier -> DrawerEditModifiers(prototypeModifier = drawerState.modifier) {
+                                println("edited modifier = $it")
+                                val updatedTree = sandboxState.openedTree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it))
+                                onTreeUpdate.invoke(updatedTree)
                             }
                             is DrawerState.EditTheme -> DrawerEditTheme(theme = sandboxState.project.theme) {
-                                onUpdate.invoke(sandboxState.copy(project = sandboxState.project.copy(theme = it)))
+                                onThemeUpdate.invoke(it)
                             }
                         }
                     }

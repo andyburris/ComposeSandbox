@@ -8,8 +8,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.setContent
 import com.andb.apps.composesandbox.state.ActionHandler
 import com.andb.apps.composesandbox.state.ActionHandlerProvider
-import com.andb.apps.composesandbox.state.Screen
 import com.andb.apps.composesandbox.state.UserAction
+import com.andb.apps.composesandbox.state.ViewState
 import com.andb.apps.composesandbox.ui.code.CodeScreen
 import com.andb.apps.composesandbox.ui.preview.PreviewScreen
 import com.andb.apps.composesandbox.ui.projects.ProjectsScreen
@@ -25,20 +25,19 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val screens = viewModel.state.screens.collectAsState()
+            val screenStates = viewModel.state.stack.collectAsState()
             val handler: ActionHandler = { viewModel.state += it }
             ActionHandlerProvider(actionHandler = handler) {
                 AppTheme {
                     Surface(color = MaterialTheme.colors.background) {
-                        when(val screen = screens.value.last()){
-                            is Screen.Projects -> ProjectsScreen(screen.projects)
-                            is Screen.Sandbox -> SandboxScreen(screen.state) {
-                                val action = UserAction.UpdateScreen(screen.copy(state = it))
-                                handler.invoke(action)
+                        when(val state = screenStates.value.last()){
+                            is ViewState.ProjectsState -> ProjectsScreen(state.projects)
+                            is ViewState.SandboxState -> SandboxScreen(state) {
+                                handler.invoke(UserAction.UpdateProject(it))
                             }
-                            is Screen.Preview -> PreviewScreen(screen.project, screen.prototypeScreen)
-                            is Screen.Code -> CodeScreen(screen.project)
-                            is Screen.Test -> TestScreen()
+                            is ViewState.PreviewState -> PreviewScreen(state.project, state.currentScreen)
+                            is ViewState.CodeState -> CodeScreen(state.project)
+                            is ViewState.TestState -> TestScreen()
                         }
                     }
                 }
@@ -47,7 +46,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (viewModel.state.screens.value.size > 1){
+        if (viewModel.state.stack.value.size > 1){
             viewModel.state += UserAction.Back
         } else {
             super.onBackPressed()

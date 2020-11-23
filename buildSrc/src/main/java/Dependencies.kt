@@ -2,7 +2,7 @@ object Versions {
     const val minSDK = 23
     const val targetSDK = 29
     const val compileSDK = 29
-    const val kotlin = "1.4.0"
+    const val kotlin = "1.4.1"
     const val koin = "2.1.5"
     const val compose = "1.0.0-alpha07"
     const val colorPicker = "0.1.1"
@@ -10,6 +10,8 @@ object Versions {
 
 object Dependencies {
     const val colorPicker = "com.github.andb3:compose-color-picker:${Versions.colorPicker}"
+    const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlin}"
+
     object Compose {
         const val layout = "androidx.compose.foundation:foundation-layout:${Versions.compose}"
         const val material = "androidx.compose.material:material:${Versions.compose}"
@@ -22,4 +24,10 @@ object Dependencies {
         const val android = "org.koin:koin-android:${Versions.koin}"
         const val viewModel = "org.koin:koin-android-viewmodel:${Versions.koin}"
     }
+
+    object SQLDelight {
+        const val android = "com.squareup.sqldelight:android-driver:1.4.3"
+        const val coroutines = "com.squareup.sqldelight:coroutines-extensions-jvm:1.4.3"
+    }
+
 }

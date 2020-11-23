@@ -24,13 +24,15 @@ import androidx.compose.ui.platform.AnimationClockAmbient
 @Composable
 fun <T> ItemSwitcher(
     current: T,
+    animateIf: (old: T?, current: T) -> Boolean = { old, new -> old != new },
+    keyFinder: (item: T) -> Any = { it as Any },
     transitionDefinition: TransitionDefinition<ItemTransitionState>,
     modifier: Modifier = Modifier,
     content: @Composable (T, TransitionState) -> Unit
 ) {
     val state = remember { ItemTransitionInnerState<T>() }
 
-    if (current != state.current) {
+    if (state.items.isEmpty() || animateIf(state.current, current)) {
         state.current = current
         val keys = state.items.map { it.key }.toMutableList()
         if (!keys.contains(current)) {
@@ -73,11 +75,14 @@ fun <T> ItemSwitcher(
                 children(anim)
             }
         }
+    } else if (current != state.current) {
+        state.current = current
+        state.items[state.items.size - 1] = state.items.last().copy(key = current)
     }
     Box(modifier) {
         state.invalidate = invalidate
         state.items.forEach { (item, transition) ->
-            key(item) {
+            key(keyFinder.invoke(item)) {
                 transition { transitionState ->
                     content(item, transitionState)
                 }
@@ -92,7 +97,7 @@ enum class ItemTransitionState {
 
 private class ItemTransitionInnerState<T> {
     // we use Any here as something which will not be equals to the real initial value
-    var current: Any? = Any()
+    var current: T? = null
     var items = mutableListOf<ItemTransitionItem<T>>()
     var invalidate: () -> Unit = { }
 }

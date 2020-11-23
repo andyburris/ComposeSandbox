@@ -1,19 +1,29 @@
 package com.andb.apps.composesandbox.ui.test
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.OutlinedTextField
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
+import androidx.compose.material.Slider
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.TextPicker
+import androidx.compose.runtime.savedinstancestate.savedInstanceState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
 
 @Composable
 fun TestScreen() {
-    val fieldContents = remember { mutableStateOf("") }
-    Column {
-        OutlinedTextField(value = fieldContents.value, onValueChange = { fieldContents.value = it })
-        TextPicker(label = "Picker", value = fieldContents.value, onValueChange = { fieldContents.value = it })
+    val visible = remember { mutableStateOf(false) }
+    Column(Modifier.padding(32.dp)) {
+        Button(onClick = { visible.value = !visible.value }) {
+            Text(text = "Toggle Visibility")
+        }
+        if(visible.value) {
+            val progress = savedInstanceState { 0f }
+            Slider(value = progress.value, onValueChange = { progress.value = it })
+        }
     }
 }
 
