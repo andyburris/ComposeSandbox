@@ -37,6 +37,11 @@ object DatabaseHelper : KoinComponent {
         database.projectQueries.insert(project.id, project.name, serializedScreens, serializedComponents, serializedTheme)
     }
 
+    fun deleteProject(project: Project) {
+        buffer.value = buffer.value.filter { it.id != project.id }
+        database.projectQueries.delete(project.id)
+    }
+
     private fun ProjectData.toProject(): Project {
         val screens = json.decodeFromString(ListSerializer(PrototypeComponent.serializer()), this.screens)
         val components = json.decodeFromString(ListSerializer(PrototypeComponent.serializer()), this.components)

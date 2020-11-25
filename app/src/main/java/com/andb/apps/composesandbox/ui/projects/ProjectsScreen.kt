@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.data.model.toTheme
 import com.andb.apps.composesandbox.model.Project
 import com.andb.apps.composesandbox.state.Handler
 import com.andb.apps.composesandbox.state.Screen
@@ -26,8 +25,7 @@ fun ProjectsScreen(projects: List<Project>) {
                 icon = { Icon(asset = Icons.Default.Add) },
                 backgroundColor = MaterialTheme.colors.primary,
                 onClick = {
-                    val project = Project(name = "Hello World", theme = lightColors().toTheme())
-                    handler.invoke(UserAction.AddProject(project))
+                    handler.invoke(UserAction.OpenScreen(Screen.AddProject))
                 }
             )
         }

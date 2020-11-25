@@ -15,10 +15,13 @@ data class DragDropState(val dragPosition: MutableState<Position>, val globalPos
         treeItems.removeAll { it.component.id == item.component.id }
         treeItems.add(item)
     }
-    private fun hoveringTreeItem() = treeItems
-        .map { it.copy(position = it.position.copy(y = it.position.y - globalPosition.value.y)) }
-        .sortedByDescending { it.indent } // create drop priority by largest indent (most nested child takes priority)
-        .find { it.isHovering(dragPosition.value) }
+    private fun hoveringTreeItem(): TreeHoverItem? {
+        val dragPosition = dragPosition.value
+        return treeItems
+            .map { it.copy(position = it.position.copy(y = it.position.y - globalPosition.value.y)) }
+            .sortedByDescending { it.indent } // create drop priority by largest indent (most nested child takes priority)
+            .find { it.isHovering(dragPosition) }
+    }
     fun drop() {
         val hoveringTreeItem = hoveringTreeItem()
         println("hoveringTreeItem = $hoveringTreeItem")
@@ -30,8 +33,8 @@ data class DragDropState(val dragPosition: MutableState<Position>, val globalPos
         val dropState = DropState.OverTreeItem(hoveringTreeItem.component, dropAbove)
         onDrop.invoke(dropState)
     }
-    fun getHoverState(draggingComponent: PrototypeComponent): HoverState? {
-        val hoveringTreeItem = hoveringTreeItem() ?: return HoverState.OverNone(draggingComponent)
+    fun getHoverState(draggingComponent: PrototypeComponent): HoverState {
+        val hoveringTreeItem = (hoveringTreeItem().apply { println("hoveringTreeItem = $this") }) ?: return HoverState.OverNone(draggingComponent)
         println("hoveringTreeItem = $hoveringTreeItem, allTreeItems = $treeItems")
         val hoverInTopHalf = dragPosition.value.y < (hoveringTreeItem.position.y + hoveringTreeItem.height / 2) && hoveringTreeItem.indent > 0
         val dropIndicatorPosition = when {

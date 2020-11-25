@@ -13,7 +13,8 @@ sealed class UserAction : Action() {
 
     /** Add a [Project] to the list of saved projects */
     data class AddProject(val project: Project) : UserAction()
-    data class UpdateProject (val updated: Project) : UserAction()
+    data class UpdateProject (val project: Project) : UserAction()
+    data class DeleteProject (val project: Project) : UserAction()
 
 
 }

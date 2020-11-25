@@ -16,10 +16,9 @@ sealed class Properties {
             val verticalAlignment: PrototypeAlignment.Vertical = PrototypeAlignment.Vertical.Top,
         ) : Group()
         @Serializable data class Column (
-            override val children: List<PrototypeComponent>,
+            override val children: List<PrototypeComponent> = emptyList(),
             val verticalArrangement: PrototypeArrangement = PrototypeArrangement.Vertical.Top,
             val horizontalAlignment: PrototypeAlignment.Horizontal = PrototypeAlignment.Horizontal.Start,
-            val number: Int = 0,
             ) : Group()
     }
 }

@@ -26,7 +26,7 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.Drawer
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SandboxScreen(sandboxState: ViewState.SandboxState, onUpdateProject: (Project) -> Unit) {
+fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) -> Unit) {
     ProjectThemeProvider(projectTheme = sandboxState.project.theme) {
         val (backdropState, setBackdropState) = remember { mutableStateOf(BackdropState.CONCEALED) }
         Backdrop(
@@ -73,7 +73,7 @@ fun SandboxScreen(sandboxState: ViewState.SandboxState, onUpdateProject: (Projec
 }
 
 @Composable
-private fun SandboxAppBar(sandboxState: ViewState.SandboxState, project: Project, iconState: BackdropState, onToggle: () -> Unit) {
+private fun SandboxAppBar(sandboxState: ViewState.Sandbox, project: Project, iconState: BackdropState, onToggle: () -> Unit) {
     val actionHandler = Handler
     val menuShowing = remember { mutableStateOf(false) }
     TopAppBar(
@@ -87,7 +87,7 @@ private fun SandboxAppBar(sandboxState: ViewState.SandboxState, project: Project
         },
         title = { Text(text = project.name) },
         actions = {
-            IconButton(onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditTheme))}) { Icon(asset = Icons.Default.Palette) }
+            IconButton(onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditTheme)) }) { Icon(asset = Icons.Default.Palette) }
             IconButton(onClick = { actionHandler.invoke(UserAction.OpenScreen(Screen.Preview(project.id, sandboxState.openedTree.id))) }) { Icon(asset = Icons.Default.PlayCircleFilled) }
             DropdownMenu(
                 toggle = {
@@ -109,14 +109,18 @@ private fun SandboxAppBar(sandboxState: ViewState.SandboxState, project: Project
                     Text("Export Code")
                 }
                 if (BuildConfig.DEBUG) {
-                    DropdownMenuItem(
-                        onClick = {
-                            val action = UserAction.OpenScreen(Screen.Test)
-                            actionHandler.invoke(action)
-                        }
-                    ) {
+                    DropdownMenuItem(onClick = {
+                        val action = UserAction.OpenScreen(Screen.Test)
+                        actionHandler.invoke(action)
+                    }) {
                         Text("Open Test Screen")
                     }
+                }
+                DropdownMenuItem(onClick = {
+                    val action = UserAction.DeleteProject(sandboxState.project)
+                    actionHandler.invoke(action)
+                }) {
+                    Text("Delete Project")
                 }
             }
         },

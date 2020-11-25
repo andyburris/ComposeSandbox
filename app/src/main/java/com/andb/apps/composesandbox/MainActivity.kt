@@ -10,6 +10,7 @@ import com.andb.apps.composesandbox.state.ActionHandler
 import com.andb.apps.composesandbox.state.ActionHandlerProvider
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.state.ViewState
+import com.andb.apps.composesandbox.ui.addproject.AddProjectScreen
 import com.andb.apps.composesandbox.ui.code.CodeScreen
 import com.andb.apps.composesandbox.ui.preview.PreviewScreen
 import com.andb.apps.composesandbox.ui.projects.ProjectsScreen
@@ -31,13 +32,16 @@ class MainActivity : AppCompatActivity() {
                 AppTheme {
                     Surface(color = MaterialTheme.colors.background) {
                         when(val state = screenStates.value.last()){
-                            is ViewState.ProjectsState -> ProjectsScreen(state.projects)
-                            is ViewState.SandboxState -> SandboxScreen(state) {
+                            is ViewState.Projects -> ProjectsScreen(state.projects)
+                            is ViewState.AddProject -> AddProjectScreen {
+                                handler.invoke(UserAction.AddProject(it))
+                            }
+                            is ViewState.Sandbox -> SandboxScreen(state) {
                                 handler.invoke(UserAction.UpdateProject(it))
                             }
-                            is ViewState.PreviewState -> PreviewScreen(state.project, state.currentScreen)
-                            is ViewState.CodeState -> CodeScreen(state.project)
-                            is ViewState.TestState -> TestScreen()
+                            is ViewState.Preview -> PreviewScreen(state.project, state.currentScreen)
+                            is ViewState.Code -> CodeScreen(state.project)
+                            is ViewState.Test -> TestScreen()
                         }
                     }
                 }

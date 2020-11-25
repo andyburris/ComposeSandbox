@@ -36,7 +36,6 @@ import com.andb.apps.composesandbox.state.ViewState
 import com.andb.apps.composesandbox.ui.common.*
 import com.andb.apps.composesandbox.ui.sandbox.drawer.modifiers.DrawerEditModifiers
 import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.DrawerEditProperties
-import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.NumberPicker
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.DrawerTree
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.toDpPosition
 import com.andb.apps.composesandbox.ui.util.ItemSwitcher
@@ -44,7 +43,7 @@ import com.andb.apps.composesandbox.ui.util.ItemTransitionState
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Drawer(sandboxState: ViewState.SandboxState, onTreeUpdate: (PrototypeComponent) -> Unit, onThemeUpdate: (Theme) -> Unit, bodyContent: @Composable() (sheetState: BottomSheetState) -> Unit) {
+fun Drawer(sandboxState: ViewState.Sandbox, onTreeUpdate: (PrototypeComponent) -> Unit, onThemeUpdate: (Theme) -> Unit, bodyContent: @Composable() (sheetState: BottomSheetState) -> Unit) {
     val sheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Peek)
     val cornerRadius = animate(target = if (sheetState.targetValue == BottomSheetValue.Expanded) 16.dp else 32.dp)
     val density = DensityAmbient.current
@@ -58,13 +57,6 @@ fun Drawer(sandboxState: ViewState.SandboxState, onTreeUpdate: (PrototypeCompone
         bodyContent = { bodyContent(sheetState) },
         gesturesEnabled = movingComponent.value == null,
         sheetContent = {
-
-            val number = remember { mutableStateOf(0) }
-            NumberPicker(label = "Test", current = number.value) {
-                number.value = it
-                onTreeUpdate.invoke(sandboxState.openedTree.copy(properties = (sandboxState.openedTree.properties as Properties.Group.Column).copy(number = it)))
-            }
-
             val (contentWidth, setContentWidth) = remember { mutableStateOf(0) }
             val drawerState = sandboxState.drawerStack.last()
             println("drawerState = $drawerState")
@@ -140,11 +132,12 @@ fun Drawer(sandboxState: ViewState.SandboxState, onTreeUpdate: (PrototypeCompone
                     ) {
                         when (drawerState) {
                             is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = movingComponent.value?.let { dragDropState.getHoverState(it) }) {
-                                movingComponent.value = it
                                 onTreeUpdate.invoke(sandboxState.openedTree.minusChildFromTree(it))
+                                movingComponent.value = it
                             }
                             DrawerState.AddComponent -> ComponentList(project = sandboxState.project) {
                                 movingComponent.value = it
+                                actionHandler.invoke(UserAction.Back)
                             }
                             is DrawerState.EditComponent -> DrawerEditProperties(drawerState.component, actionHandler) { updatedComponent ->
                                 val updatedTree = sandboxState.openedTree.updatedChildInTree(updatedComponent)

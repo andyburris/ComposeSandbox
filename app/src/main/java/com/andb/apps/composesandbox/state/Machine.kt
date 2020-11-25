@@ -16,7 +16,8 @@ class Machine(coroutineScope: CoroutineScope) {
     val stack: StateFlow<List<ViewState>> = combine(allProjects, screens) { projects, screens ->
         screens.map { screen ->
             when (screen) {
-                Screen.Projects -> ViewState.ProjectsState(projects)
+                Screen.Projects -> ViewState.Projects(projects)
+                Screen.AddProject -> ViewState.AddProject
                 is Screen.Sandbox -> {
                     val project = projects.first { it.id == screen.projectID }
                     val openedTree = project.screens.first { it.id == screen.openedTreeID }
@@ -30,18 +31,18 @@ class Machine(coroutineScope: CoroutineScope) {
                             DrawerScreen.EditTheme -> DrawerState.EditTheme
                         }
                     }
-                    ViewState.SandboxState(project, openedTree, drawerStack)
+                    ViewState.Sandbox(project, openedTree, drawerStack)
                 }
                 is Screen.Preview -> {
                     val project = projects.first { it.id == screen.projectID }
                     val currentScreen = project.screens.first { it.id == screen.currentScreenID }
-                    ViewState.PreviewState(project, currentScreen)
+                    ViewState.Preview(project, currentScreen)
                 }
-                is Screen.Code -> ViewState.CodeState(projects.first { it.id == screen.projectID })
-                is Screen.Test -> ViewState.TestState
+                is Screen.Code -> ViewState.Code(projects.first { it.id == screen.projectID })
+                is Screen.Test -> ViewState.Test
             }
         }
-    }.stateIn(coroutineScope, SharingStarted.Lazily, listOf(ViewState.ProjectsState(listOf())))
+    }.stateIn(coroutineScope, SharingStarted.Lazily, listOf(ViewState.Projects(listOf())))
 
     operator fun plusAssign(action: Action) = handleAction(action)
 
@@ -52,9 +53,14 @@ class Machine(coroutineScope: CoroutineScope) {
             is UserAction.OpenDrawerScreen -> screens.updateSandbox {
                 it.copy(drawerScreens = it.drawerScreens + action.drawerScreen)
             }
-            is UserAction.AddProject -> addProject(action.project)
-            is UserAction.UpdateProject -> {
-                DatabaseHelper.upsertProject(action.updated)
+            is UserAction.AddProject -> {
+                DatabaseHelper.upsertProject(action.project)
+                screens.value = listOf(Screen.Projects, Screen.Sandbox(action.project.id, action.project.screens.first().id))
+            }
+            is UserAction.UpdateProject -> DatabaseHelper.upsertProject(action.project)
+            is UserAction.DeleteProject -> {
+                screens.value = listOf(Screen.Projects)
+                DatabaseHelper.deleteProject(action.project)
             }
         }
     }
@@ -68,16 +74,8 @@ class Machine(coroutineScope: CoroutineScope) {
             screens.value.size > 1 -> screens.value = screens.value.dropLast(1)
         }
     }
-
-    private fun addProject(project: Project) {
-        DatabaseHelper.upsertProject(project)
-    }
 }
 
-@OptIn(ExperimentalCoroutinesApi::class)
-private fun MutableStateFlow<List<Screen>>.updateEach(transform: (Screen) -> Screen) {
-    value = value.map(transform)
-}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 private inline fun <reified T> MutableStateFlow<List<Screen>>.updateScreen(transform: (T) -> Screen) {
