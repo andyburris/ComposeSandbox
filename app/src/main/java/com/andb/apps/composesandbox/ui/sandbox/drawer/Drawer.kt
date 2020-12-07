@@ -75,8 +75,8 @@ fun Drawer(sandboxState: ViewState.Sandbox, onTreeUpdate: (PrototypeComponent) -
                             val isNesting = dropState.dropPosition is DropPosition.NESTED
                             println("isNesting = $isNesting")
                             val updatedTree = when(dropState.dropPosition) {
-                                is DropPosition.NESTED.First -> sandboxState.openedTree.plusChildInTree(moving, dropState.hoveringComponent, 0)
-                                is DropPosition.NESTED.Last -> sandboxState.openedTree.plusChildInTree(moving, dropState.hoveringComponent, (dropState.hoveringComponent.properties as Properties.Group).children.size)
+                                is DropPosition.NESTED.First -> sandboxState.openedTree.plusChildInTree(moving, dropState.hoveringComponent as PrototypeComponent.Group, 0)
+                                is DropPosition.NESTED.Last -> sandboxState.openedTree.plusChildInTree(moving, dropState.hoveringComponent as PrototypeComponent.Group, dropState.hoveringComponent.children.size)
                                 else ->  {
                                     val (parent, index) = sandboxState.openedTree.findParentOfComponent(dropState.hoveringComponent)!!
                                     println("not nesting, parent = $parent, index = $index")

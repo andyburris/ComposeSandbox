@@ -41,7 +41,7 @@ val verticalAlignments = listOf(PrototypeAlignment.Vertical.Top, PrototypeAlignm
 val horizontalAlignments = listOf(PrototypeAlignment.Horizontal.Start, PrototypeAlignment.Horizontal.CenterHorizontally, PrototypeAlignment.Horizontal.End)
 
 
-fun PrototypeArrangement.toCodeString(): String = when(this) {
+fun PrototypeArrangement.toCode(): String = when(this) {
     PrototypeArrangement.Horizontal.Start -> "Arrangement.Start"
     PrototypeArrangement.Horizontal.Center -> "Arrangement.Center"
     PrototypeArrangement.Horizontal.End -> "Arrangement.End"
@@ -54,14 +54,10 @@ fun PrototypeArrangement.toCodeString(): String = when(this) {
 }
 
 
-fun PrototypeAlignment.Vertical.toCodeString() = when (this){
+fun PrototypeAlignment.toCode() = when (this){
     PrototypeAlignment.Vertical.Top -> "Alignment.Top"
     PrototypeAlignment.Vertical.CenterVertically -> "Alignment.CenterVertically"
     PrototypeAlignment.Vertical.Bottom -> "Alignment.Bottom"
-    else -> ""
-}
-
-fun PrototypeAlignment.Horizontal.toCodeString() = when (this) {
     PrototypeAlignment.Horizontal.Start -> "Alignment.Start"
     PrototypeAlignment.Horizontal.CenterHorizontally -> "Alignment.CenterHorizontally"
     PrototypeAlignment.Horizontal.End -> "Alignment.End"

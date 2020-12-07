@@ -75,13 +75,13 @@ private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifie
                     .padding(vertical = 8.dp)
             )
         }
-        if (component.properties is Properties.Group) {
-            GenericTree(items = (component.properties as Properties.Group).children) { child ->
+        if (component is PrototypeComponent.Group) {
+            GenericTree(items = component.children) { child ->
                 TreeItem(child, indent = indent + 1, onMoveComponent = onMoveComponent)
             }
         }
-        if (component.properties is Properties.Slotted) {
-            GenericTree(items = (component.properties as Properties.Slotted).slots) { slot ->
+        if (component is PrototypeComponent.Slotted) {
+            GenericTree(items = component.slots) { slot ->
                 SlotItem(slot = slot, indent = indent + 1, onMoveComponent = onMoveComponent)
             }
         }
@@ -115,13 +115,13 @@ private fun SlotItem(slot: Slot, modifier: Modifier = Modifier, indent: Int, onM
                 )
             }
         }
-        if (slot.tree.properties is Properties.Group) {
-            GenericTree(items = (slot.tree.properties as Properties.Group).children) { child ->
+        if (slot.tree is PrototypeComponent.Group) {
+            GenericTree(items = (slot.tree as PrototypeComponent.Group).children) { child ->
                 TreeItem(child, indent = indent + 1, onMoveComponent = onMoveComponent)
             }
         }
-        if (slot.tree.properties is Properties.Slotted) {
-            GenericTree(items = (slot.tree.properties as Properties.Slotted).slots) { slot ->
+        if (slot.tree is PrototypeComponent.Slotted) {
+            GenericTree(items = (slot.tree as PrototypeComponent.Slotted).slots) { slot ->
 
             }
         }
@@ -173,13 +173,13 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
 
 @Composable
 fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier) {
-    val icon = when (component.properties) {
-        is Properties.Text -> Icons.Default.TextFields
-        is Properties.Icon -> Icons.Default.Image
-        is Properties.Group.Column -> vectorResource(id = R.drawable.ic_column)
-        is Properties.Group.Row -> vectorResource(id = R.drawable.ic_row)
-        is Properties.Group.Box -> Icons.Default.Layers
-        is Properties.Slotted.ExtendedFloatingActionButton -> vectorResource(id = R.drawable.ic_extended_fab)
+    val icon = when (component) {
+        is PrototypeComponent.Text -> Icons.Default.TextFields
+        is PrototypeComponent.Icon -> Icons.Default.Image
+        is PrototypeComponent.Group.Column -> vectorResource(id = R.drawable.ic_column)
+        is PrototypeComponent.Group.Row -> vectorResource(id = R.drawable.ic_row)
+        is PrototypeComponent.Group.Box -> Icons.Default.Layers
+        is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> vectorResource(id = R.drawable.ic_extended_fab)
     }
 
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {

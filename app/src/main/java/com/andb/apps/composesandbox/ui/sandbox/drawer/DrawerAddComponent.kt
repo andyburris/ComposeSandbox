@@ -22,7 +22,8 @@ import androidx.compose.ui.layout.globalPosition
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.model.*
+import com.andb.apps.composesandbox.model.Project
+import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.DragDropAmbient
@@ -35,12 +36,12 @@ fun ComponentList(project: Project, onSelect: (PrototypeComponent) -> Unit) {
         val searchTerm = savedInstanceState { "" }
 
         AddComponentHeader(text = "Common Components")
-        AddComponentItem(Properties.Text("Text").toComponent(), onSelect)
-        AddComponentItem(Properties.Icon(PrototypeIcon.Image, PrototypeColor.ThemeColor.OnBackground).toComponent(), onSelect)
-        AddComponentItem(Properties.Group.Row().toComponent(), onSelect)
-        AddComponentItem(Properties.Group.Column().toComponent(), onSelect)
-        AddComponentItem(Properties.Group.Box().toComponent(), onSelect)
-        AddComponentItem(Properties.Slotted.ExtendedFloatingActionButton().toComponent(), onSelect)
+        AddComponentItem(PrototypeComponent.Text(), onSelect)
+        AddComponentItem(PrototypeComponent.Icon(), onSelect)
+        AddComponentItem(PrototypeComponent.Group.Row(), onSelect)
+        AddComponentItem(PrototypeComponent.Group.Column(), onSelect)
+        AddComponentItem(PrototypeComponent.Group.Box(), onSelect)
+        AddComponentItem(PrototypeComponent.Slotted.ExtendedFloatingActionButton(), onSelect)
     }
 }
 

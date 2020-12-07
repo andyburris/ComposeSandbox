@@ -7,7 +7,6 @@ import androidx.compose.runtime.staticAmbientOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.model.Properties
 import com.andb.apps.composesandbox.model.PrototypeComponent
 
 
@@ -45,15 +44,15 @@ data class DragDropState(val dragPosition: MutableState<Position>, val globalPos
         val (droppingItem, dropPosition) = when (hoverDropPosition) {
             DropPosition.ABOVE, DropPosition.BELOW -> when {
                 hoveringItem.canDropAround -> Pair(hoveringItem, hoverDropPosition)
-                else -> when (hoveringItem.component.properties) {
-                    is Properties.Slotted -> Pair(null, hoverDropPosition)
-                    is Properties.Group -> Pair(hoveringItem, if (hoverDropPosition == DropPosition.ABOVE) DropPosition.NESTED.First else DropPosition.NESTED.Last)
+                else -> when (hoveringItem.component) {
+                    is PrototypeComponent.Slotted -> Pair(null, hoverDropPosition)
+                    is PrototypeComponent.Group -> Pair(hoveringItem, if (hoverDropPosition == DropPosition.ABOVE) DropPosition.NESTED.First else DropPosition.NESTED.Last)
                     else -> throw Error("Components that are not Group or Slotted should always be able to be dropped around")
                 }
             }
-            is DropPosition.NESTED -> when (hoveringItem.component.properties) {
-                is Properties.Slotted -> Pair(treeItemsWithGlobalOffset.first { it.component == (hoveringItem.component.properties as Properties.Slotted).slots.first().tree }, hoverDropPosition)
-                is Properties.Group -> Pair(hoveringItem, hoverDropPosition)
+            is DropPosition.NESTED -> when (hoveringItem.component) {
+                is PrototypeComponent.Slotted -> Pair(treeItemsWithGlobalOffset.first { it.component == (hoveringItem.component as PrototypeComponent.Slotted).slots.first().tree }, hoverDropPosition)
+                is PrototypeComponent.Group -> Pair(hoveringItem, hoverDropPosition)
                 else -> throw Error("Components that are not Group or Slotted can't have things nested in them")
             }
         }
@@ -96,20 +95,20 @@ data class TreeHoverItem(val component: PrototypeComponent, val position: Positi
     fun isHovering(hoverPosition: Position): Boolean = hoverPosition.y in (position.y)..(position.y + height)
     fun getDropPosition(hoverPosition: Position) = when {
         hoverPosition.y in (position.y)..(position.y + height/2) -> DropPosition.ABOVE
-        hoverPosition.y in (position.y + height/2)..(position.y + height) -> when (component.properties) {
-            is Properties.Group, is Properties.Slotted -> DropPosition.NESTED.First
+        hoverPosition.y in (position.y + height/2)..(position.y + height) -> when (component) {
+            is PrototypeComponent.Group, is PrototypeComponent.Slotted -> DropPosition.NESTED.First
             else -> DropPosition.BELOW
         }
         else -> when {
-            component.properties is Properties.Group && (hoverPosition.x >= position.x + 40.dp) -> DropPosition.NESTED.Last
+            component is PrototypeComponent.Group && (hoverPosition.x >= position.x + 40.dp) -> DropPosition.NESTED.Last
             else -> DropPosition.BELOW
         }
     }
-    fun heightWithChildren(treeItems: List<TreeHoverItem>): Dp = when (component.properties) {
+    fun heightWithChildren(treeItems: List<TreeHoverItem>): Dp = when (component) {
         // if droppingItem is a Group, dropIndicator should be at the bottom of its last child
-        is Properties.Group -> treeItems.find { it.component == (component.properties as Properties.Group).children.lastOrNull() }?.heightWithChildren(treeItems) ?: position.y + height
+        is PrototypeComponent.Group -> treeItems.find { it.component == component.children.lastOrNull() }?.heightWithChildren(treeItems) ?: position.y + height
         // if droppingItem is a Slotted, dropIndicator should be at the bottom of its last slot's last child
-        is Properties.Slotted -> treeItems.find { it.component == ((component.properties as Properties.Slotted).slots.lastOrNull()?.tree?.properties as Properties.Group).children.lastOrNull() }?.heightWithChildren(treeItems) ?: position.y + height
+        is PrototypeComponent.Slotted -> treeItems.find { it.component == (component.slots.lastOrNull()?.tree as PrototypeComponent.Group).children.lastOrNull() }?.heightWithChildren(treeItems) ?: position.y + height
         else -> position.y + height
     }
 }
