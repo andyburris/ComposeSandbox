@@ -12,6 +12,7 @@ sealed class PrototypeModifier {
         @Serializable data class All(val padding: Int, override val id: String = UUID.randomUUID().toString()) : Padding()
     }
     @Serializable data class Border(val strokeWidth: Int, val color: PrototypeColor, val cornerRadius: Int, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
+    @Serializable data class Background(val color: PrototypeColor, val cornerRadius: Int, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
     @Serializable data class Width(val width: Int, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
     @Serializable data class Height(val height: Int, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
     @Serializable data class FillMaxWidth(override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
@@ -22,6 +23,7 @@ val PrototypeModifier.name: String
     get() = when(this) {
         is PrototypeModifier.Padding -> "Padding"
         is PrototypeModifier.Border -> "Border"
+        is PrototypeModifier.Background -> "Background"
         is PrototypeModifier.Height -> "Height"
         is PrototypeModifier.Width -> "Width"
         is PrototypeModifier.FillMaxWidth -> "Fill Max Width"
@@ -34,6 +36,7 @@ val PrototypeModifier.summary: String
         is PrototypeModifier.Padding.Sides -> "Horizontal: $horizontal, Vertical: $vertical"
         is PrototypeModifier.Padding.All -> "All: $padding"
         is PrototypeModifier.Border -> "Stroke: $strokeWidth, Corners: $cornerRadius"
+        is PrototypeModifier.Background -> "Corners: $cornerRadius"
         is PrototypeModifier.Height -> "$height"
         is PrototypeModifier.Width -> "$width"
         is PrototypeModifier.FillMaxWidth -> ""
@@ -91,7 +94,8 @@ fun List<PrototypeModifier>.toCode(): String {
 }
 
 fun PrototypeModifier.toCode() = when (this) {
-    is PrototypeModifier.Border -> "border(width = $strokeWidth.dp, color = ${color.toCode()})"
+    is PrototypeModifier.Border -> "border(width = $strokeWidth.dp, color = ${color.toCode()}, shape = RoundedCornerShape($cornerRadius.dp))"
+    is PrototypeModifier.Background -> "background(color = ${color.toCode()}, shape = RoundedCornerShape($cornerRadius.dp))"
     is PrototypeModifier.Padding.Individual -> "padding(start = $start.dp, end = $end.dp, top = $top.dp, bottom = $bottom.dp)"
     is PrototypeModifier.Padding.Sides -> "padding(horizontal = $horizontal.dp, vertical = $vertical.dp)"
     is PrototypeModifier.Padding.All -> "padding($padding.dp)"

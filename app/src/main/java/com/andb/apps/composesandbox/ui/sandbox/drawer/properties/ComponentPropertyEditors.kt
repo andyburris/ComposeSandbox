@@ -12,6 +12,15 @@ fun TextProperties(properties: Properties.Text, onUpdate: (Properties.Text) -> U
         TextPicker(label = "Text", value = properties.text) {
             onUpdate(properties.copy(text = it))
         }
+        NumberPicker(label = "Text Size", current = properties.size) {
+            onUpdate.invoke(properties.copy(size = it))
+        }
+        OptionsPicker(label = "Font Weight", selected = properties.weight, options = Properties.Text.Weight.values().toList()) {
+            onUpdate.invoke(properties.copy(weight = it))
+        }
+        ColorPicker(label = "Text Color", current = properties.color) {
+            onUpdate.invoke(properties.copy(color = it))
+        }
     }
 }
 

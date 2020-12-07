@@ -5,9 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -20,11 +22,14 @@ import androidx.compose.ui.layout.globalPosition
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.R
 import com.andb.apps.composesandbox.model.Properties
 import com.andb.apps.composesandbox.model.PrototypeComponent
+import com.andb.apps.composesandbox.model.Slot
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerScreen
 import com.andb.apps.composesandbox.state.UserAction
@@ -44,30 +49,80 @@ private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifie
     val dragDropState = DragDropAmbient.current
     Column(
         modifier = modifier
-            .onGloballyPositioned {
+    ) {
+        Row(
+            modifier = Modifier.onGloballyPositioned {
                 val hoverItem = TreeHoverItem(
                     component,
                     it.globalPosition.toDpPosition(density),
                     with(density) { it.size.height.toDp() },
-                    indent
+                    indent,
+                    indent != 0
                 )
                 dragDropState.updateTreeItem(hoverItem)
             }
-            .clickable(
-                onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditComponent(component.id))) }
+        ) {
+            ComponentItem(
+                component = component,
+                modifier = Modifier
+                    .clickable(
+                        onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditComponent(component.id))) }
+                    )
+                    .longPressGestureFilter {
+                        onMoveComponent.invoke(component)
+                    }
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
             )
-            .longPressGestureFilter {
-                onMoveComponent.invoke(component)
-            }
-            .fillMaxWidth()
-    ) {
-        ComponentItem(
-            component = component,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
+        }
         if (component.properties is Properties.Group) {
             GenericTree(items = (component.properties as Properties.Group).children) { child ->
                 TreeItem(child, indent = indent + 1, onMoveComponent = onMoveComponent)
+            }
+        }
+        if (component.properties is Properties.Slotted) {
+            GenericTree(items = (component.properties as Properties.Slotted).slots) { slot ->
+                SlotItem(slot = slot, indent = indent + 1, onMoveComponent = onMoveComponent)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SlotItem(slot: Slot, modifier: Modifier = Modifier, indent: Int, onMoveComponent: (PrototypeComponent) -> Unit) {
+    val density = DensityAmbient.current
+    val dragDropState = DragDropAmbient.current
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        ProvideTextStyle(value = TextStyle.Default.copy(fontStyle = FontStyle.Italic)) {
+            Row (
+                modifier = Modifier.onGloballyPositioned {
+                    val hoverItem = TreeHoverItem(
+                        slot.tree,
+                        it.globalPosition.toDpPosition(density),
+                        with(density) { it.size.height.toDp() },
+                        indent,
+                        false
+                    )
+                    dragDropState.updateTreeItem(hoverItem)
+                }
+
+            ){
+                ComponentItem(
+                    component = slot.tree.copy(name = slot.name + " Slot"),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+        }
+        if (slot.tree.properties is Properties.Group) {
+            GenericTree(items = (slot.tree.properties as Properties.Group).children) { child ->
+                TreeItem(child, indent = indent + 1, onMoveComponent = onMoveComponent)
+            }
+        }
+        if (slot.tree.properties is Properties.Slotted) {
+            GenericTree(items = (slot.tree.properties as Properties.Slotted).slots) { slot ->
+
             }
         }
     }
@@ -105,7 +160,7 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
                 }
             }
         }
-        if (items.isNotEmpty()){
+        if (items.isNotEmpty()) {
             Box(
                 modifier = Modifier
                     .padding(start = treeConfig.horizontalPaddingStart - 1.dp, top = treeConfig.verticalPaddingTop)
@@ -123,6 +178,8 @@ fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier) 
         is Properties.Icon -> Icons.Default.Image
         is Properties.Group.Column -> vectorResource(id = R.drawable.ic_column)
         is Properties.Group.Row -> vectorResource(id = R.drawable.ic_row)
+        is Properties.Group.Box -> Icons.Default.Layers
+        is Properties.Slotted.ExtendedFloatingActionButton -> vectorResource(id = R.drawable.ic_extended_fab)
     }
 
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {

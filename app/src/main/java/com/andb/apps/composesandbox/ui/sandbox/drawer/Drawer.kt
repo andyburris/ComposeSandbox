@@ -2,6 +2,7 @@ package com.andb.apps.composesandbox.ui.sandbox.drawer
 
 import androidx.compose.animation.animate
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,10 +17,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawShadow
 import androidx.compose.ui.drawLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.gesture.DragObserver
 import androidx.compose.ui.gesture.dragGestureFilter
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.VectorAsset
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.globalPosition
@@ -36,6 +39,7 @@ import com.andb.apps.composesandbox.state.ViewState
 import com.andb.apps.composesandbox.ui.common.*
 import com.andb.apps.composesandbox.ui.sandbox.drawer.modifiers.DrawerEditModifiers
 import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.DrawerEditProperties
+import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.ComponentItem
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.DrawerTree
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.toDpPosition
 import com.andb.apps.composesandbox.ui.util.ItemSwitcher
@@ -65,9 +69,25 @@ fun Drawer(sandboxState: ViewState.Sandbox, onTreeUpdate: (PrototypeComponent) -
                 DragDropState(dragPosition, mutableStateOf(Position(0.dp, 0.dp)), mutableListOf()) { dropState ->
                     when (dropState) {
                         is DropState.OverTreeItem -> {
-                            println("dropping, movingComponent? = ${movingComponent.value}")
+                            println("dropping, movingComponent? = ${movingComponent.value}, dropState = $dropState")
                             val moving = movingComponent.value ?: return@DragDropState
-                            val updatedTree = sandboxState.openedTree.plusChildInTree(moving, dropState.hoveringComponent, dropState.dropAbove)
+                            println("adding to tree")
+                            val isNesting = dropState.dropPosition is DropPosition.NESTED
+                            println("isNesting = $isNesting")
+                            val updatedTree = when(dropState.dropPosition) {
+                                is DropPosition.NESTED.First -> sandboxState.openedTree.plusChildInTree(moving, dropState.hoveringComponent, 0)
+                                is DropPosition.NESTED.Last -> sandboxState.openedTree.plusChildInTree(moving, dropState.hoveringComponent, (dropState.hoveringComponent.properties as Properties.Group).children.size)
+                                else ->  {
+                                    val (parent, index) = sandboxState.openedTree.findParentOfComponent(dropState.hoveringComponent)!!
+                                    println("not nesting, parent = $parent, index = $index")
+                                    when (dropState.dropPosition) {
+                                        DropPosition.ABOVE -> sandboxState.openedTree.plusChildInTree(moving, parent, index)
+                                        DropPosition.BELOW -> sandboxState.openedTree.plusChildInTree(moving, parent, index + 1)
+                                        else -> throw Error("will never reach here")
+                                    }
+                                }
+                            }
+                            println("updated tree = $updatedTree")
                             movingComponent.value = null
                             onTreeUpdate.invoke(updatedTree)
                         }
@@ -131,7 +151,7 @@ fun Drawer(sandboxState: ViewState.Sandbox, onTreeUpdate: (PrototypeComponent) -
                         )
                     ) {
                         when (drawerState) {
-                            is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = movingComponent.value?.let { dragDropState.getHoverState(it) }) {
+                            is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = movingComponent.value?.let { dragDropState.getDropState() }) {
                                 onTreeUpdate.invoke(sandboxState.openedTree.minusChildFromTree(it))
                                 movingComponent.value = it
                             }
@@ -157,6 +177,10 @@ fun Drawer(sandboxState: ViewState.Sandbox, onTreeUpdate: (PrototypeComponent) -
                             is DrawerState.EditTheme -> DrawerEditTheme(theme = sandboxState.project.theme) {
                                 onThemeUpdate.invoke(it)
                             }
+                        }
+                        val currentMovingComponent = movingComponent.value
+                        if (currentMovingComponent != null) {
+                            ComponentDragDropItem(component = currentMovingComponent, position = dragPosition.value)
                         }
                     }
                 }
@@ -256,4 +280,16 @@ fun DrawerHeader(title: String, icon: VectorAsset = Icons.Default.ArrowBack, onI
             }
         }
     }
+}
+
+@Composable
+private fun ComponentDragDropItem(component: PrototypeComponent, position: Position) {
+    ComponentItem(
+        component = component,
+        modifier = Modifier
+            .offset(position.x, position.y)
+            .drawShadow(4.dp, RoundedCornerShape(8.dp))
+            .background(Color.White, shape = RoundedCornerShape(8.dp))
+            .padding(16.dp)
+    )
 }

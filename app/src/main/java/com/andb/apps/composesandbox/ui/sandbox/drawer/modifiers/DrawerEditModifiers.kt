@@ -30,6 +30,7 @@ fun DrawerEditModifiers(prototypeModifier: PrototypeModifier, onEdit: (Prototype
         when (prototypeModifier) {
             is PrototypeModifier.Padding -> PaddingModifierEditor(prototypeModifier = prototypeModifier, onEdit)
             is PrototypeModifier.Border -> BorderModifierEditor(prototypeModifier = prototypeModifier, onEdit)
+            is PrototypeModifier.Background -> BackgroundModifierEditor(prototypeModifier = prototypeModifier, onEdit)
             is PrototypeModifier.Width -> WidthModifierEditor(prototypeModifier = prototypeModifier, onEdit = onEdit)
             is PrototypeModifier.Height -> HeightModifierEditor(prototypeModifier = prototypeModifier, onEdit = onEdit)
             is PrototypeModifier.FillMaxWidth -> NoOptions()
@@ -92,14 +93,14 @@ private fun PaddingModifierEditor(prototypeModifier: PrototypeModifier.Padding, 
 
 @Composable
 private fun BorderModifierEditor(prototypeModifier: PrototypeModifier.Border, onEdit: (PrototypeModifier) -> Unit) {
+    ColorPicker(label = "Stroke Color", current = prototypeModifier.color) {
+        onEdit.invoke(prototypeModifier.copy(color = it))
+    }
     NumberPicker(label = "Stroke Width", current = prototypeModifier.strokeWidth) {
         onEdit.invoke(prototypeModifier.copy(strokeWidth = it))
     }
     NumberPicker(label = "Corner Radius", current = prototypeModifier.cornerRadius) {
         onEdit.invoke(prototypeModifier.copy(cornerRadius = it))
-    }
-    ColorPicker(label = "Stroke Color", current = prototypeModifier.color) {
-        onEdit.invoke(prototypeModifier.copy(color = it))
     }
 }
 
@@ -112,8 +113,18 @@ private fun WidthModifierEditor(prototypeModifier: PrototypeModifier.Width, onEd
 
 @Composable
 private fun HeightModifierEditor(prototypeModifier: PrototypeModifier.Height, onEdit: (PrototypeModifier) -> Unit) {
-    NumberPicker(label = "Width", current = prototypeModifier.height) {
+    NumberPicker(label = "Height", current = prototypeModifier.height) {
         onEdit.invoke(prototypeModifier.copy(height = it))
+    }
+}
+
+@Composable
+private fun BackgroundModifierEditor(prototypeModifier: PrototypeModifier.Background, onEdit: (PrototypeModifier) -> Unit) {
+    ColorPicker(label = "Background Color", current = prototypeModifier.color) {
+        onEdit.invoke(prototypeModifier.copy(color = it))
+    }
+    NumberPicker(label = "Corner Radius", current = prototypeModifier.cornerRadius) {
+        onEdit.invoke(prototypeModifier.copy(cornerRadius = it))
     }
 }
 

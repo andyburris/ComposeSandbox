@@ -2,15 +2,17 @@ object Versions {
     const val minSDK = 23
     const val targetSDK = 29
     const val compileSDK = 29
-    const val kotlin = "1.4.1"
+    const val kotlin = "1.4.20"
+    const val kotlinCoroutines = "1.4.1"
     const val koin = "2.1.5"
     const val compose = "1.0.0-alpha07"
     const val colorPicker = "0.1.1"
+    const val kaseChange = "1.3.0"
 }
 
 object Dependencies {
     const val colorPicker = "com.github.andb3:compose-color-picker:${Versions.colorPicker}"
-    const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlin}"
+    const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinCoroutines}"
 
     object Compose {
         const val layout = "androidx.compose.foundation:foundation-layout:${Versions.compose}"

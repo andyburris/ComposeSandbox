@@ -37,8 +37,10 @@ fun ComponentList(project: Project, onSelect: (PrototypeComponent) -> Unit) {
         AddComponentHeader(text = "Common Components")
         AddComponentItem(Properties.Text("Text").toComponent(), onSelect)
         AddComponentItem(Properties.Icon(PrototypeIcon.Image, PrototypeColor.ThemeColor.OnBackground).toComponent(), onSelect)
-        AddComponentItem(Properties.Group.Row(emptyList()).toComponent(), onSelect)
-        AddComponentItem(Properties.Group.Column(emptyList()).toComponent(), onSelect)
+        AddComponentItem(Properties.Group.Row().toComponent(), onSelect)
+        AddComponentItem(Properties.Group.Column().toComponent(), onSelect)
+        AddComponentItem(Properties.Group.Box().toComponent(), onSelect)
+        AddComponentItem(Properties.Slotted.ExtendedFloatingActionButton().toComponent(), onSelect)
     }
 }
 

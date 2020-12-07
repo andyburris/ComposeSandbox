@@ -22,7 +22,7 @@ sealed class PrototypeColor {
 }
 
 fun PrototypeColor.toCode() = when (this) {
-    is PrototypeColor.FixedColor -> "Color(0xFF${this.color.toString(16)})"
+    is PrototypeColor.FixedColor -> "Color(0x${this.color.toUInt().toString(16).toUpperCase()})"
     is PrototypeColor.ThemeColor.Primary -> "MaterialTheme.colors.primary"
     is PrototypeColor.ThemeColor.PrimaryVariant -> "MaterialTheme.colors.primaryVariant"
     is PrototypeColor.ThemeColor.OnPrimary -> "MaterialTheme.colors.onPrimary"

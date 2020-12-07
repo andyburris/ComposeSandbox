@@ -6,6 +6,7 @@ import androidx.compose.runtime.Providers
 import androidx.compose.runtime.staticAmbientOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Position
+import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.model.Properties
 import com.andb.apps.composesandbox.model.PrototypeComponent
 
@@ -15,34 +16,57 @@ data class DragDropState(val dragPosition: MutableState<Position>, val globalPos
         treeItems.removeAll { it.component.id == item.component.id }
         treeItems.add(item)
     }
-    private fun hoveringTreeItem(): TreeHoverItem? {
+    private fun hoveringOverItem(): TreeHoverItem? {
         val dragPosition = dragPosition.value
-        return treeItems
-            .map { it.copy(position = it.position.copy(y = it.position.y - globalPosition.value.y)) }
-            .sortedByDescending { it.indent } // create drop priority by largest indent (most nested child takes priority)
-            .find { it.isHovering(dragPosition) }
+        val treeItemsWithGlobalOffset = treeItems.map { it.copy(position = it.position.copy(y = it.position.y - globalPosition.value.y)) }
+        val dragIsBelowTree = dragPosition.y > treeItemsWithGlobalOffset.maxOfOrNull { it.position.y + it.height } ?: 0.dp
+        return if (dragIsBelowTree) {
+            val indent = (dragPosition.x.value / 40).toInt().coerceIn(0, treeItemsWithGlobalOffset.maxOfOrNull { it.indent } ?: 0)
+            treeItemsWithGlobalOffset.filter { it.indent <= indent }.maxByOrNull { it.position.y + it.height }
+        } else {
+            treeItemsWithGlobalOffset
+                .sortedByDescending { it.indent } // create drop priority by largest indent (most nested child takes priority)
+                .find { it.isHovering(dragPosition) }
+        }
     }
     fun drop() {
-        val hoveringTreeItem = hoveringTreeItem()
-        println("hoveringTreeItem = $hoveringTreeItem")
-        if (hoveringTreeItem == null) {
-            onDrop.invoke(DropState.OverNone)
-            return
-        }
-        val dropAbove: Boolean = dragPosition.value.y < (hoveringTreeItem.position.y + hoveringTreeItem.height / 2) && hoveringTreeItem.indent > 0
-        val dropState = DropState.OverTreeItem(hoveringTreeItem.component, dropAbove)
-        onDrop.invoke(dropState)
+        onDrop.invoke(getDropState())
     }
-    fun getHoverState(draggingComponent: PrototypeComponent): HoverState {
-        val hoveringTreeItem = (hoveringTreeItem().apply { println("hoveringTreeItem = $this") }) ?: return HoverState.OverNone(draggingComponent)
-        println("hoveringTreeItem = $hoveringTreeItem, allTreeItems = $treeItems")
-        val hoverInTopHalf = dragPosition.value.y < (hoveringTreeItem.position.y + hoveringTreeItem.height / 2) && hoveringTreeItem.indent > 0
-        val dropIndicatorPosition = when {
-            hoverInTopHalf -> hoveringTreeItem.position
-            else -> hoveringTreeItem.position.copy(y = hoveringTreeItem.position.y + hoveringTreeItem.height)
+
+    fun getDropState(): DropState {
+        val treeItemsWithGlobalOffset = treeItems.map { it.copy(position = it.position.copy(y = it.position.y - globalPosition.value.y)) }
+        val dragPosition = dragPosition.value
+        val hoveringItem = hoveringOverItem() ?: return DropState.OverNone
+        val hoverDropPosition = hoveringItem.getDropPosition(dragPosition)
+
+        // Correct for scenarios where a drop can't happen, namely when
+        // the hovering either will nest directly in a scaffold (which redirects to nesting in its first slot)
+        // or the hovering is Above or Below a TreeHoverItem where canDropAround is false (which redirects to either deleting or nesting at the First/Last position)
+        val (droppingItem, dropPosition) = when (hoverDropPosition) {
+            DropPosition.ABOVE, DropPosition.BELOW -> when {
+                hoveringItem.canDropAround -> Pair(hoveringItem, hoverDropPosition)
+                else -> when (hoveringItem.component.properties) {
+                    is Properties.Slotted -> Pair(null, hoverDropPosition)
+                    is Properties.Group -> Pair(hoveringItem, if (hoverDropPosition == DropPosition.ABOVE) DropPosition.NESTED.First else DropPosition.NESTED.Last)
+                    else -> throw Error("Components that are not Group or Slotted should always be able to be dropped around")
+                }
+            }
+            is DropPosition.NESTED -> when (hoveringItem.component.properties) {
+                is Properties.Slotted -> Pair(treeItemsWithGlobalOffset.first { it.component == (hoveringItem.component.properties as Properties.Slotted).slots.first().tree }, hoverDropPosition)
+                is Properties.Group -> Pair(hoveringItem, hoverDropPosition)
+                else -> throw Error("Components that are not Group or Slotted can't have things nested in them")
+            }
         }
-        val indent = hoveringTreeItem.indent + if (hoveringTreeItem.component.properties is Properties.Group && (hoveringTreeItem.component.properties as Properties.Group).children.isEmpty() && !hoverInTopHalf) 1 else 0
-        return HoverState.OverTreeItem(draggingComponent, dropIndicatorPosition.y, indent)
+        droppingItem ?: return DropState.OverNone
+        val indicatorState = IndicatorState(
+            position = when (dropPosition) {
+                is DropPosition.ABOVE -> droppingItem.position.y
+                is DropPosition.NESTED.First -> droppingItem.position.y + droppingItem.height
+                is DropPosition.BELOW, DropPosition.NESTED.Last -> droppingItem.heightWithChildren(treeItemsWithGlobalOffset)
+            },
+            indent = if (dropPosition is DropPosition.NESTED) droppingItem.indent + 1 else droppingItem.indent
+        )
+        return DropState.OverTreeItem(droppingItem.component, dropPosition, indicatorState)
     }
 }
 val DragDropAmbient = staticAmbientOf<DragDropState>()
@@ -56,45 +80,36 @@ fun DragDropProvider(dragDropState: DragDropState, content: @Composable() () -> 
 }
 
 sealed class DropState {
-    data class OverTreeItem(val hoveringComponent: PrototypeComponent, val dropAbove: Boolean) : DropState()
+    data class OverTreeItem(val hoveringComponent: PrototypeComponent, val dropPosition: DropPosition, val indicatorState: IndicatorState) : DropState()
     object OverNone : DropState()
 }
-sealed class HoverState(open val draggingComponent: PrototypeComponent) {
-    data class OverTreeItem(override val draggingComponent: PrototypeComponent, val dropIndicatorPosition: Dp, val indent: Int) : HoverState(draggingComponent)
-    data class OverNone(override val draggingComponent: PrototypeComponent) : HoverState(draggingComponent)
+sealed class DropPosition {
+    object ABOVE : DropPosition()
+    sealed class NESTED : DropPosition() {
+        object First : NESTED()
+        object Last : NESTED()
+    }
+    object BELOW : DropPosition()
 }
-data class TreeHoverItem(val component: PrototypeComponent, val position: Position, val height: Dp, val indent: Int) {
+data class IndicatorState(val position: Dp, val indent: Int)
+data class TreeHoverItem(val component: PrototypeComponent, val position: Position, val height: Dp, val indent: Int, val canDropAround: Boolean) {
     fun isHovering(hoverPosition: Position): Boolean = hoverPosition.y in (position.y)..(position.y + height)
-}
-
-// create new dragdropstate on each tree update (using statefor)
-// update treeItems each redraw?
-// create drop priority by largest indent (most nested child takes priority) .sortedByDescending { it.indent }
-
-/*
-
-val (treePositions, setTreePositions) = remember { mutableStateOf<List<TreeHoverItem>>(emptyList()) }
-TreeItem(component = parent, modifier){ newPositions ->
-        setTreePositions(newPositions.map { it.copy(position = it.position - globalPositionOffset) })
-        //println("new tree positions (size = ${treePositions.size}) = $treePositions")
-}
-if (movingPosition != null) {
-    val treeTop = treePositions.maxOfOrNull { it.position.y } ?: 0.dp
-    val treeBottom = treePositions.maxOfOrNull { it.position.y + it.height } ?: 0.dp
-    val above = movingPosition.y < treeTop
-    val below = movingPosition.y > treeBottom
-    val hovering = treePositions.find { it.isHovering(movingPosition) }
-    //println("finding hover at $movingPosition, hover positions = ${treePositions.map { it.position.y..(it.position.y + it.height) }} hovering = $hovering")
-    when {
-        /*below -> {
-            val indent = (movingPosition.x / 40.dp).toInt().coerceAtMost(treePositions.maxByOrNull { it.position.y }?.indent ?: 0)
-            val hoverState = HoverState(treeBottom, indent)
-            onMove.invoke(hoverState)
-        } TODO: decide whether multiple top-levels can be used in a tree, include this code if yes */
-        hovering != null -> {
-            //val parent = treePositions.maxByOrNull { it.position.y < hovering.position.y && it.indent == hovering.indent - 1 }
-            onMove.invoke(hovering.getHoverState(movingPosition))
+    fun getDropPosition(hoverPosition: Position) = when {
+        hoverPosition.y in (position.y)..(position.y + height/2) -> DropPosition.ABOVE
+        hoverPosition.y in (position.y + height/2)..(position.y + height) -> when (component.properties) {
+            is Properties.Group, is Properties.Slotted -> DropPosition.NESTED.First
+            else -> DropPosition.BELOW
+        }
+        else -> when {
+            component.properties is Properties.Group && (hoverPosition.x >= position.x + 40.dp) -> DropPosition.NESTED.Last
+            else -> DropPosition.BELOW
         }
     }
+    fun heightWithChildren(treeItems: List<TreeHoverItem>): Dp = when (component.properties) {
+        // if droppingItem is a Group, dropIndicator should be at the bottom of its last child
+        is Properties.Group -> treeItems.find { it.component == (component.properties as Properties.Group).children.lastOrNull() }?.heightWithChildren(treeItems) ?: position.y + height
+        // if droppingItem is a Slotted, dropIndicator should be at the bottom of its last slot's last child
+        is Properties.Slotted -> treeItems.find { it.component == ((component.properties as Properties.Slotted).slots.lastOrNull()?.tree?.properties as Properties.Group).children.lastOrNull() }?.heightWithChildren(treeItems) ?: position.y + height
+        else -> position.y + height
+    }
 }
- */

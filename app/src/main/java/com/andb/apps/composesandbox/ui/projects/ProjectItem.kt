@@ -14,8 +14,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.drawLayer
 import androidx.compose.ui.graphics.LinearGradient
+import androidx.compose.ui.layout.WithConstraints
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.ConfigurationAmbient
+import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.toColors
@@ -27,12 +32,22 @@ fun ProjectItem(project: Project, selected: Boolean = false, modifier: Modifier 
     Column(modifier = modifier) {
         Box(
             modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
                 .border(2.dp, MaterialTheme.colors.secondaryVariant, RoundedCornerShape(8.dp))
-                .aspectRatio(.5f)
+                .aspectRatio(ConfigurationAmbient.current.screenWidthDp.toFloat() / ConfigurationAmbient.current.screenHeightDp)
                 .fillMaxWidth()
         ) {
             MaterialTheme(colors = project.theme.toColors()) {
-                RenderComponent(component = project.screens.first())
+                WithConstraints {
+                    val width = ConfigurationAmbient.current.screenWidthDp
+                    val height = ConfigurationAmbient.current.screenHeightDp
+                    val scaleX = with(DensityAmbient.current) { constraints.maxWidth.toDp().value } / width.toFloat()
+                    val scaleY = with(DensityAmbient.current) { constraints.maxHeight.toDp().value } / height.toFloat()
+                    println("projectItem, scaleX = $scaleX, scaleY = $scaleY")
+                    Box(modifier = Modifier.drawLayer(scaleX = scaleX, scaleY = scaleY).size(width.dp, height.dp)) {
+                        RenderComponent(component = project.screens.first())
+                    }
+                }
             }
             if (selected) {
                 val size = remember { mutableStateOf(IntSize(0, 0)) }

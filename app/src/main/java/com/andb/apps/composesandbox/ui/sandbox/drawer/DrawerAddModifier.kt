@@ -24,6 +24,7 @@ fun AddModifierList(onSelect: (PrototypeModifier) -> Unit) {
         AddComponentHeader(text = "Common Components")
         AddModifierItem(PrototypeModifier.Padding.All(16), onSelect)
         AddModifierItem(PrototypeModifier.Border(1, PrototypeColor.ThemeColor.OnBackground, 0), onSelect)
+        AddModifierItem(PrototypeModifier.Background(PrototypeColor.ThemeColor.Primary, 0), onSelect)
         AddModifierItem(PrototypeModifier.Width(32), onSelect)
         AddModifierItem(PrototypeModifier.Height(32), onSelect)
         AddModifierItem(PrototypeModifier.FillMaxWidth(), onSelect)

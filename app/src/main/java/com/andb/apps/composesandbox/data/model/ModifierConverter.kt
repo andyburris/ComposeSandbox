@@ -1,13 +1,11 @@
 package com.andb.apps.composesandbox.data.model
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BorderStyle
-import androidx.compose.material.icons.filled.FlipToFront
-import androidx.compose.material.icons.filled.Height
-import androidx.compose.material.icons.filled.UnfoldMore
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.VectorAsset
@@ -21,6 +19,7 @@ val PrototypeModifier.icon: VectorAsset
     get() = when (this) {
         is PrototypeModifier.Padding -> Icons.Default.FlipToFront
         is PrototypeModifier.Border -> Icons.Default.BorderStyle
+        is PrototypeModifier.Background -> Icons.Default.FormatPaint
         is PrototypeModifier.Height -> Icons.Default.Height
         is PrototypeModifier.Width -> vectorResource(id = R.drawable.ic_width)
         is PrototypeModifier.FillMaxWidth -> vectorResource(id = R.drawable.ic_max_width)
@@ -35,6 +34,7 @@ fun List<PrototypeModifier>.toModifier() : Modifier {
             is PrototypeModifier.Padding.Sides -> Modifier.padding(horizontal = prototypeModifier.horizontal.dp, vertical = prototypeModifier.vertical.dp)
             is PrototypeModifier.Padding.All -> Modifier.padding(all = prototypeModifier.padding.dp)
             is PrototypeModifier.Border -> Modifier.border(prototypeModifier.strokeWidth.dp, prototypeModifier.color.renderColor(), shape = RoundedCornerShape(prototypeModifier.cornerRadius.dp))
+            is PrototypeModifier.Background -> Modifier.background(prototypeModifier.color.renderColor(), shape = RoundedCornerShape(prototypeModifier.cornerRadius.dp))
             is PrototypeModifier.Height -> Modifier.height(prototypeModifier.height.dp)
             is PrototypeModifier.Width -> Modifier.width(prototypeModifier.width.dp)
             is PrototypeModifier.FillMaxWidth -> Modifier.fillMaxWidth()
