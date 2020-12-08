@@ -41,6 +41,8 @@ fun ComponentList(project: Project, onSelect: (PrototypeComponent) -> Unit) {
         AddComponentItem(PrototypeComponent.Group.Row(), onSelect)
         AddComponentItem(PrototypeComponent.Group.Column(), onSelect)
         AddComponentItem(PrototypeComponent.Group.Box(), onSelect)
+        AddComponentItem(PrototypeComponent.Slotted.TopAppBar(), onSelect)
+        AddComponentItem(PrototypeComponent.Slotted.BottomAppBar(), onSelect)
         AddComponentItem(PrototypeComponent.Slotted.ExtendedFloatingActionButton(), onSelect)
     }
 }

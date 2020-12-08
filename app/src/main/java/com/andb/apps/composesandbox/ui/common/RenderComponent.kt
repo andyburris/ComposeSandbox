@@ -3,10 +3,9 @@ package com.andb.apps.composesandbox.ui.common
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material.ExtendedFloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andb.apps.composesandbox.data.model.*
 import com.andb.apps.composesandbox.model.PrototypeComponent
@@ -44,6 +43,30 @@ fun RenderComponent(component: PrototypeComponent){
             },
             modifier = component.modifiers.toModifier(),
             onClick = {}
+        )
+        is PrototypeComponent.Slotted.TopAppBar -> TopAppBar(
+            modifier = component.modifiers.toModifier(),
+            backgroundColor = component.properties.backgroundColor.renderColor(),
+            contentColor = component.properties.contentColor.renderColor(),
+            elevation = component.properties.elevation.dp,
+            navigationIcon = {
+                component.slots[0].tree.children.forEach { RenderComponent(component = it) }
+             },
+            title = {
+                component.slots[1].tree.children.forEach { RenderComponent(component = it) }
+            },
+            actions = {
+                component.slots[2].tree.children.forEach { RenderComponent(component = it) }
+            }
+        )
+        is PrototypeComponent.Slotted.BottomAppBar -> BottomAppBar(
+            modifier = component.modifiers.toModifier(),
+            backgroundColor = component.properties.backgroundColor.renderColor(),
+            contentColor = component.properties.contentColor.renderColor(),
+            elevation = component.properties.elevation.dp,
+            content = {
+                component.slots[0].tree.children.forEach { RenderComponent(component = it) }
+            }
         )
     }
 }

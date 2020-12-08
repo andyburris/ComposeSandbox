@@ -6,7 +6,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ControlPointDuplicate
 import androidx.compose.runtime.Composable
-import com.andb.apps.composesandbox.model.Properties
 import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.state.ActionHandler
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
@@ -18,17 +17,27 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
 fun DrawerEditProperties(component: PrototypeComponent, actionHandler: ActionHandler, onUpdate: (PrototypeComponent) -> Unit) {
     Column {
         DrawerEditPropertiesHeader(component)
-        when (val properties = component.properties) {
-            is Properties.Text -> TextProperties(properties) {
+        when (component) {
+            is PrototypeComponent.Text -> TextProperties(component.properties) {
                 onUpdate(component.copy(properties = it))
             }
-            is Properties.Icon -> IconProperties(properties) {
+            is PrototypeComponent.Icon -> IconProperties(component.properties) {
                 onUpdate(component.copy(properties = it))
             }
-            is Properties.Group.Column -> ColumnProperties(properties) {
+            is PrototypeComponent.Group.Column -> ColumnProperties(component.properties) {
                 onUpdate(component.copy(properties = it))
             }
-            is Properties.Group.Row -> RowProperties(properties) {
+            is PrototypeComponent.Group.Row -> RowProperties(component.properties) {
+                onUpdate(component.copy(properties = it))
+            }
+            is PrototypeComponent.Group.Box -> {}
+            is PrototypeComponent.Slotted.TopAppBar -> TopAppBarProperties(properties = component.properties) {
+                onUpdate(component.copy(properties = it))
+            }
+            is PrototypeComponent.Slotted.BottomAppBar -> BottomAppBarProperties(properties = component.properties) {
+                onUpdate(component.copy(properties = it))
+            }
+            is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> ExtendedFloatingActionButtonProperties(properties = component.properties) {
                 onUpdate(component.copy(properties = it))
             }
         }

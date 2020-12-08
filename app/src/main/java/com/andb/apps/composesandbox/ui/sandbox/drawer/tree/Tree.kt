@@ -180,6 +180,8 @@ fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier) 
         is PrototypeComponent.Group.Row -> vectorResource(id = R.drawable.ic_row)
         is PrototypeComponent.Group.Box -> Icons.Default.Layers
         is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> vectorResource(id = R.drawable.ic_extended_fab)
+        is PrototypeComponent.Slotted.TopAppBar -> vectorResource(id = R.drawable.ic_top_app_bar)
+        is PrototypeComponent.Slotted.BottomAppBar -> vectorResource(id = R.drawable.ic_bottom_app_bar)
     }
 
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {

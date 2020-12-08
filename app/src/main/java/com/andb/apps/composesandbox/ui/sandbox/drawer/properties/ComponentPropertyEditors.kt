@@ -65,3 +65,42 @@ fun RowProperties(properties: Properties.Group.Row, onUpdate: (Properties.Group.
         }
     }
 }
+
+@Composable
+fun TopAppBarProperties(properties: Properties.Slotted.TopAppBar, onUpdate: (Properties.Slotted.TopAppBar) -> Unit) {
+    Column {
+        ColorPicker(label = "Background Color", current = properties.backgroundColor) {
+            onUpdate.invoke(properties.copy(backgroundColor = it))
+        }
+        NumberPicker(label = "Elevation", current = properties.elevation) {
+            onUpdate.invoke(properties.copy(elevation = it))
+        }
+    }
+}
+
+@Composable
+fun BottomAppBarProperties(properties: Properties.Slotted.BottomAppBar, onUpdate: (Properties.Slotted.BottomAppBar) -> Unit) {
+    Column {
+        ColorPicker(label = "Background Color", current = properties.backgroundColor) {
+            onUpdate.invoke(properties.copy(backgroundColor = it))
+        }
+        NumberPicker(label = "Elevation", current = properties.elevation) {
+            onUpdate.invoke(properties.copy(elevation = it))
+        }
+    }
+}
+
+@Composable
+fun ExtendedFloatingActionButtonProperties(properties: Properties.Slotted.ExtendedFloatingActionButton, onUpdate: (Properties.Slotted.ExtendedFloatingActionButton) -> Unit) {
+    Column {
+        ColorPicker(label = "Background Color", current = properties.backgroundColor) {
+            onUpdate.invoke(properties.copy(backgroundColor = it))
+        }
+        NumberPicker(label = "Default Elevation", current = properties.defaultElevation) {
+            onUpdate.invoke(properties.copy(defaultElevation = it))
+        }
+        NumberPicker(label = "Pressed Elevation", current = properties.pressedElevation) {
+            onUpdate.invoke(properties.copy(pressedElevation = it))
+        }
+    }
+}
