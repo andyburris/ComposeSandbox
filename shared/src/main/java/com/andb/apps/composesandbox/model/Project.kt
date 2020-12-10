@@ -7,22 +7,28 @@ import java.util.*
 data class Project(
     val id: String = UUID.randomUUID().toString(),
     val name: String,
-    val screens: List<PrototypeComponent>,
+    val screens: List<PrototypeScreen>,
     val components: List<PrototypeComponent> = listOf(),
     val theme: Theme,
 )
 
-fun Project.updatedTree(tree: PrototypeComponent) = this.copy(
+fun Project.updatedScreen(screen: PrototypeScreen) = this.copy(
     screens = this.screens.map {
         when (it.id) {
-            tree.id -> tree
+            screen.id -> screen
             else -> it
         }
     },
+)
+
+fun Project.updatedComponent(component: PrototypeComponent) = this.copy(
     components = this.components.map {
         when (it.id) {
-            tree.id -> tree
+            component.id -> component
             else -> it
         }
     }
 )
+
+@Serializable
+data class PrototypeScreen(val id: String = UUID.randomUUID().toString(), val name: String, val tree: PrototypeComponent.Group = PrototypeComponent.Group.Column())

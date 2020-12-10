@@ -9,6 +9,7 @@ sealed class UserAction : Action() {
     object Back : UserAction()
     /** Add a [Screen] to the top of the navigation stack */
     data class OpenScreen(val screen: Screen) : UserAction()
+    data class UpdateSandbox(val screen: Screen.Sandbox) : UserAction()
     data class OpenDrawerScreen(val drawerScreen: DrawerScreen) : UserAction()
 
     /** Add a [Project] to the list of saved projects */

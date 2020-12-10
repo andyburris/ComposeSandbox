@@ -8,18 +8,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.andb.apps.composesandbox.data.model.toColors
 import com.andb.apps.composesandbox.model.Project
-import com.andb.apps.composesandbox.model.PrototypeComponent
+import com.andb.apps.composesandbox.model.PrototypeScreen
 import com.andb.apps.composesandbox.ui.common.RenderComponent
 
 @Composable
-fun PreviewScreen(project: Project, previewComponent: PrototypeComponent) {
+fun PreviewScreen(project: Project, previewScreen: PrototypeScreen) {
     Box(
         modifier = Modifier
             .background(MaterialTheme.colors.background)
             .fillMaxSize()
     ) {
         MaterialTheme(colors = project.theme.toColors()) {
-            RenderComponent(component = previewComponent)
+            RenderComponent(component = previewScreen.tree)
         }
     }
 }

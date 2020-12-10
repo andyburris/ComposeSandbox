@@ -26,7 +26,8 @@ private val templates = listOf(
     Project(
         name = "Empty",
         screens = listOf(
-            PrototypeComponent.Group.Column()
+            PrototypeScreen(name = "Screen 1")
+
         ),
         theme = lightColors().toTheme()
     ),
@@ -35,15 +36,18 @@ private val templates = listOf(
     Project(
         name = "Hello World",
         screens = listOf(
-            PrototypeComponent.Group.Column(
-                properties = Properties.Group.Column(
-                    horizontalAlignment = PrototypeAlignment.Horizontal.CenterHorizontally,
-                    verticalArrangement = PrototypeArrangement.Vertical.Center,
-                ),
-                modifiers = listOf(PrototypeModifier.FillMaxHeight(), PrototypeModifier.FillMaxWidth()),
-                children = listOf(
-                    PrototypeComponent.Text(
-                        properties = Properties.Text("Hello World")
+            PrototypeScreen(
+                name = "Screen 1",
+                tree = PrototypeComponent.Group.Column(
+                    properties = Properties.Group.Column(
+                        horizontalAlignment = PrototypeAlignment.Horizontal.CenterHorizontally,
+                        verticalArrangement = PrototypeArrangement.Vertical.Center,
+                    ),
+                    modifiers = listOf(PrototypeModifier.FillMaxHeight(), PrototypeModifier.FillMaxWidth()),
+                    children = listOf(
+                        PrototypeComponent.Text(
+                            properties = Properties.Text("Hello World")
+                        )
                     )
                 )
             )

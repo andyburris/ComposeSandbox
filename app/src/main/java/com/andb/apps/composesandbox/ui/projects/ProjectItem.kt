@@ -45,7 +45,7 @@ fun ProjectItem(project: Project, selected: Boolean = false, modifier: Modifier 
                     val scaleY = with(DensityAmbient.current) { constraints.maxHeight.toDp().value } / height.toFloat()
                     println("projectItem, scaleX = $scaleX, scaleY = $scaleY")
                     Box(modifier = Modifier.drawLayer(scaleX = scaleX, scaleY = scaleY).size(width.dp, height.dp)) {
-                        RenderComponent(component = project.screens.first())
+                        RenderComponent(component = project.screens.first().tree)
                     }
                 }
             }

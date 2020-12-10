@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.model.Project
 import com.andb.apps.composesandbox.model.PrototypeComponent
+import com.andb.apps.composesandbox.model.allComponents
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.DragDropAmbient
@@ -36,14 +37,9 @@ fun ComponentList(project: Project, onSelect: (PrototypeComponent) -> Unit) {
         val searchTerm = savedInstanceState { "" }
 
         AddComponentHeader(text = "Common Components")
-        AddComponentItem(PrototypeComponent.Text(), onSelect)
-        AddComponentItem(PrototypeComponent.Icon(), onSelect)
-        AddComponentItem(PrototypeComponent.Group.Row(), onSelect)
-        AddComponentItem(PrototypeComponent.Group.Column(), onSelect)
-        AddComponentItem(PrototypeComponent.Group.Box(), onSelect)
-        AddComponentItem(PrototypeComponent.Slotted.TopAppBar(), onSelect)
-        AddComponentItem(PrototypeComponent.Slotted.BottomAppBar(), onSelect)
-        AddComponentItem(PrototypeComponent.Slotted.ExtendedFloatingActionButton(), onSelect)
+        allComponents.forEach {
+            AddComponentItem(component = it, onSelect = onSelect)
+        }
     }
 }
 

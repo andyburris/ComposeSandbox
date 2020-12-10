@@ -17,7 +17,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.model.Project
-import com.andb.apps.composesandbox.model.PrototypeComponent
+import com.andb.apps.composesandbox.model.PrototypeScreen
 import com.andb.apps.composesandbox.model.toCode
 import com.andb.apps.composesandbox.state.Handler
 import com.andb.apps.composesandbox.state.UserAction
@@ -55,7 +55,7 @@ fun CodeScreen(project: Project) {
                 onClick = {
                     val sendIntent: Intent = Intent().apply {
                         action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_TEXT, project.screens.first().toCode())
+                        putExtra(Intent.EXTRA_TEXT, project.screens.first().tree.toCode())
                         type = "text/plain"
                     }
 
@@ -69,12 +69,12 @@ fun CodeScreen(project: Project) {
 }
 
 @Composable
-private fun CodeCard(screen: PrototypeComponent) {
+private fun CodeCard(screen: PrototypeScreen) {
     Card(Modifier.padding(8.dp)) {
         Column(Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp)) {
             FileItem(screen = screen, modifier = Modifier.padding(end = 16.dp, bottom = 16.dp))
             Row {
-                val code = screen.toCode()
+                val code = screen.tree.toCode()
                 Text(
                     text = (1..code.lines().size).joinToString("\n"),
                     style = codeStyle.copy(textAlign = TextAlign.End),
@@ -90,7 +90,7 @@ private fun CodeCard(screen: PrototypeComponent) {
 }
 
 @Composable
-private fun FileItem(screen: PrototypeComponent, modifier: Modifier = Modifier) {
+private fun FileItem(screen: PrototypeScreen, modifier: Modifier = Modifier) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Column {
             Text(text = screen.name)

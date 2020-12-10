@@ -20,14 +20,14 @@ class Machine(coroutineScope: CoroutineScope) {
                 Screen.AddProject -> ViewState.AddProject
                 is Screen.Sandbox -> {
                     val project = projects.first { it.id == screen.projectID }
-                    val openedTree = project.screens.first { it.id == screen.openedTreeID }
+                    val openedTree = project.screens.first { it.id == screen.openedScreenID }
                     val drawerStack = screen.drawerScreens.map { drawerScreen ->
                         when (drawerScreen) {
                             DrawerScreen.Tree -> DrawerState.Tree
                             DrawerScreen.AddComponent -> DrawerState.AddComponent
-                            is DrawerScreen.EditComponent -> DrawerState.EditComponent(openedTree.findByIDInTree(drawerScreen.componentID)!!)
+                            is DrawerScreen.EditComponent -> DrawerState.EditComponent(openedTree.tree.findByIDInTree(drawerScreen.componentID)!!)
                             DrawerScreen.AddModifier -> DrawerState.AddModifier
-                            is DrawerScreen.EditModifier -> DrawerState.EditModifier(openedTree.findModifierByIDInTree(drawerScreen.modifierID)!!)
+                            is DrawerScreen.EditModifier -> DrawerState.EditModifier(openedTree.tree.findModifierByIDInTree(drawerScreen.modifierID)!!)
                             DrawerScreen.EditTheme -> DrawerState.EditTheme
                         }
                     }
@@ -50,6 +50,7 @@ class Machine(coroutineScope: CoroutineScope) {
         when (action) {
             UserAction.Back -> handleBack()
             is UserAction.OpenScreen -> screens.value += action.screen
+            is UserAction.UpdateSandbox -> screens.updateSandbox { action.screen }
             is UserAction.OpenDrawerScreen -> screens.updateSandbox {
                 it.copy(drawerScreens = it.drawerScreens + action.drawerScreen)
             }

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.model.PrototypeComponent
+import com.andb.apps.composesandbox.model.PrototypeScreen
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerScreen
 import com.andb.apps.composesandbox.state.UserAction
@@ -35,7 +36,7 @@ import com.andb.apps.composesandbox.ui.common.*
  * @param hovering the component currently in the drag state of drag-and-drop. null if no component is currently being dragged
  */
 @Composable
-fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, hovering: DropState?, onMoveComponent: (PrototypeComponent) -> Unit) {
+fun DrawerTree(opened: PrototypeScreen, sheetState: BottomSheetState, hovering: DropState?, onMoveComponent: (PrototypeComponent) -> Unit) {
 
     val dragPosition = DragDropAmbient.current.dragPosition
     Column(
@@ -43,7 +44,7 @@ fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, hoverin
     ) {
         DrawerTreeHeader(opened, sheetState)
         Tree(
-            parent = opened,
+            parent = opened.tree,
             modifier = Modifier.padding(start = 32.dp, end = 32.dp),
             onMoveComponent = onMoveComponent
         )
@@ -59,7 +60,7 @@ fun DrawerTree(opened: PrototypeComponent, sheetState: BottomSheetState, hoverin
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun DrawerTreeHeader(opened: PrototypeComponent, sheetState: BottomSheetState) {
+private fun DrawerTreeHeader(opened: PrototypeScreen, sheetState: BottomSheetState) {
     val actionHandler = ActionHandlerAmbient.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
