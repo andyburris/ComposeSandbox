@@ -7,16 +7,20 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
+private val blueGrey500 = Color(0xFF718792)
+private val blueGrey700 = Color(0xFF455A64)
+private val blueGrey900 = Color(0xFF1c313a)
+
 private val DarkColorPalette = darkColors(
-    primary = purple200,
-    primaryVariant = purple700,
-    secondary = teal200,
-    onSecondary = Color.Black.copy(alpha = 0.5f),
+    primary = blueGrey500,
+    primaryVariant = blueGrey700,
+    secondary = Color.Black.copy(alpha = .05f),
+    onSecondary = Color.Black.copy(alpha = 0.5f)
 )
 
 private val LightColorPalette = lightColors(
-    primary = purple500,
-    primaryVariant = purple700,
+    primary = blueGrey700,
+    primaryVariant = blueGrey900,
     secondary = Color.Black.copy(alpha = .05f),
     onSecondary = Color.Black.copy(alpha = 0.5f),
     secondaryVariant = Color.Black.copy(alpha = .25f)

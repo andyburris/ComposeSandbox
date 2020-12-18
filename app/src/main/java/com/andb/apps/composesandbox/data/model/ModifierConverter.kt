@@ -8,14 +8,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.VectorAsset
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.R
 import com.andb.apps.composesandbox.model.PrototypeModifier
 
 @Composable
-val PrototypeModifier.icon: VectorAsset
+val PrototypeModifier.icon: ImageVector
     get() = when (this) {
         is PrototypeModifier.Padding -> Icons.Default.FlipToFront
         is PrototypeModifier.Border -> Icons.Default.BorderStyle

@@ -15,6 +15,7 @@ val allComponents = listOf(
     PrototypeComponent.Slotted.TopAppBar(),
     PrototypeComponent.Slotted.BottomAppBar(),
     PrototypeComponent.Slotted.ExtendedFloatingActionButton(),
+    PrototypeComponent.Slotted.Scaffold(),
 )
 
 @Serializable
@@ -41,6 +42,7 @@ sealed class PrototypeComponent {
     sealed class Group : PrototypeComponent() {
 
         abstract val children: List<PrototypeComponent>
+        abstract override val properties: Properties.Group
 
         @Serializable
         data class Row(
@@ -67,6 +69,9 @@ sealed class PrototypeComponent {
     sealed class Slotted : PrototypeComponent() {
 
         abstract val slots: List<Slot>
+        abstract override val properties: Properties.Slotted
+
+        val Slot.enabled get() = !this.optional || properties.slotsEnabled[this.name] == true
 
         @Serializable
         data class TopAppBar(
@@ -78,29 +83,39 @@ sealed class PrototypeComponent {
         @Serializable
         data class BottomAppBar(
             override val properties: Properties.Slotted.BottomAppBar = Properties.Slotted.BottomAppBar(),
-            override val slots: List<Slot> = listOf(Slot("Content", PrototypeComponent.Group.Row())),
+            override val slots: List<Slot> = listOf(Slot("Content", PrototypeComponent.Group.Row(), optional = false)),
             override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(), override val name: String = "BottomAppBar",
         ) : Slotted()
+
         @Serializable
         data class ExtendedFloatingActionButton(
             override val properties: Properties.Slotted.ExtendedFloatingActionButton = Properties.Slotted.ExtendedFloatingActionButton(),
             override val slots: List<Slot> = listOf(Slot("Icon"), Slot("Text", optional = false)),
             override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(), override val name: String = "ExtendedFloatingActionButton",
         ) : Slotted()
+
+        @Serializable
+        data class Scaffold(
+            override val properties: Properties.Slotted.Scaffold = Properties.Slotted.Scaffold(),
+            override val slots: List<Slot> = listOf(Slot("Top App Bar"), Slot("Bottom App Bar"), Slot("Floating Action Button"), Slot("Drawer"), Slot("Body Content", optional = false)),
+            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(), override val name: String = "Scaffold",
+        ) : Slotted()
     }
     fun copy(
+        id: String = this.id,
         modifiers: List<PrototypeModifier> = this.modifiers,
         properties: Properties = this.properties,
         name: String = this.name,
     ): PrototypeComponent = when (this) {
-        is Text -> this.copy(id = this.id, modifiers = modifiers, properties = properties as Properties.Text, name = name)
-        is Icon -> this.copy(id = this.id, modifiers = modifiers, properties = properties as Properties.Icon, name = name)
-        is Group.Row -> this.copy(id = this.id, modifiers = modifiers, properties = properties as Properties.Group.Row, name = name)
-        is Group.Column -> this.copy(id = this.id, modifiers = modifiers, properties = properties as Properties.Group.Column, name = name)
-        is Group.Box -> this.copy(id = this.id, modifiers = modifiers, properties = properties as Properties.Group.Box, name = name)
-        is Slotted.TopAppBar -> this.copy(id = this.id, modifiers = modifiers, properties = properties as Properties.Slotted.TopAppBar, name = name)
-        is Slotted.BottomAppBar -> this.copy(id = this.id, modifiers = modifiers, properties = properties as Properties.Slotted.BottomAppBar, name = name)
-        is Slotted.ExtendedFloatingActionButton -> this.copy(id = this.id, modifiers = modifiers, properties = properties as Properties.Slotted.ExtendedFloatingActionButton, name = name)
+        is Text -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Text, name = name)
+        is Icon -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Icon, name = name)
+        is Group.Row -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Group.Row, name = name)
+        is Group.Column -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Group.Column, name = name)
+        is Group.Box -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Group.Box, name = name)
+        is Slotted.TopAppBar -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Slotted.TopAppBar, name = name)
+        is Slotted.BottomAppBar -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Slotted.BottomAppBar, name = name)
+        is Slotted.ExtendedFloatingActionButton -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Slotted.ExtendedFloatingActionButton, name = name)
+        is Slotted.Scaffold -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Slotted.Scaffold, name = name)
     }
 }
 
@@ -141,8 +156,11 @@ sealed class Properties {
     @Serializable
     sealed class Slotted : Properties() {
 
+        abstract val slotsEnabled: Map<String, Boolean>
+
         @Serializable
         data class TopAppBar(
+            override val slotsEnabled: Map<String, Boolean> = mapOf("Navigation Icon" to true, "Actions" to true),
             val backgroundColor: PrototypeColor = PrototypeColor.ThemeColor.Primary,
             val contentColor: PrototypeColor = PrototypeColor.ThemeColor.OnPrimary,
             val elevation: Int = 4
@@ -150,22 +168,53 @@ sealed class Properties {
 
         @Serializable
         data class BottomAppBar(
+            override val slotsEnabled: Map<String, Boolean> = emptyMap(),
             val backgroundColor: PrototypeColor = PrototypeColor.ThemeColor.Primary,
             val contentColor: PrototypeColor = PrototypeColor.ThemeColor.OnPrimary,
             val elevation: Int = 4
         ) : Slotted()
         @Serializable
         data class ExtendedFloatingActionButton(
+            override val slotsEnabled: Map<String, Boolean> = mapOf("Icon" to true),
             val backgroundColor: PrototypeColor = PrototypeColor.ThemeColor.Secondary,
             val contentColor: PrototypeColor = PrototypeColor.ThemeColor.OnSecondary,
             val defaultElevation: Int = 6,
             val pressedElevation: Int = 12,
         ) : Slotted()
+
+        @Serializable
+        data class Scaffold(
+            override val slotsEnabled: Map<String, Boolean> = mapOf("Top App Bar" to true, "Bottom App Bar" to false, "Floating Action Button" to true, "Drawer" to false),
+            val backgroundColor: PrototypeColor = PrototypeColor.ThemeColor.Background,
+            val contentColor: PrototypeColor = PrototypeColor.ThemeColor.OnBackground,
+            val drawerBackgroundColor: PrototypeColor = PrototypeColor.ThemeColor.Background,
+            val drawerContentColor: PrototypeColor = PrototypeColor.ThemeColor.OnBackground,
+            val drawerElevation: Int = 16,
+            val floatingActionButtonPosition: FabPosition = FabPosition.End,
+            val isFloatingActionButtonDocked: Boolean = false,
+        ) : Slotted() {
+            enum class FabPosition {
+                Center, End
+            }
+
+            fun FabPosition.toCode() = when(this) {
+                FabPosition.Center -> "FabPosition.Center"
+                FabPosition.End -> "FabPosition.End"
+            }
+        }
     }
 }
 
+fun <T: Properties.Slotted> T.withSlotsEnabled(slotsEnabled: Map<String, Boolean>): T = when(this) {
+    is Properties.Slotted.TopAppBar -> this.copy(slotsEnabled = slotsEnabled) as T
+    is Properties.Slotted.BottomAppBar -> this.copy(slotsEnabled = slotsEnabled) as T
+    is Properties.Slotted.ExtendedFloatingActionButton -> this.copy(slotsEnabled = slotsEnabled) as T
+    is Properties.Slotted.Scaffold -> this.copy(slotsEnabled = slotsEnabled) as T
+    else -> throw Error("Not possible")
+}
+
 @Serializable
-data class Slot(val name: String, val tree: PrototypeComponent.Group = PrototypeComponent.Group.Box(), val optional: Boolean = true, val enabled: Boolean = true)
+data class Slot(val name: String, val tree: PrototypeComponent.Group = PrototypeComponent.Group.Box(), val optional: Boolean = true)
 
 fun PrototypeComponent.Group.withChildren(children: List<PrototypeComponent> = this.children): PrototypeComponent.Group {
     return when (this) {
@@ -180,6 +229,7 @@ fun PrototypeComponent.Slotted.withSlots(slots: List<Slot>): PrototypeComponent.
         is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> this.copy(slots = slots)
         is PrototypeComponent.Slotted.TopAppBar -> this.copy(slots = slots)
         is PrototypeComponent.Slotted.BottomAppBar -> this.copy(slots = slots)
+        is PrototypeComponent.Slotted.Scaffold -> this.copy(slots = slots)
     }
 }
 
@@ -295,19 +345,28 @@ fun PrototypeComponent.findModifierByIDInTree(id: String): PrototypeModifier? {
 fun PrototypeComponent.toCode(indent: Boolean = false): String =
     ("${name.toPascalCase()}(${properties.toCode()}${modifiers.toCode()})" + when (this) {
         is PrototypeComponent.Group -> "{\n${this.childrenToCode().prependIndent("    ")}\n}"
-        is PrototypeComponent.Slotted -> "{\n${this.slots.toCode().prependIndent("    ")}\n}"
+        is PrototypeComponent.Slotted -> "{\n${this.slotsToCode().prependIndent("    ")}\n}"
         else -> ""
     }).prependIndent(if (indent) "    " else "")
 
 fun Properties.toCode(): String = when (this) {
     is Properties.Text -> """text = "$text", color = ${color.toCode()}"""
-    is Properties.Icon -> """asset = Icons.Default.${icon.name}, tint = ${tint.toCode()}"""
+    is Properties.Icon -> """imageVector = Icons.Default.${icon.name}, tint = ${tint.toCode()}"""
     is Properties.Group.Row -> """horizontalArrangement = ${horizontalArrangement.toCodeString()}, verticalAlignment = ${verticalAlignment.toCodeString()}"""
     is Properties.Group.Column -> """verticalArrangement = ${verticalArrangement.toCodeString()}, horizontalAlignment = ${horizontalAlignment.toCodeString()}"""
     is Properties.Group.Box -> ""
     is Properties.Slotted.ExtendedFloatingActionButton -> """backgroundColor = ${backgroundColor.toCode()}, defaultElevation = ${defaultElevation}.dp, pressedElevation = $pressedElevation.dp"""
     is Properties.Slotted.TopAppBar -> "backgroundColor = ${backgroundColor.toCode()}, elevation = $elevation.dp"
     is Properties.Slotted.BottomAppBar -> "backgroundColor = ${backgroundColor.toCode()}, elevation = $elevation.dp"
+    is Properties.Slotted.Scaffold -> """
+        backgroundColor = ${backgroundColor.toCode()}
+        contentColor = ${contentColor.toCode()}
+        drawerBackgroundColor = ${drawerBackgroundColor.toCode()}
+        drawerContentColor = ${drawerContentColor.toCode()}
+        drawerElevation = $drawerElevation.dp
+        floatingActionButtonPosition = ${floatingActionButtonPosition.toCode()}
+        isFloatingActionButtonDocked = $isFloatingActionButtonDocked
+    """.trimIndent()
 }
 
 fun Any?.toCodeString(): String = when (this) {
@@ -321,6 +380,6 @@ fun Any?.toCodeString(): String = when (this) {
 
 fun PrototypeComponent.Group.childrenToCode() = children.joinToString("\n") { it.toCode(true) }
 
-fun List<Slot>.toCode() = joinToString(", \n") {
+fun PrototypeComponent.Slotted.slotsToCode() = slots.filter { properties.slotsEnabled[it.name] == true }.joinToString(", \n") {
     it.name.toCamelCase() + " = {\n" + it.tree.childrenToCode() + "\n}"
 }

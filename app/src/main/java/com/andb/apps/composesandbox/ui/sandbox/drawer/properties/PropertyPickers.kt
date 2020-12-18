@@ -1,5 +1,7 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.properties
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.draggable
@@ -23,18 +25,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.andb.apps.composesandbox.data.model.imageVector
 import com.andb.apps.composesandbox.data.model.projectColor
-import com.andb.apps.composesandbox.data.model.vectorAsset
-import com.andb.apps.composesandbox.model.PrototypeColor
-import com.andb.apps.composesandbox.model.PrototypeIcon
-import com.andb.apps.composesandbox.model.icons
+import com.andb.apps.composesandbox.model.*
 import com.andb.apps.composesandbox.ui.common.ColorPickerCircle
 import com.andb.apps.composesandbox.ui.common.ColorPickerWithTheme
 import com.andb.apps.composesandbox.util.isDark
 
 @Composable
 fun TextPicker(label: String, value: String, onValueChange: (String) -> Unit) {
-    OutlinedTextField(value = value, onValueChange = onValueChange, label = { Text(text = label) }, modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp))
+    OutlinedTextField(value = value, onValueChange = onValueChange, label = { Text(text = label) }, modifier = Modifier.fillMaxWidth())
 }
 
 
@@ -46,7 +46,7 @@ fun <T> OptionsPicker(label: String, selected: T, options: List<T>, stringify: (
             toggle = {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { opened.value = true }) {
                     Text(text = stringify(selected))
-                    Icon(asset = Icons.Default.ArrowDropDown)
+                    Icon(imageVector = Icons.Default.ArrowDropDown)
                 }
             },
             expanded = opened.value,
@@ -67,7 +67,7 @@ fun NumberPicker(label: String, current: Int, minValue: Int = 0, maxValue: Int =
         val dragged = remember { mutableStateOf(Pair(current, 0f)) }
         Column(
             modifier = Modifier
-                .width(108.dp)
+                .preferredWidth(96.dp)
                 .background(
                     MaterialTheme.colors.secondary,
                     shape = RoundedCornerShape(topLeft = 8.dp, topRight = 8.dp)
@@ -101,15 +101,15 @@ fun NumberPicker(label: String, current: Int, minValue: Int = 0, maxValue: Int =
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    asset = Icons.Default.Remove.copy(defaultHeight = 16.dp, defaultWidth = 16.dp),
+                    imageVector = Icons.Default.Remove.copy(defaultHeight = 16.dp, defaultWidth = 16.dp),
                     tint = MaterialTheme.colors.onSecondary,
-                    modifier = Modifier.clickable { onValueChange.invoke((current - 1).coerceIn(minValue..maxValue)) }.padding(12.dp)
+                    modifier = Modifier.clickable { onValueChange.invoke((current - 1).coerceIn(minValue..maxValue)) }.padding(8.dp)
                 )
                 Text(text = current.toString())
                 Icon(
-                    asset = Icons.Default.Add.copy(defaultHeight = 16.dp, defaultWidth = 16.dp),
+                    imageVector = Icons.Default.Add.copy(defaultHeight = 16.dp, defaultWidth = 16.dp),
                     tint = MaterialTheme.colors.onSecondary,
-                    modifier = Modifier.clickable { onValueChange.invoke((current + 1).coerceIn(minValue..maxValue)) }.padding(12.dp)
+                    modifier = Modifier.clickable { onValueChange.invoke((current + 1).coerceIn(minValue..maxValue)) }.padding(8.dp)
                 )
             }
             Box(modifier = Modifier.background(MaterialTheme.colors.onSecondary).fillMaxWidth().height(1.dp))
@@ -118,11 +118,18 @@ fun NumberPicker(label: String, current: Int, minValue: Int = 0, maxValue: Int =
 }
 
 @Composable
-fun GenericPropertyEditor(label: String, modifier: Modifier = Modifier, widget: @Composable() () -> Unit) {
+fun SwitchPicker(label: String, current: Boolean, onToggle: (Boolean) -> Unit) {
+    GenericPropertyEditor(label = label) {
+        Switch(checked = current, onCheckedChange = onToggle, colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary))
+    }
+}
+
+@Composable
+fun GenericPropertyEditor(label: String, modifier: Modifier = Modifier, widget: @Composable() RowScope.() -> Unit) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp)
+        modifier = modifier.fillMaxWidth()
     ) {
         Text(label)
         widget()
@@ -139,7 +146,7 @@ fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Mod
             }
             if (current is PrototypeColor.ThemeColor) {
                 Icon(
-                    asset = Icons.Default.Link.copy(defaultWidth = 20.dp, defaultHeight = 20.dp),
+                    imageVector = Icons.Default.Link.copy(defaultWidth = 20.dp, defaultHeight = 20.dp),
                     modifier = Modifier.align(Alignment.Center),
                     tint = if (current.projectColor().isDark()) Color.White else Color.Black)
             }
@@ -173,6 +180,31 @@ fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Mod
 }
 
 @Composable
+fun <T: Properties.Slotted> SlotPicker(name: String, properties: T, onSelect: (T) -> Unit) {
+    SlotPicker(
+        name = name,
+        enabled = properties.slotsEnabled["Navigation Icon"] == true,
+        onToggle = { enabled ->
+            val newProperties = properties.withSlotsEnabled(properties.slotsEnabled + (name to enabled))
+            onSelect.invoke(newProperties)
+        },
+    )
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun SlotPicker(name: String, enabled: Boolean, onToggle: (Boolean) -> Unit, children: (@Composable ColumnScope.() -> Unit)? = null) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        SwitchPicker(label = name, current = enabled, onToggle = onToggle)
+        if (children != null) {
+            AnimatedVisibility(visible = enabled) {
+                Column(Modifier.background(MaterialTheme.colors.secondary, RoundedCornerShape(8.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top), content = children)
+            }
+        }
+    }
+}
+
+@Composable
 fun IconPicker(icon: PrototypeIcon, onSelect: (PrototypeIcon) -> Unit) {
     val picking = remember { mutableStateOf(false) }
     GenericPropertyEditor(label = "Icon") {
@@ -182,7 +214,7 @@ fun IconPicker(icon: PrototypeIcon, onSelect: (PrototypeIcon) -> Unit) {
                 .background(MaterialTheme.colors.secondary, CircleShape)
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
-            Icon(asset = icon.vectorAsset)
+            Icon(imageVector = icon.imageVector)
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = icon.name, color = MaterialTheme.colors.onSecondary)
         }
@@ -257,8 +289,7 @@ private fun RowScope.IconPickerItem(icon: PrototypeIcon, modifier: Modifier = Mo
             .weight(1f)
             .padding(horizontal = 8.dp)
     ) {
-        Icon(asset = icon.vectorAsset.copy(defaultHeight = 36.dp, defaultWidth = 36.dp))
+        Icon(imageVector = icon.imageVector.copy(defaultHeight = 36.dp, defaultWidth = 36.dp))
         Text(text = icon.name, style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
-
 }

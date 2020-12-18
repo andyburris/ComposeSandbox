@@ -22,7 +22,7 @@ fun ProjectsScreen(projects: List<Project>) {
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 text = { Text("Add Project".toUpperCase()) },
-                icon = { Icon(asset = Icons.Default.Add) },
+                icon = { Icon(imageVector = Icons.Default.Add) },
                 backgroundColor = MaterialTheme.colors.primary,
                 onClick = {
                     handler.invoke(UserAction.OpenScreen(Screen.AddProject))

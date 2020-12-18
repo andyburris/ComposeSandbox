@@ -3,9 +3,9 @@ package com.andb.apps.composesandbox.ui.common
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animate
-import androidx.compose.foundation.*
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,19 +19,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.drawLayer
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.andb.apps.composecolorpicker.ui.ExpandedColorPicker
 import com.andb.apps.composecolorpicker.ui.MaterialPalette
-import com.andb.apps.composesandbox.Platform
 import com.andb.apps.composesandbox.data.model.name
 import com.andb.apps.composesandbox.data.model.projectColor
 import com.andb.apps.composesandbox.data.model.toColor
 import com.andb.apps.composesandbox.data.model.toPrototypeColor
-import com.andb.apps.composesandbox.model.*
+import com.andb.apps.composesandbox.model.PrototypeColor
+import com.andb.apps.composesandbox.model.Theme
+import com.andb.apps.composesandbox.model.getColor
+import com.andb.apps.composesandbox.model.updateColor
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.GenericTree
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.TreeConfig
 import com.andb.apps.composesandbox.util.isDark
@@ -127,7 +129,7 @@ private fun ColorThemeTree(parent: PrototypeColor.ThemeColor, picked: PrototypeC
     Column(modifier) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { expanded.value = !expanded.value }) {
             val rotation = animate(target = if (expanded.value) 0f else -90f)
-            Icon(asset = Icons.Default.ExpandMore, tint = MaterialTheme.colors.onSecondary, modifier = Modifier.padding(end = 16.dp).drawLayer(rotationZ = rotation))
+            Icon(imageVector = Icons.Default.ExpandMore, tint = MaterialTheme.colors.onSecondary, modifier = Modifier.padding(end = 16.dp).graphicsLayer(rotationZ = rotation))
             ThemeColorItem(color = parent, picked = picked == parent) {
                 onClick.invoke(parent)
             }
@@ -148,11 +150,11 @@ private fun ThemeColorItem(color: PrototypeColor.ThemeColor, picked: Boolean, mo
         Text(text = color.name)
         LayoutBox(
             modifier = Modifier,
-            children = {
+            content = {
                 ColorPickerCircle(color = color.projectColor(), onClick = onClick)
                 if (picked) {
                     Icon(
-                        asset = Icons.Default.Check.copy(defaultWidth = 20.dp, defaultHeight = 20.dp),
+                        imageVector = Icons.Default.Check.copy(defaultWidth = 20.dp, defaultHeight = 20.dp),
                         modifier = Modifier.align(Alignment.Center),
                         tint = if (color.projectColor().isDark()) Color.White else Color.Black
                     )

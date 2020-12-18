@@ -1,10 +1,7 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.modifiers
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -24,68 +21,67 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.NumberPicker
 @Composable
 fun DrawerEditModifiers(prototypeModifier: PrototypeModifier, onEdit: (PrototypeModifier) -> Unit) {
     val actionHandler = ActionHandlerAmbient.current
-    Column {
+    Column() {
         DrawerHeader(title = "Edit Modifier", onIconClick = { actionHandler.invoke(UserAction.Back) })
-
-        when (prototypeModifier) {
-            is PrototypeModifier.Padding -> PaddingModifierEditor(prototypeModifier = prototypeModifier, onEdit)
-            is PrototypeModifier.Border -> BorderModifierEditor(prototypeModifier = prototypeModifier, onEdit)
-            is PrototypeModifier.Background -> BackgroundModifierEditor(prototypeModifier = prototypeModifier, onEdit)
-            is PrototypeModifier.Width -> WidthModifierEditor(prototypeModifier = prototypeModifier, onEdit = onEdit)
-            is PrototypeModifier.Height -> HeightModifierEditor(prototypeModifier = prototypeModifier, onEdit = onEdit)
-            is PrototypeModifier.FillMaxWidth -> NoOptions()
-            is PrototypeModifier.FillMaxHeight -> NoOptions()
+        Column(Modifier.padding(horizontal = 32.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            when (prototypeModifier) {
+                is PrototypeModifier.Padding -> PaddingModifierEditor(prototypeModifier = prototypeModifier, onEdit)
+                is PrototypeModifier.Border -> BorderModifierEditor(prototypeModifier = prototypeModifier, onEdit)
+                is PrototypeModifier.Background -> BackgroundModifierEditor(prototypeModifier = prototypeModifier, onEdit)
+                is PrototypeModifier.Width -> WidthModifierEditor(prototypeModifier = prototypeModifier, onEdit = onEdit)
+                is PrototypeModifier.Height -> HeightModifierEditor(prototypeModifier = prototypeModifier, onEdit = onEdit)
+                is PrototypeModifier.FillMaxWidth -> NoOptions()
+                is PrototypeModifier.FillMaxHeight -> NoOptions()
+            }
         }
     }
 }
 
 @Composable
 private fun PaddingModifierEditor(prototypeModifier: PrototypeModifier.Padding, onEdit: (PrototypeModifier) -> Unit) {
-    Column {
-        Row(Modifier.padding(start = 32.dp)) {
-            Chip(
-                label = "All",
-                selected = prototypeModifier is PrototypeModifier.Padding.All,
-                modifier = Modifier.padding(end = 8.dp).clickable{ onEdit(prototypeModifier.toAll()) }
-            )
-            Chip(
-                label = "Sides",
-                selected = prototypeModifier is PrototypeModifier.Padding.Sides,
-                modifier = Modifier.padding(end = 8.dp).clickable{ onEdit(prototypeModifier.toSides()) }
-            )
-            Chip(
-                label = "Individual",
-                selected = prototypeModifier is PrototypeModifier.Padding.Individual,
-                modifier = Modifier.clickable{ onEdit(prototypeModifier.toIndividual()) }
-            )
+    Row {
+        Chip(
+            label = "All",
+            selected = prototypeModifier is PrototypeModifier.Padding.All,
+            modifier = Modifier.padding(end = 8.dp).clickable { onEdit(prototypeModifier.toAll()) }
+        )
+        Chip(
+            label = "Sides",
+            selected = prototypeModifier is PrototypeModifier.Padding.Sides,
+            modifier = Modifier.padding(end = 8.dp).clickable { onEdit(prototypeModifier.toSides()) }
+        )
+        Chip(
+            label = "Individual",
+            selected = prototypeModifier is PrototypeModifier.Padding.Individual,
+            modifier = Modifier.clickable { onEdit(prototypeModifier.toIndividual()) }
+        )
+    }
+    when (prototypeModifier) {
+        is PrototypeModifier.Padding.All -> {
+            NumberPicker(label = "Padding", current = prototypeModifier.padding) {
+                onEdit.invoke(prototypeModifier.copy(padding = it))
+            }
         }
-        when(prototypeModifier) {
-            is PrototypeModifier.Padding.All -> {
-                NumberPicker(label = "Padding", current = prototypeModifier.padding) {
-                    onEdit.invoke(prototypeModifier.copy(padding = it))
-                }
+        is PrototypeModifier.Padding.Sides -> {
+            NumberPicker(label = "Horizontal Padding", current = prototypeModifier.horizontal) {
+                onEdit.invoke(prototypeModifier.copy(horizontal = it))
             }
-            is PrototypeModifier.Padding.Sides -> {
-                NumberPicker(label = "Horizontal Padding", current = prototypeModifier.horizontal) {
-                    onEdit.invoke(prototypeModifier.copy(horizontal = it))
-                }
-                NumberPicker(label = "Vertical Padding", current = prototypeModifier.vertical) {
-                    onEdit.invoke(prototypeModifier.copy(vertical = it))
-                }
+            NumberPicker(label = "Vertical Padding", current = prototypeModifier.vertical) {
+                onEdit.invoke(prototypeModifier.copy(vertical = it))
             }
-            is PrototypeModifier.Padding.Individual -> {
-                NumberPicker(label = "Start Padding", current = prototypeModifier.start) {
-                    onEdit.invoke(prototypeModifier.copy(start = it))
-                }
-                NumberPicker(label = "End Padding", current = prototypeModifier.end) {
-                    onEdit.invoke(prototypeModifier.copy(end = it))
-                }
-                NumberPicker(label = "Top Padding", current = prototypeModifier.top) {
-                    onEdit.invoke(prototypeModifier.copy(top = it))
-                }
-                NumberPicker(label = "Bottom Padding", current = prototypeModifier.bottom) {
-                    onEdit.invoke(prototypeModifier.copy(bottom = it))
-                }
+        }
+        is PrototypeModifier.Padding.Individual -> {
+            NumberPicker(label = "Start Padding", current = prototypeModifier.start) {
+                onEdit.invoke(prototypeModifier.copy(start = it))
+            }
+            NumberPicker(label = "End Padding", current = prototypeModifier.end) {
+                onEdit.invoke(prototypeModifier.copy(end = it))
+            }
+            NumberPicker(label = "Top Padding", current = prototypeModifier.top) {
+                onEdit.invoke(prototypeModifier.copy(top = it))
+            }
+            NumberPicker(label = "Bottom Padding", current = prototypeModifier.bottom) {
+                onEdit.invoke(prototypeModifier.copy(bottom = it))
             }
         }
     }

@@ -6,10 +6,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.andb.apps.composesandbox.data.model.toColors
 import com.andb.apps.composesandbox.model.Project
 import com.andb.apps.composesandbox.model.PrototypeScreen
-import com.andb.apps.composesandbox.ui.common.RenderComponent
+import com.andb.apps.composesandbox.ui.common.RenderComponentParent
 
 @Composable
 fun PreviewScreen(project: Project, previewScreen: PrototypeScreen) {
@@ -18,8 +17,6 @@ fun PreviewScreen(project: Project, previewScreen: PrototypeScreen) {
             .background(MaterialTheme.colors.background)
             .fillMaxSize()
     ) {
-        MaterialTheme(colors = project.theme.toColors()) {
-            RenderComponent(component = previewScreen.tree)
-        }
+        RenderComponentParent(theme = project.theme, component = previewScreen.tree)
     }
 }

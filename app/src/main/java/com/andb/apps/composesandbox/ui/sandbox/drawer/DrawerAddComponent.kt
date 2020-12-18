@@ -20,15 +20,16 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.gesture.longPressGestureFilter
 import androidx.compose.ui.layout.globalPosition
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.DensityAmbient
+import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.model.Project
 import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.model.allComponents
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
-import com.andb.apps.composesandbox.ui.common.DragDropAmbient
+import com.andb.apps.composesandbox.ui.common.AmbientDragDrop
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.ComponentItem
+import java.util.*
 
 @Composable
 fun ComponentList(project: Project, onSelect: (PrototypeComponent) -> Unit) {
@@ -37,8 +38,8 @@ fun ComponentList(project: Project, onSelect: (PrototypeComponent) -> Unit) {
         val searchTerm = savedInstanceState { "" }
 
         AddComponentHeader(text = "Common Components")
-        allComponents.forEach {
-            AddComponentItem(component = it, onSelect = onSelect)
+        allComponents.forEach { component ->
+            AddComponentItem(component = component, onSelect = { onSelect.invoke(component.copy(id = UUID.randomUUID().toString())) })
         }
     }
 }
@@ -50,8 +51,8 @@ fun AddComponentHeader(text: String) {
 
 @Composable
 private fun AddComponentItem(component: PrototypeComponent, onSelect: (PrototypeComponent) -> Unit) {
-    val dragDropState = DragDropAmbient.current
-    val density = DensityAmbient.current
+    val dragDropState = AmbientDragDrop.current
+    val density = AmbientDensity.current
     val globalPositionOffset = remember { mutableStateOf(Offset.Zero) }
     ComponentItem(
         component = component,
@@ -77,7 +78,7 @@ private fun ComponentListHeader() {
     ) {
         val actionHandler = ActionHandlerAmbient.current
         Icon(
-            asset = Icons.Default.ArrowBack,
+            imageVector = Icons.Default.ArrowBack,
             modifier = Modifier.clickable { actionHandler.invoke(UserAction.Back) }
         )
         Text(

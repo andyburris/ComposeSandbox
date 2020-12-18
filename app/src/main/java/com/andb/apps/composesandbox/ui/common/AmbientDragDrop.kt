@@ -51,7 +51,10 @@ data class DragDropState(val dragPosition: MutableState<Position>, val globalPos
                 }
             }
             is DropPosition.NESTED -> when (hoveringItem.component) {
-                is PrototypeComponent.Slotted -> Pair(treeItemsWithGlobalOffset.first { it.component == (hoveringItem.component as PrototypeComponent.Slotted).slots.first().tree }, hoverDropPosition)
+                is PrototypeComponent.Slotted -> Pair(treeItemsWithGlobalOffset.first {
+                    val firstTree = hoveringItem.component.slots.first{ hoveringItem.component.properties.slotsEnabled[it.name] != false }.tree
+                    it.component == firstTree
+                }, hoverDropPosition)
                 is PrototypeComponent.Group -> Pair(hoveringItem, hoverDropPosition)
                 else -> throw Error("Components that are not Group or Slotted can't have things nested in them")
             }
@@ -68,12 +71,12 @@ data class DragDropState(val dragPosition: MutableState<Position>, val globalPos
         return DropState.OverTreeItem(droppingItem.component, dropPosition, indicatorState)
     }
 }
-val DragDropAmbient = staticAmbientOf<DragDropState>()
+val AmbientDragDrop = staticAmbientOf<DragDropState>()
 
 
 @Composable
 fun DragDropProvider(dragDropState: DragDropState, content: @Composable() () -> Unit){
-    Providers(DragDropAmbient provides dragDropState) {
+    Providers(AmbientDragDrop provides dragDropState) {
         content()
     }
 }

@@ -33,13 +33,13 @@ fun CodeScreen(project: Project) {
             TopAppBar(
                 navigationIcon = {
                     IconButton(onClick = { actionHandler.invoke(UserAction.Back) }) {
-                        Icon(asset = Icons.Default.ArrowBack)
+                        Icon(imageVector = Icons.Default.ArrowBack)
                     }
                 },
                 title = { Text("Code Preview") },
                 actions = {
                     IconButton(onClick = {}) {
-                        Icon(asset = Icons.Default.WrapText)
+                        Icon(imageVector = Icons.Default.WrapText)
                     }
                 }
             )
@@ -50,7 +50,7 @@ fun CodeScreen(project: Project) {
         floatingActionButton = {
             val context = ContextAmbient.current
             ExtendedFloatingActionButton(
-                icon = { Icon(asset = Icons.Default.Share) },
+                icon = { Icon(imageVector = Icons.Default.Share) },
                 text = { Text(text = "Export Code") },
                 onClick = {
                     val sendIntent: Intent = Intent().apply {
@@ -97,7 +97,7 @@ private fun FileItem(screen: PrototypeScreen, modifier: Modifier = Modifier) {
             Text(text = "${screen.name.capitalize().filter { it != ' ' }}.kt", style = codeStyle)
         }
         IconButton(onClick = {}) {
-            Icon(asset = Icons.Default.UnfoldLess)
+            Icon(imageVector = Icons.Default.UnfoldLess)
         }
     }
 }

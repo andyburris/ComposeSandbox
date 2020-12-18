@@ -1,14 +1,16 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.properties
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayout
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.toReadableString
 import com.andb.apps.composesandbox.model.*
 
 @Composable
 fun TextProperties(properties: Properties.Text, onUpdate: (Properties.Text) -> Unit) {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TextPicker(label = "Text", value = properties.text) {
             onUpdate(properties.copy(text = it))
         }
@@ -27,7 +29,7 @@ fun TextProperties(properties: Properties.Text, onUpdate: (Properties.Text) -> U
 @OptIn(ExperimentalLayout::class)
 @Composable
 fun IconProperties(properties: Properties.Icon, onUpdate: (Properties.Icon) -> Unit) {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         IconPicker(icon = properties.icon){
             onUpdate.invoke(properties.copy(icon = it))
         }
@@ -40,7 +42,7 @@ fun IconProperties(properties: Properties.Icon, onUpdate: (Properties.Icon) -> U
 
 @Composable
 fun ColumnProperties(properties: Properties.Group.Column, onUpdate: (Properties.Group.Column) -> Unit) {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         OptionsPicker(label = "Vertical Arrangement", selected = properties.verticalArrangement, options = verticalArrangements + bothArrangements, stringify = { it.toReadableString() }) {
             val newProperties = properties.copy(verticalArrangement = it)
             onUpdate(newProperties)
@@ -54,7 +56,7 @@ fun ColumnProperties(properties: Properties.Group.Column, onUpdate: (Properties.
 
 @Composable
 fun RowProperties(properties: Properties.Group.Row, onUpdate: (Properties.Group.Row) -> Unit) {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         OptionsPicker(label = "Horizontal Arrangement", selected = properties.horizontalArrangement, options = horizontalArrangements + bothArrangements, stringify = { it.toReadableString() }) {
             val newProperties = properties.copy(horizontalArrangement = it)
             onUpdate(newProperties)
@@ -68,19 +70,20 @@ fun RowProperties(properties: Properties.Group.Row, onUpdate: (Properties.Group.
 
 @Composable
 fun TopAppBarProperties(properties: Properties.Slotted.TopAppBar, onUpdate: (Properties.Slotted.TopAppBar) -> Unit) {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         ColorPicker(label = "Background Color", current = properties.backgroundColor) {
             onUpdate.invoke(properties.copy(backgroundColor = it))
         }
         NumberPicker(label = "Elevation", current = properties.elevation) {
             onUpdate.invoke(properties.copy(elevation = it))
         }
+        SlotPicker(name = "Navigation Icon", properties = properties, onSelect = onUpdate)
     }
 }
 
 @Composable
 fun BottomAppBarProperties(properties: Properties.Slotted.BottomAppBar, onUpdate: (Properties.Slotted.BottomAppBar) -> Unit) {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         ColorPicker(label = "Background Color", current = properties.backgroundColor) {
             onUpdate.invoke(properties.copy(backgroundColor = it))
         }
@@ -92,7 +95,7 @@ fun BottomAppBarProperties(properties: Properties.Slotted.BottomAppBar, onUpdate
 
 @Composable
 fun ExtendedFloatingActionButtonProperties(properties: Properties.Slotted.ExtendedFloatingActionButton, onUpdate: (Properties.Slotted.ExtendedFloatingActionButton) -> Unit) {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         ColorPicker(label = "Background Color", current = properties.backgroundColor) {
             onUpdate.invoke(properties.copy(backgroundColor = it))
         }
@@ -101,6 +104,59 @@ fun ExtendedFloatingActionButtonProperties(properties: Properties.Slotted.Extend
         }
         NumberPicker(label = "Pressed Elevation", current = properties.pressedElevation) {
             onUpdate.invoke(properties.copy(pressedElevation = it))
+        }
+        SlotPicker(
+            name = "Icon",
+            enabled = properties.slotsEnabled["Icon"] == true,
+            onToggle = { onUpdate.invoke(properties.copy(slotsEnabled = properties.slotsEnabled + ("Icon" to it))) }
+        )
+    }
+}
+
+@Composable
+fun ScaffoldProperties(properties: Properties.Slotted.Scaffold, onUpdate: (Properties.Slotted.Scaffold) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        ColorPicker(label = "Background Color", current = properties.backgroundColor) {
+            onUpdate.invoke(properties.copy(backgroundColor = it))
+        }
+        SlotPicker(
+            name = "Drawer",
+            enabled = properties.slotsEnabled.getValue("Drawer"),
+            onToggle = { onUpdate.invoke(properties.copy(slotsEnabled = properties.slotsEnabled.plus("Drawer" to it))) }
+        ) {
+            NumberPicker(label = "Drawer Elevation", current = properties.drawerElevation) {
+                onUpdate.invoke(properties.copy(drawerElevation = it))
+            }
+            ColorPicker(label = "Drawer Background Color", current = properties.drawerBackgroundColor) {
+                onUpdate.invoke(properties.copy(drawerBackgroundColor = it))
+            }
+        }
+        SlotPicker(
+            name = "Top App Bar",
+            enabled = properties.slotsEnabled.getValue("Top App Bar"),
+            onToggle = { onUpdate.invoke(properties.copy(slotsEnabled = properties.slotsEnabled.plus("Top App Bar" to it)))}
+        )
+        SlotPicker(
+            name = "Bottom App Bar",
+            enabled = properties.slotsEnabled.getValue("Bottom App Bar"),
+            onToggle = { onUpdate.invoke(properties.copy(slotsEnabled = properties.slotsEnabled.plus("Bottom App Bar" to it)))}
+        )
+        SlotPicker(
+            name = "Floating Action Button",
+            enabled = properties.slotsEnabled.getValue("Floating Action Button"),
+            onToggle = { onUpdate.invoke(properties.copy(slotsEnabled = properties.slotsEnabled.plus("Floating Action Button" to it)))}
+        ) {
+            OptionsPicker(
+                label = "FAB Position",
+                selected = properties.floatingActionButtonPosition,
+                options = Properties.Slotted.Scaffold.FabPosition.values().toList(),
+                onValueChange = { onUpdate.invoke(properties.copy(floatingActionButtonPosition = it)) }
+            )
+            SwitchPicker(
+                label = "Dock FAB",
+                current = properties.isFloatingActionButtonDocked,
+                onToggle = { onUpdate.invoke(properties.copy(isFloatingActionButtonDocked = it)) }
+            )
         }
     }
 }

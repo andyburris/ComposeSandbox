@@ -20,20 +20,19 @@ import androidx.compose.ui.gesture.longPressGestureFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.globalPosition
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.DensityAmbient
+import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.R
-import com.andb.apps.composesandbox.model.Properties
 import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.model.Slot
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerScreen
 import com.andb.apps.composesandbox.state.UserAction
-import com.andb.apps.composesandbox.ui.common.DragDropAmbient
+import com.andb.apps.composesandbox.ui.common.AmbientDragDrop
 import com.andb.apps.composesandbox.ui.common.TreeHoverItem
 
 
@@ -45,8 +44,8 @@ fun Tree(parent: PrototypeComponent, modifier: Modifier = Modifier, onMoveCompon
 @Composable
 private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifier, indent: Int = 0, onMoveComponent: (PrototypeComponent) -> Unit) {
     val actionHandler = ActionHandlerAmbient.current
-    val density = DensityAmbient.current
-    val dragDropState = DragDropAmbient.current
+    val density = AmbientDensity.current
+    val dragDropState = AmbientDragDrop.current
     Column(
         modifier = modifier
     ) {
@@ -81,7 +80,7 @@ private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifie
             }
         }
         if (component is PrototypeComponent.Slotted) {
-            GenericTree(items = component.slots) { slot ->
+            GenericTree(items = component.slots.filter { with(component) { it.enabled } }) { slot ->
                 SlotItem(slot = slot, indent = indent + 1, onMoveComponent = onMoveComponent)
             }
         }
@@ -90,8 +89,8 @@ private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifie
 
 @Composable
 private fun SlotItem(slot: Slot, modifier: Modifier = Modifier, indent: Int, onMoveComponent: (PrototypeComponent) -> Unit) {
-    val density = DensityAmbient.current
-    val dragDropState = DragDropAmbient.current
+    val density = AmbientDensity.current
+    val dragDropState = AmbientDragDrop.current
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
@@ -164,12 +163,13 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
             Box(
                 modifier = Modifier
                     .padding(start = treeConfig.horizontalPaddingStart - 1.dp, top = treeConfig.verticalPaddingTop)
-                    .size(1.dp, (with(DensityAmbient.current) { height.toDp() } - (with(DensityAmbient.current) { lastItemHeight.toDp() } - treeConfig.verticalPositionOnItem) + 1.dp).coerceAtLeast(0.dp) - treeConfig.verticalPaddingTop)
+                    .size(1.dp, (with(AmbientDensity.current) { height.toDp() } - (with(AmbientDensity.current) { lastItemHeight.toDp() } - treeConfig.verticalPositionOnItem) + 1.dp).coerceAtLeast(0.dp) - treeConfig.verticalPaddingTop)
                     .background(MaterialTheme.colors.secondaryVariant)
             )
         }
     }
 }
+
 
 @Composable
 fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier) {
@@ -182,10 +182,11 @@ fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier) 
         is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> vectorResource(id = R.drawable.ic_extended_fab)
         is PrototypeComponent.Slotted.TopAppBar -> vectorResource(id = R.drawable.ic_top_app_bar)
         is PrototypeComponent.Slotted.BottomAppBar -> vectorResource(id = R.drawable.ic_bottom_app_bar)
+        is PrototypeComponent.Slotted.Scaffold -> vectorResource(id = R.drawable.ic_scaffold)
     }
 
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Icon(asset = icon)
+        Icon(imageVector = icon)
         Text(text = component.name, modifier = Modifier.padding(start = 16.dp))
     }
 }

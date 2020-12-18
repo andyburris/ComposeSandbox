@@ -15,7 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.DensityAmbient
+import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.dp
 
 /**
@@ -38,8 +38,8 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun Backdrop(
-    backdropState: BackdropState = remember { BackdropState.CONCEALED },
     modifier: Modifier = Modifier,
+    backdropState: BackdropState = remember { BackdropState.CONCEALED },
     peekContent: @Composable() (BackdropState) -> Unit,
     backdropContent: @Composable() (BackdropState) -> Unit,
     backdropColor: Color = MaterialTheme.colors.primary,
@@ -57,7 +57,7 @@ fun Backdrop(
                 backdropContent(backdropState)
             }
             Surface(
-                modifier = modifier.offset(y = with(DensityAmbient.current){ frontSlide.toDp() }),
+                modifier = modifier.offset(y = with(AmbientDensity.current){ frontSlide.toDp() }),
                 color = bodyColor,
                 shape = RoundedCornerShape(topLeft = 16.dp, topRight = 16.dp)
             ) {

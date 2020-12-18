@@ -12,18 +12,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.VectorAsset
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun Chip(
     label: String,
-    icon: VectorAsset? = null,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
     selected: Boolean = false,
     backgroundColor: Color = if (selected) MaterialTheme.colors.onSecondary else MaterialTheme.colors.surface,
     borderColor: Color = if (selected) Color.Transparent else MaterialTheme.colors.onSecondary,
-    textColor: Color = if (selected) MaterialTheme.colors.onPrimary else Color.Unspecified,
-    modifier: Modifier = Modifier
+    textColor: Color = if (selected) MaterialTheme.colors.onPrimary else Color.Unspecified
 ) {
     Row(
         modifier = modifier
@@ -33,7 +33,7 @@ fun Chip(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (icon != null) {
-            Icon(asset = icon, modifier = Modifier.padding(end = 12.dp))
+            Icon(imageVector = icon, modifier = Modifier.padding(end = 12.dp))
         }
         Text(text = label, color = textColor)
     }

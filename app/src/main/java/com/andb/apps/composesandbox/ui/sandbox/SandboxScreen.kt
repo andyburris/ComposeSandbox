@@ -1,5 +1,6 @@
 package com.andb.apps.composesandbox.ui.sandbox
 
+import androidx.compose.animation.animate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,19 +14,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.savedinstancestate.savedInstanceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.TransformOrigin
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.drawLayer
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.andb.apps.composesandbox.BuildConfig
-import com.andb.apps.composesandbox.data.model.toColors
 import com.andb.apps.composesandbox.model.*
 import com.andb.apps.composesandbox.state.*
 import com.andb.apps.composesandbox.ui.common.ProjectThemeProvider
-import com.andb.apps.composesandbox.ui.common.RenderComponent
+import com.andb.apps.composesandbox.ui.common.RenderComponentParent
 import com.andb.apps.composesandbox.ui.sandbox.drawer.Drawer
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.ComponentItem
 
@@ -52,26 +53,38 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) ->
             },
             bodyColor = Color(229, 229, 229),
             bodyContent = {
-                Drawer(
-                    sandboxState = sandboxState,
-                    onScreenUpdate = { onUpdateProject.invoke(sandboxState.project.updatedScreen(it)) },
-                    onThemeUpdate = { onUpdateProject.invoke(sandboxState.project.copy(theme = it)) }
-                ) { sheetState ->
-                    MaterialTheme(colors = sandboxState.project.theme.toColors()) {
-                        val (height, setHeight) = remember { mutableStateOf(0) }
-                        val scale = (sheetState.offset.value / height).coerceIn(0.5f..1f)
-
-                        Box(
-                            modifier = Modifier
-                                .drawLayer(scaleX = scale, scaleY = scale, transformOrigin = TransformOrigin(0.5f, 0f))
-                                .onGloballyPositioned { setHeight(it.size.height) }
-                                .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 100.dp)
-                                .clipToBounds()
-                                .background(MaterialTheme.colors.background)
-                                .fillMaxSize()
-                        ) {
-                            RenderComponent(component = sandboxState.openedTree.tree)
-                        }
+                val bottomSheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
+                val cornerRadius = animate(target = if (bottomSheetState.targetValue == BottomSheetValue.Expanded) 16.dp else 32.dp)
+                val (height, setHeight) = remember { mutableStateOf(0) }
+                BottomSheetScaffold(
+                    modifier = Modifier.onGloballyPositioned { setHeight(it.size.height) },
+                    scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState),
+                    sheetShape = RoundedCornerShape(topLeft = cornerRadius, topRight = cornerRadius),
+                    sheetPeekHeight = 88.dp,
+                    sheetContent = {
+                        Drawer(
+                            sandboxState = sandboxState,
+                            sheetState = bottomSheetState,
+                            modifier = Modifier.height(with(AmbientDensity.current) { (height/2).toDp() } + 88.dp),
+                            onScreenUpdate = { onUpdateProject.invoke(sandboxState.project.updatedScreen(it)) },
+                            onThemeUpdate = { onUpdateProject.invoke(sandboxState.project.copy(theme = it)) }
+                        )
+                    }
+                ) {
+                    val offset = if (bottomSheetState.offset.value.isNaN()) 0f else bottomSheetState.offset.value
+                    val scale = (offset / height).coerceIn(0f..1f)
+                    println("height = $height, offset = ${bottomSheetState.offset.value}, scale = $scale")
+                    //Box(Modifier.background(Color.Red).size(128.dp))
+                    Box(
+                        modifier = Modifier
+                            .background(MaterialTheme.colors.secondary)
+                            .graphicsLayer(scaleX = scale, scaleY = scale, transformOrigin = TransformOrigin(0.5f, 0f))
+                            .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 32.dp /*+ with(AmbientDensity.current) { (height-offset).toDp() }*/)
+                            .clipToBounds()
+                            .background(MaterialTheme.colors.background)
+                            .fillMaxSize()
+                    ) {
+                        RenderComponentParent(theme = sandboxState.project.theme, component = sandboxState.openedTree.tree)
                     }
                 }
             }
@@ -89,17 +102,17 @@ private fun SandboxAppBar(sandboxState: ViewState.Sandbox, project: Project, ico
                 checked = iconState == BackdropState.REVEALED,
                 onCheckedChange = { onToggle.invoke() }
             ) {
-                Icon(asset = if (iconState == BackdropState.CONCEALED) Icons.Default.Menu else Icons.Default.Clear)
+                Icon(imageVector = if (iconState == BackdropState.CONCEALED) Icons.Default.Menu else Icons.Default.Clear)
             }
         },
         title = { Text(text = project.name) },
         actions = {
-            IconButton(onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditTheme)) }) { Icon(asset = Icons.Default.Palette) }
-            IconButton(onClick = { actionHandler.invoke(UserAction.OpenScreen(Screen.Preview(project.id, sandboxState.openedTree.id))) }) { Icon(asset = Icons.Default.PlayCircleFilled) }
+            IconButton(onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditTheme)) }) { Icon(imageVector = Icons.Default.Palette) }
+            IconButton(onClick = { actionHandler.invoke(UserAction.OpenScreen(Screen.Preview(project.id, sandboxState.openedTree.id))) }) { Icon(imageVector = Icons.Default.PlayCircleFilled) }
             DropdownMenu(
                 toggle = {
                     IconButton(onClick = { menuShowing.value = true }) {
-                        Icon(asset = Icons.Default.MoreVert)
+                        Icon(imageVector = Icons.Default.MoreVert)
                     }
                 },
                 expanded = menuShowing.value,
@@ -192,10 +205,10 @@ private fun ScreenItem(screen: PrototypeScreen, selected: Boolean, onEdit: () ->
             .fillMaxWidth()
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(asset = Icons.Default.PhoneAndroid, tint = MaterialTheme.colors.onPrimary)
+            Icon(imageVector = Icons.Default.PhoneAndroid, tint = MaterialTheme.colors.onPrimary)
             Text(text = screen.name, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(start = 16.dp))
         }
-        Icon(asset = Icons.Default.Edit, tint = MaterialTheme.colors.onPrimary, modifier = Modifier.clickable(onClick = onEdit))
+        Icon(imageVector = Icons.Default.Edit, tint = MaterialTheme.colors.onPrimary, modifier = Modifier.clickable(onClick = onEdit))
     }
 }
 
@@ -210,11 +223,11 @@ private fun EditScreenDialog(screen: PrototypeScreen, canDelete: Boolean, onDism
             modifier = Modifier.padding(32.dp).fillMaxWidth()
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(asset = Icons.Default.Clear, tint = MaterialTheme.colors.onSecondary, modifier = Modifier.clickable(onClick = onDismiss))
+                Icon(imageVector = Icons.Default.Clear, tint = MaterialTheme.colors.onSecondary, modifier = Modifier.clickable(onClick = onDismiss))
                 Text(text = "Edit Screen", style = MaterialTheme.typography.h6, color = MaterialTheme.colors.onSecondary, modifier = Modifier.padding(start = 16.dp))
             }
             if (canDelete) {
-                Icon(asset = Icons.Default.Delete, tint = MaterialTheme.colors.onSecondary, modifier = Modifier.clickable(onClick = onDelete))
+                Icon(imageVector = Icons.Default.Delete, tint = MaterialTheme.colors.onSecondary, modifier = Modifier.clickable(onClick = onDelete))
             }
         }
         OutlinedTextField(
@@ -229,7 +242,7 @@ private fun EditScreenDialog(screen: PrototypeScreen, canDelete: Boolean, onDism
             toggle = {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.clickable { dropdownOpen.value = true }.fillMaxWidth().padding(horizontal = 32.dp)) {
                     ComponentItem(component = baseComponent.value)
-                    Icon(asset = Icons.Default.ArrowDropDown)
+                    Icon(imageVector = Icons.Default.ArrowDropDown)
                 }
             },
             expanded = dropdownOpen.value,
@@ -257,6 +270,6 @@ private fun EditScreenDialog(screen: PrototypeScreen, canDelete: Boolean, onDism
 private fun CategoryHeader(category: String, modifier: Modifier = Modifier, onAdd: () -> Unit) {
     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth()) {
         Text(text = category.toUpperCase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.onPrimary)
-        Icon(asset = Icons.Default.Add, tint = MaterialTheme.colors.onPrimary, modifier = Modifier.clickable(onClick = onAdd))
+        Icon(imageVector = Icons.Default.Add, tint = MaterialTheme.colors.onPrimary, modifier = Modifier.clickable(onClick = onAdd))
     }
 }

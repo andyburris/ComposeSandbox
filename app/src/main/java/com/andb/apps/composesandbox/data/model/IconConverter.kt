@@ -2,12 +2,12 @@ package com.andb.apps.composesandbox.data.model
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.ui.graphics.vector.VectorAsset
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.andb.apps.composesandbox.model.PrototypeIcon
 
-val VectorAsset.readableName get() = this.name.removePrefix("Filled.")
+val ImageVector.readableName get() = this.name.removePrefix("Filled.")
 
-val PrototypeIcon.vectorAsset get() = when(this) {
+val PrototypeIcon.imageVector get() = when(this) {
     PrototypeIcon.Accessibility -> Icons.Default.Accessibility
     PrototypeIcon.AccessibilityNew -> Icons.Default.AccessibilityNew
     PrototypeIcon.Accessible -> Icons.Default.Accessible

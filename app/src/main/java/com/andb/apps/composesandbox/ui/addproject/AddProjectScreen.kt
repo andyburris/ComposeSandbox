@@ -70,7 +70,7 @@ fun AddProjectScreen(onAddProject: (Project) -> Unit) {
                     Text(text = "Create Project")
                 },
                 icon = {
-                    Icon(asset = Icons.Default.Add)
+                    Icon(imageVector = Icons.Default.Add)
                 },
                 onClick = {
                     if (canSave) {

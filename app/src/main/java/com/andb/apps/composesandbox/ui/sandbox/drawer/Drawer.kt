@@ -1,15 +1,12 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer
 
-import androidx.compose.animation.animate
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
@@ -17,17 +14,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawShadow
-import androidx.compose.ui.drawLayer
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.gesture.DragObserver
 import androidx.compose.ui.gesture.dragGestureFilter
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.VectorAsset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.globalPosition
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.DensityAmbient
+import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.model.*
@@ -47,147 +44,135 @@ import com.andb.apps.composesandbox.ui.util.ItemTransitionState
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Drawer(sandboxState: ViewState.Sandbox, onScreenUpdate: (PrototypeScreen) -> Unit, onThemeUpdate: (Theme) -> Unit, bodyContent: @Composable() (sheetState: BottomSheetState) -> Unit) {
-    val sheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Peek)
-    val cornerRadius = animate(target = if (sheetState.targetValue == BottomSheetValue.Expanded) 16.dp else 32.dp)
-    val density = DensityAmbient.current
+fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifier: Modifier = Modifier, onScreenUpdate: (PrototypeScreen) -> Unit, onThemeUpdate: (Theme) -> Unit) {
+    val density = AmbientDensity.current
     val actionHandler = ActionHandlerAmbient.current
     val movingComponent = remember { mutableStateOf<PrototypeComponent?>(null) }
-    BottomSheetLayout(
-        sheetState = sheetState,
-        closeable = false,
-        peekHeight = 88.dp,
-        sheetShape = RoundedCornerShape(topLeft = cornerRadius, topRight = cornerRadius),
-        bodyContent = { bodyContent(sheetState) },
-        gesturesEnabled = movingComponent.value == null,
-        sheetContent = {
-            val (contentWidth, setContentWidth) = remember { mutableStateOf(0) }
-            val drawerState = sandboxState.drawerStack.last()
-            println("drawerState = $drawerState")
-            val dragPosition = remember { mutableStateOf(Position(0.dp, 0.dp)) }
-            val dragDropState = remember(sandboxState.openedTree, drawerState) {
-                DragDropState(dragPosition, mutableStateOf(Position(0.dp, 0.dp)), mutableListOf()) { dropState ->
-                    when (dropState) {
-                        is DropState.OverTreeItem -> {
-                            println("dropping, movingComponent? = ${movingComponent.value}, dropState = $dropState")
-                            val moving = movingComponent.value ?: return@DragDropState
-                            println("adding to tree")
-                            val isNesting = dropState.dropPosition is DropPosition.NESTED
-                            println("isNesting = $isNesting")
-                            val updatedTree = when(dropState.dropPosition) {
-                                is DropPosition.NESTED.First -> sandboxState.openedTree.tree.plusChildInTree(moving, dropState.hoveringComponent as PrototypeComponent.Group, 0)
-                                is DropPosition.NESTED.Last -> sandboxState.openedTree.tree.plusChildInTree(moving, dropState.hoveringComponent as PrototypeComponent.Group, dropState.hoveringComponent.children.size)
-                                else ->  {
-                                    val (parent, index) = sandboxState.openedTree.tree.findParentOfComponent(dropState.hoveringComponent)!!
-                                    println("not nesting, parent = $parent, index = $index")
-                                    when (dropState.dropPosition) {
-                                        DropPosition.ABOVE -> sandboxState.openedTree.tree.plusChildInTree(moving, parent, index)
-                                        DropPosition.BELOW -> sandboxState.openedTree.tree.plusChildInTree(moving, parent, index + 1)
-                                        else -> throw Error("will never reach here")
-                                    }
-                                }
-                            } as PrototypeComponent.Group
-                            println("updated tree = $updatedTree")
-                            movingComponent.value = null
-                            onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
+    val (contentWidth, setContentWidth) = remember { mutableStateOf(0) }
+    val drawerState = sandboxState.drawerStack.last()
+    println("drawerState = $drawerState")
+    val dragPosition = remember { mutableStateOf(Position(0.dp, 0.dp)) }
+    val dragDropState = remember(sandboxState.openedTree, drawerState) {
+        DragDropState(dragPosition, mutableStateOf(Position(0.dp, 0.dp)), mutableListOf()) { dropState ->
+            when (dropState) {
+                is DropState.OverTreeItem -> {
+                    println("dropping, movingComponent? = ${movingComponent.value}, dropState = $dropState")
+                    val moving = movingComponent.value ?: return@DragDropState
+                    println("adding to tree")
+                    val isNesting = dropState.dropPosition is DropPosition.NESTED
+                    println("isNesting = $isNesting")
+                    val updatedTree = when (dropState.dropPosition) {
+                        is DropPosition.NESTED.First -> sandboxState.openedTree.tree.plusChildInTree(moving, dropState.hoveringComponent as PrototypeComponent.Group, 0)
+                        is DropPosition.NESTED.Last -> sandboxState.openedTree.tree.plusChildInTree(moving, dropState.hoveringComponent as PrototypeComponent.Group, dropState.hoveringComponent.children.size)
+                        else -> {
+                            val (parent, index) = sandboxState.openedTree.tree.findParentOfComponent(dropState.hoveringComponent)!!
+                            println("not nesting, parent = $parent, index = $index")
+                            when (dropState.dropPosition) {
+                                DropPosition.ABOVE -> sandboxState.openedTree.tree.plusChildInTree(moving, parent, index)
+                                DropPosition.BELOW -> sandboxState.openedTree.tree.plusChildInTree(moving, parent, index + 1)
+                                else -> throw Error("will never reach here")
+                            }
                         }
-                        is DropState.OverNone -> {
-                            movingComponent.value = null
-                        }
-                    }
+                    } as PrototypeComponent.Group
+                    println("updated tree = $updatedTree")
+                    movingComponent.value = null
+                    onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
+                }
+                is DropState.OverNone -> {
+                    movingComponent.value = null
                 }
             }
-            DragDropProvider(dragDropState = dragDropState) {
-                val oldState = remember { mutableStateOf<DrawerState?>(null) }
-                val transitionDefinition = getDrawerContentTransition(
-                    offsetPx = contentWidth.toFloat(),
-                    reverse = when (drawerState) {
-                        is DrawerState.Tree -> true // always at bottom of stack
-                        is DrawerState.AddComponent, is DrawerState.AddModifier, is DrawerState.EditModifier, is DrawerState.EditTheme -> false // always at top of stack
-                        is DrawerState.EditComponent -> oldState.value !is DrawerState.Tree
+        }
+    }
+    DragDropProvider(dragDropState = dragDropState) {
+        val oldState = remember { mutableStateOf<DrawerState?>(null) }
+        val transitionDefinition = getDrawerContentTransition(
+            offsetPx = contentWidth.toFloat(),
+            reverse = when (drawerState) {
+                is DrawerState.Tree -> true // always at bottom of stack
+                is DrawerState.AddComponent, is DrawerState.AddModifier, is DrawerState.EditModifier, is DrawerState.EditTheme -> false // always at top of stack
+                is DrawerState.EditComponent -> oldState.value !is DrawerState.Tree
+            },
+            enabled = oldState.value != null && oldState.value!!::class != drawerState::class
+        )
+        oldState.value = drawerState
+        ItemSwitcher(
+            current = drawerState,
+            animateIf = { old, current -> old != null && old::class != current::class },
+            keyFinder = { it::class },
+            transitionDefinition = transitionDefinition,
+            modifier = modifier
+                .dragGestureFilter(
+                    dragObserver = object : DragObserver {
+                        override fun onDrag(dragDistance: Offset): Offset {
+                            dragDropState.dragPosition.value = dragDropState.dragPosition.value + dragDistance.toDpPosition(density)
+                            println("dragging, value = ${dragDropState.dragPosition.value}")
+                            return dragDistance
+                        }
+
+                        override fun onStop(velocity: Offset) {
+                            dragDropState.drop()
+                        }
+
+                        override fun onCancel() {
+                            dragDropState.drop()
+                        }
                     },
-                    enabled = oldState.value != null && oldState.value!!::class != drawerState::class
+                    canDrag = { drawerState is DrawerState.Tree && movingComponent.value != null },
+                    startDragImmediately = false
                 )
-                oldState.value = drawerState
-                ItemSwitcher(
-                    current = drawerState,
-                    animateIf = { old, current -> old != null && old::class != current::class },
-                    keyFinder = { it::class },
-                    transitionDefinition = transitionDefinition,
-                    modifier = Modifier
-                        .dragGestureFilter(
-                            dragObserver = object : DragObserver {
-                                override fun onDrag(dragDistance: Offset): Offset {
-                                    dragDropState.dragPosition.value = dragDropState.dragPosition.value + dragDistance.toDpPosition(density)
-                                    println("dragging, value = ${dragDropState.dragPosition.value}")
-                                    return dragDistance
-                                }
-
-                                override fun onStop(velocity: Offset) {
-                                    dragDropState.drop()
-                                }
-
-                                override fun onCancel() {
-                                    dragDropState.drop()
-                                }
-                            },
-                            canDrag = { drawerState is DrawerState.Tree && movingComponent.value != null },
-                            startDragImmediately = false
-                        )
-                        .pointerInteropFilter { event ->
-                            println("pointerEvent = $event")
-                            dragDropState.dragPosition.value = Offset(event.x, event.y).toDpPosition(density)
-                            false
-                        }
-                        .onGloballyPositioned {
-                            setContentWidth(it.size.width)
-                            dragDropState.globalPosition.value = it.globalPosition.toDpPosition(density)
-                        }
-                ) { drawerState, transitionState ->
-                    Box(
-                        modifier = Modifier.drawLayer(
-                            translationX = transitionState[ContentOffset],
-                            alpha = transitionState[Alpha]
-                        )
-                    ) {
-                        when (drawerState) {
-                            is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = movingComponent.value?.let { dragDropState.getDropState() }) {
-                                val updatedTree = sandboxState.openedTree.tree.minusChildFromTree(it) as PrototypeComponent.Group
-                                onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
-                                movingComponent.value = it
-                            }
-                            DrawerState.AddComponent -> ComponentList(project = sandboxState.project) {
-                                movingComponent.value = it
-                                actionHandler.invoke(UserAction.Back)
-                            }
-                            is DrawerState.EditComponent -> DrawerEditProperties(drawerState.component, actionHandler) { updatedComponent ->
-                                val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(updatedComponent) as PrototypeComponent.Group
-                                onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
-                            }
-                            is DrawerState.AddModifier -> AddModifierList {
-                                val withModifier = sandboxState.editingComponent.copy(modifiers = sandboxState.editingComponent.modifiers.plusElement(it, 0))
-                                val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(withModifier) as PrototypeComponent.Group
-                                onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
-                                actionHandler.invoke(UserAction.Back)
-                            }
-                            is DrawerState.EditModifier -> DrawerEditModifiers(prototypeModifier = drawerState.modifier) {
-                                println("edited modifier = $it")
-                                val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it)) as PrototypeComponent.Group
-                                onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
-                            }
-                            is DrawerState.EditTheme -> DrawerEditTheme(theme = sandboxState.project.theme) {
-                                onThemeUpdate.invoke(it)
-                            }
-                        }
-                        val currentMovingComponent = movingComponent.value
-                        if (currentMovingComponent != null) {
-                            ComponentDragDropItem(component = currentMovingComponent, position = dragPosition.value)
-                        }
+                .pointerInteropFilter { event ->
+                    println("pointerEvent = $event")
+                    dragDropState.dragPosition.value = Offset(event.x, event.y).toDpPosition(density)
+                    false
+                }
+                .onGloballyPositioned {
+                    setContentWidth(it.size.width)
+                    dragDropState.globalPosition.value = it.globalPosition.toDpPosition(density)
+                }
+        ) { drawerState, transitionState ->
+            Box(
+                modifier = Modifier.graphicsLayer(
+                    translationX = transitionState[ContentOffset],
+                    alpha = transitionState[Alpha]
+                )
+            ) {
+                when (drawerState) {
+                    is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = movingComponent.value?.let { dragDropState.getDropState() }) {
+                        val updatedTree = sandboxState.openedTree.tree.minusChildFromTree(it) as PrototypeComponent.Group
+                        onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
+                        movingComponent.value = it
+                    }
+                    DrawerState.AddComponent -> ComponentList(project = sandboxState.project) {
+                        movingComponent.value = it
+                        actionHandler.invoke(UserAction.Back)
+                    }
+                    is DrawerState.EditComponent -> DrawerEditProperties(drawerState.component, actionHandler) { updatedComponent ->
+                        val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(updatedComponent) as PrototypeComponent.Group
+                        onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
+                    }
+                    is DrawerState.AddModifier -> AddModifierList {
+                        val withModifier = sandboxState.editingComponent.copy(modifiers = sandboxState.editingComponent.modifiers.plusElement(it, 0))
+                        val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(withModifier) as PrototypeComponent.Group
+                        onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
+                        actionHandler.invoke(UserAction.Back)
+                    }
+                    is DrawerState.EditModifier -> DrawerEditModifiers(prototypeModifier = drawerState.modifier) {
+                        println("edited modifier = $it")
+                        val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it)) as PrototypeComponent.Group
+                        onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
+                    }
+                    is DrawerState.EditTheme -> DrawerEditTheme(theme = sandboxState.project.theme) {
+                        onThemeUpdate.invoke(it)
                     }
                 }
+                val currentMovingComponent = movingComponent.value
+                if (currentMovingComponent != null) {
+                    ComponentDragDropItem(component = currentMovingComponent, position = dragPosition.value)
+                }
             }
-        },
-    )
+        }
+    }
 }
 
 private val Alpha = FloatPropKey()
@@ -254,18 +239,18 @@ private fun getDrawerContentTransition(
 }
 
 @Composable
-fun DrawerHeader(title: String, icon: VectorAsset = Icons.Default.ArrowBack, onIconClick: () -> Unit, actions: (@Composable RowScope.() -> Unit)? = null) {
+fun DrawerHeader(title: String, modifier: Modifier = Modifier, icon: ImageVector = Icons.Default.ArrowBack, onIconClick: () -> Unit, actions: (@Composable RowScope.() -> Unit)? = null) {
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.padding(32.dp).fillMaxWidth()
+        modifier = modifier.padding(32.dp).fillMaxWidth()
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                asset = icon,
+                imageVector = icon,
                 modifier = Modifier.clickable(onClick = onIconClick)
             )
             Text(
@@ -284,12 +269,15 @@ fun DrawerHeader(title: String, icon: VectorAsset = Icons.Default.ArrowBack, onI
 }
 
 @Composable
+fun ScrollState.toShadow() = with(AmbientDensity.current){ this@toShadow.value.toDp() }.coerceAtMost(4.dp)
+
+@Composable
 private fun ComponentDragDropItem(component: PrototypeComponent, position: Position) {
     ComponentItem(
         component = component,
         modifier = Modifier
             .offset(position.x, position.y)
-            .drawShadow(4.dp, RoundedCornerShape(8.dp))
+            .shadow(4.dp, RoundedCornerShape(8.dp))
             .background(Color.White, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
     )
