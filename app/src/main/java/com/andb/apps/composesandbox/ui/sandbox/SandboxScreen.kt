@@ -34,75 +34,75 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.ComponentItem
 @Composable
 fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) -> Unit) {
     ProjectThemeProvider(projectTheme = sandboxState.project.theme) {
-        val (backdropState, setBackdropState) = remember { mutableStateOf(BackdropState.CONCEALED) }
-        Backdrop(
-            backdropState = backdropState,
-            modifier = Modifier.fillMaxSize(),
-            peekContent = { state ->
+        val backdropState = rememberBackdropScaffoldState(initialValue = BackdropValue.Concealed)
+        BackdropScaffold(
+            scaffoldState = backdropState,
+            appBar = {
                 SandboxAppBar(
                     sandboxState = sandboxState,
                     project = sandboxState.project,
-                    iconState = backdropState,
-                    onToggle = { setBackdropState(backdropState.other()) }
+                    iconState = backdropState.value,
+                    onToggle = { if (backdropState.value == BackdropValue.Concealed) backdropState.reveal() else backdropState.conceal() }
                 )
             },
-            backdropContent = {
+            backLayerContent = {
                 SandboxBackdrop(sandboxState) {
                     onUpdateProject.invoke(it)
                 }
-            },
-            bodyColor = Color(229, 229, 229),
-            bodyContent = {
-                val bottomSheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
-                val cornerRadius = animate(target = if (bottomSheetState.targetValue == BottomSheetValue.Expanded) 16.dp else 32.dp)
-                val (height, setHeight) = remember { mutableStateOf(0) }
-                BottomSheetScaffold(
-                    modifier = Modifier.onGloballyPositioned { setHeight(it.size.height) },
-                    scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState),
-                    sheetShape = RoundedCornerShape(topLeft = cornerRadius, topRight = cornerRadius),
-                    sheetPeekHeight = 88.dp,
-                    sheetContent = {
-                        Drawer(
-                            sandboxState = sandboxState,
-                            sheetState = bottomSheetState,
-                            modifier = Modifier.height(with(AmbientDensity.current) { (height/2).toDp() } + 88.dp),
-                            onScreenUpdate = { onUpdateProject.invoke(sandboxState.project.updatedScreen(it)) },
-                            onThemeUpdate = { onUpdateProject.invoke(sandboxState.project.copy(theme = it)) }
-                        )
-                    }
+            }
+        ) {
+            val bottomSheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
+            val cornerRadius = animate(target = if (bottomSheetState.targetValue == BottomSheetValue.Expanded) 16.dp else 32.dp)
+            val (height, setHeight) = remember { mutableStateOf(0) }
+            val canDragSheet = remember { mutableStateOf(true) }
+            BottomSheetScaffold(
+                modifier = Modifier.onGloballyPositioned { setHeight(it.size.height) },
+                scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState),
+                sheetShape = RoundedCornerShape(topLeft = cornerRadius, topRight = cornerRadius),
+                sheetPeekHeight = 88.dp,
+                sheetGesturesEnabled = false,
+                sheetContent = {
+                    Drawer(
+                        sandboxState = sandboxState,
+                        sheetState = bottomSheetState,
+                        modifier = Modifier.height(with(AmbientDensity.current) { (height/2).toDp() } + 88.dp),
+                        onScreenUpdate = { onUpdateProject.invoke(sandboxState.project.updatedScreen(it)) },
+                        onThemeUpdate = { onUpdateProject.invoke(sandboxState.project.copy(theme = it)) },
+                        onDragUpdate = { canDragSheet.value = !it }
+                    )
+                }
+            ) {
+                val offset = if (bottomSheetState.offset.value.isNaN()) 0f else bottomSheetState.offset.value
+                val scale = (offset / height).coerceIn(0f..1f)
+                println("height = $height, offset = ${bottomSheetState.offset.value}, scale = $scale")
+                //Box(Modifier.background(Color.Red).size(128.dp))
+                Box(
+                    modifier = Modifier
+                        .background(MaterialTheme.colors.secondary)
+                        .graphicsLayer(scaleX = scale, scaleY = scale, transformOrigin = TransformOrigin(0.5f, 0f))
+                        .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 32.dp /*+ with(AmbientDensity.current) { (height-offset).toDp() }*/)
+                        .clipToBounds()
+                        .background(MaterialTheme.colors.background)
+                        .fillMaxSize()
                 ) {
-                    val offset = if (bottomSheetState.offset.value.isNaN()) 0f else bottomSheetState.offset.value
-                    val scale = (offset / height).coerceIn(0f..1f)
-                    println("height = $height, offset = ${bottomSheetState.offset.value}, scale = $scale")
-                    //Box(Modifier.background(Color.Red).size(128.dp))
-                    Box(
-                        modifier = Modifier
-                            .background(MaterialTheme.colors.secondary)
-                            .graphicsLayer(scaleX = scale, scaleY = scale, transformOrigin = TransformOrigin(0.5f, 0f))
-                            .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 32.dp /*+ with(AmbientDensity.current) { (height-offset).toDp() }*/)
-                            .clipToBounds()
-                            .background(MaterialTheme.colors.background)
-                            .fillMaxSize()
-                    ) {
-                        RenderComponentParent(theme = sandboxState.project.theme, component = sandboxState.openedTree.tree)
-                    }
+                    RenderComponentParent(theme = sandboxState.project.theme, component = sandboxState.openedTree.tree)
                 }
             }
-        )
+        }
     }
 }
 
 @Composable
-private fun SandboxAppBar(sandboxState: ViewState.Sandbox, project: Project, iconState: BackdropState, onToggle: () -> Unit) {
+private fun SandboxAppBar(sandboxState: ViewState.Sandbox, project: Project, iconState: BackdropValue, onToggle: () -> Unit) {
     val actionHandler = Handler
     val menuShowing = remember { mutableStateOf(false) }
     TopAppBar(
         navigationIcon = {
             IconToggleButton(
-                checked = iconState == BackdropState.REVEALED,
+                checked = iconState == BackdropValue.Revealed,
                 onCheckedChange = { onToggle.invoke() }
             ) {
-                Icon(imageVector = if (iconState == BackdropState.CONCEALED) Icons.Default.Menu else Icons.Default.Clear)
+                Icon(imageVector = if (iconState == BackdropValue.Concealed) Icons.Default.Menu else Icons.Default.Clear)
             }
         },
         title = { Text(text = project.name) },
@@ -144,7 +144,8 @@ private fun SandboxAppBar(sandboxState: ViewState.Sandbox, project: Project, ico
                 }
             }
         },
-        elevation = 0.dp
+        elevation = 0.dp,
+        backgroundColor = MaterialTheme.colors.primary
     )
 }
 

@@ -1,12 +1,15 @@
 package com.andb.apps.composesandbox.ui.common
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.emptyContent
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andb.apps.composesandbox.data.model.*
@@ -16,7 +19,9 @@ import com.andb.apps.composesandbox.model.Theme
 @Composable
 fun RenderComponentParent(theme: Theme, component: PrototypeComponent) {
     MaterialTheme(colors = theme.toColors(), typography = Typography(), shapes = Shapes()) {
-        RenderComponent(component = component)
+        Box(modifier = Modifier.background(MaterialTheme.colors.background).fillMaxSize()) {
+            RenderComponent(component = component)
+        }
     }
 }
 

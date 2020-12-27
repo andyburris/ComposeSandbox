@@ -14,8 +14,8 @@ private val blueGrey900 = Color(0xFF1c313a)
 private val DarkColorPalette = darkColors(
     primary = blueGrey500,
     primaryVariant = blueGrey700,
-    secondary = Color.Black.copy(alpha = .05f),
-    onSecondary = Color.Black.copy(alpha = 0.5f)
+    secondary = Color.White.copy(alpha = .05f),
+    onSecondary = Color.White.copy(alpha = 0.5f)
 )
 
 private val LightColorPalette = lightColors(

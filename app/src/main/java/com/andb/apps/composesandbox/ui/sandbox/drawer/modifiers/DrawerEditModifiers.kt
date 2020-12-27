@@ -7,10 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.model.PrototypeModifier
-import com.andb.apps.composesandbox.model.toAll
-import com.andb.apps.composesandbox.model.toIndividual
-import com.andb.apps.composesandbox.model.toSides
+import com.andb.apps.composesandbox.model.*
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.Chip
@@ -22,7 +19,7 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.NumberPicker
 fun DrawerEditModifiers(prototypeModifier: PrototypeModifier, onEdit: (PrototypeModifier) -> Unit) {
     val actionHandler = ActionHandlerAmbient.current
     Column() {
-        DrawerHeader(title = "Edit Modifier", onIconClick = { actionHandler.invoke(UserAction.Back) })
+        DrawerHeader(title = prototypeModifier.name, screenName = "Edit Modifier".toUpperCase(), onIconClick = { actionHandler.invoke(UserAction.Back) })
         Column(Modifier.padding(horizontal = 32.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             when (prototypeModifier) {
                 is PrototypeModifier.Padding -> PaddingModifierEditor(prototypeModifier = prototypeModifier, onEdit)

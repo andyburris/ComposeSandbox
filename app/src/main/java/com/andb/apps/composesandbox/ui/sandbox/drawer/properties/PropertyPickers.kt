@@ -30,6 +30,7 @@ import com.andb.apps.composesandbox.data.model.projectColor
 import com.andb.apps.composesandbox.model.*
 import com.andb.apps.composesandbox.ui.common.ColorPickerCircle
 import com.andb.apps.composesandbox.ui.common.ColorPickerWithTheme
+import com.andb.apps.composesandbox.util.bottomBorder
 import com.andb.apps.composesandbox.util.isDark
 
 @Composable
@@ -65,9 +66,10 @@ fun <T> OptionsPicker(label: String, selected: T, options: List<T>, stringify: (
 fun NumberPicker(label: String, current: Int, minValue: Int = 0, maxValue: Int = Int.MAX_VALUE, onValueChange: (Int) -> Unit) {
     GenericPropertyEditor(label = label) {
         val dragged = remember { mutableStateOf(Pair(current, 0f)) }
-        Column(
+        Row(
             modifier = Modifier
                 .preferredWidth(96.dp)
+                .bottomBorder(1.dp, MaterialTheme.colors.onSecondary)
                 .background(
                     MaterialTheme.colors.secondary,
                     shape = RoundedCornerShape(topLeft = 8.dp, topRight = 8.dp)
@@ -93,26 +95,21 @@ fun NumberPicker(label: String, current: Int, minValue: Int = 0, maxValue: Int =
                         val numbersDragged = dragged.value.second.toDp().value
                         onValueChange.invoke((dragged.value.first + numbersDragged).toInt().coerceIn(minValue..maxValue))
                     }
-                )
+                ),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Remove.copy(defaultHeight = 16.dp, defaultWidth = 16.dp),
-                    tint = MaterialTheme.colors.onSecondary,
-                    modifier = Modifier.clickable { onValueChange.invoke((current - 1).coerceIn(minValue..maxValue)) }.padding(8.dp)
-                )
-                Text(text = current.toString())
-                Icon(
-                    imageVector = Icons.Default.Add.copy(defaultHeight = 16.dp, defaultWidth = 16.dp),
-                    tint = MaterialTheme.colors.onSecondary,
-                    modifier = Modifier.clickable { onValueChange.invoke((current + 1).coerceIn(minValue..maxValue)) }.padding(8.dp)
-                )
-            }
-            Box(modifier = Modifier.background(MaterialTheme.colors.onSecondary).fillMaxWidth().height(1.dp))
+            Icon(
+                imageVector = Icons.Default.Remove.copy(defaultHeight = 16.dp, defaultWidth = 16.dp),
+                tint = MaterialTheme.colors.onSecondary,
+                modifier = Modifier.clickable { onValueChange.invoke((current - 1).coerceIn(minValue..maxValue)) }.padding(8.dp)
+            )
+            Text(text = current.toString())
+            Icon(
+                imageVector = Icons.Default.Add.copy(defaultHeight = 16.dp, defaultWidth = 16.dp),
+                tint = MaterialTheme.colors.onSecondary,
+                modifier = Modifier.clickable { onValueChange.invoke((current + 1).coerceIn(minValue..maxValue)) }.padding(8.dp)
+            )
         }
     }
 }
@@ -129,7 +126,7 @@ fun GenericPropertyEditor(label: String, modifier: Modifier = Modifier, widget: 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.height(32.dp).fillMaxWidth()
     ) {
         Text(label)
         widget()
@@ -168,7 +165,7 @@ fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Mod
         Dialog(onDismissRequest = { pickingColor.value = false }) {
             Column(Modifier.background(MaterialTheme.colors.background, RoundedCornerShape(16.dp))) {
                 Text(text = "Pick Color", style = MaterialTheme.typography.h6, modifier = Modifier.padding(32.dp))
-                ColorPickerWithTheme(current = current ,onSelect = onSelect)
+                ColorPickerWithTheme(current = current, onSelect = onSelect)
                 Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
                     TextButton(onClick = { pickingColor.value = false }) {
                         Text(text = "Select".toUpperCase())
@@ -180,7 +177,7 @@ fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Mod
 }
 
 @Composable
-fun <T: Properties.Slotted> SlotPicker(name: String, properties: T, onSelect: (T) -> Unit) {
+fun <T : Properties.Slotted> SlotPicker(name: String, properties: T, onSelect: (T) -> Unit) {
     SlotPicker(
         name = name,
         enabled = properties.slotsEnabled["Navigation Icon"] == true,
@@ -194,7 +191,7 @@ fun <T: Properties.Slotted> SlotPicker(name: String, properties: T, onSelect: (T
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SlotPicker(name: String, enabled: Boolean, onToggle: (Boolean) -> Unit, children: (@Composable ColumnScope.() -> Unit)? = null) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SwitchPicker(label = name, current = enabled, onToggle = onToggle)
         if (children != null) {
             AnimatedVisibility(visible = enabled) {
@@ -219,7 +216,7 @@ fun IconPicker(icon: PrototypeIcon, onSelect: (PrototypeIcon) -> Unit) {
             Text(text = icon.name, color = MaterialTheme.colors.onSecondary)
         }
     }
-    if(picking.value) {
+    if (picking.value) {
         Dialog(onDismissRequest = { picking.value = false }) {
             Column(Modifier.background(MaterialTheme.colors.background, RoundedCornerShape(16.dp))) {
                 Text(text = "Pick Icon", style = MaterialTheme.typography.h6, modifier = Modifier.padding(32.dp))
@@ -269,7 +266,7 @@ private fun IconPickerDialogContent(selected: PrototypeIcon, modifier: Modifier,
                                 onSelect.invoke(icon)
                             }
                         }
-                        repeat(rowSize-icons.size) {
+                        repeat(rowSize - icons.size) {
                             Spacer(modifier = Modifier.weight(1f))
                         }
                     }

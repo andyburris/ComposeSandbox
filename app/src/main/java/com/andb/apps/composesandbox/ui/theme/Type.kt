@@ -1,7 +1,5 @@
 package com.andb.apps.composesandbox.ui.theme
 
-import androidx.compose.runtime.Composable
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -18,6 +16,10 @@ val typography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         letterSpacing = 0.15.sp
+    ),
+    caption = TextStyle(
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp
     ),
     /* Other default text styles to override
     button = TextStyle(

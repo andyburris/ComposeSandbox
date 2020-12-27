@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +28,7 @@ import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerScreen
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.*
+import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
 import com.andb.apps.composesandbox.ui.sandbox.drawer.toShadow
 
 /**
@@ -40,14 +42,12 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.toShadow
 fun DrawerTree(opened: PrototypeScreen, sheetState: BottomSheetState, hovering: DropState?, onMoveComponent: (PrototypeComponent) -> Unit) {
     val scrollState = rememberScrollState()
     Box {
-        Column(
-        ) {
+        Column {
             DrawerTreeHeader(
                 opened,
                 modifier = Modifier
-                    //.border(4.dp, Color.Red)
                     .shadow(scrollState.toShadow())
-                    .background(MaterialTheme.colors.background),
+                    .background(AmbientElevationOverlay.current?.apply(color = MaterialTheme.colors.surface, elevation = AmbientAbsoluteElevation.current + scrollState.toShadow()) ?: MaterialTheme.colors.surface),
                 isExpanded = sheetState.targetValue == BottomSheetValue.Expanded
             ) { if (sheetState.isExpanded) sheetState.collapse() else sheetState.expand() }
             ScrollableColumn(scrollState = scrollState) {
@@ -72,25 +72,21 @@ fun DrawerTree(opened: PrototypeScreen, sheetState: BottomSheetState, hovering: 
 @Composable
 private fun DrawerTreeHeader(opened: PrototypeScreen, modifier: Modifier = Modifier, isExpanded: Boolean, onClick: () -> Unit) {
     val actionHandler = ActionHandlerAmbient.current
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = modifier.padding(32.dp).fillMaxWidth()
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            val iconRotation = animate(target = if (isExpanded) 180f else 0f)
+    val iconRotation = animate(target = if (isExpanded) 180f else 0f)
+    DrawerHeader(
+        title = opened.name,
+        modifier = modifier,
+        icon = Icons.Default.KeyboardArrowUp,
+        iconSlot = {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowUp,
                 modifier = Modifier
-                    .clickable(onClick = onClick)
+                    .clickable(onClick = onClick, indication = rememberRipple(bounded = false, radius = 16.dp))
                     .graphicsLayer(rotationZ = iconRotation)
             )
-            Text(
-                text = opened.name,
-                style = MaterialTheme.typography.h6,
-                modifier = Modifier.padding(start = 16.dp)
-            )
-        }
+        },
+        onIconClick = onClick
+    ) {
         Icon(imageVector = Icons.Default.Add, modifier = Modifier.clickable { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.AddComponent)) })
     }
 }

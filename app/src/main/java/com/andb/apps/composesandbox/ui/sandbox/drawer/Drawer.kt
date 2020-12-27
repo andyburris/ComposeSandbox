@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,7 +19,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.gesture.DragObserver
 import androidx.compose.ui.gesture.dragGestureFilter
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInteropFilter
@@ -44,7 +44,7 @@ import com.andb.apps.composesandbox.ui.util.ItemTransitionState
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifier: Modifier = Modifier, onScreenUpdate: (PrototypeScreen) -> Unit, onThemeUpdate: (Theme) -> Unit) {
+fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifier: Modifier = Modifier, onScreenUpdate: (PrototypeScreen) -> Unit, onThemeUpdate: (Theme) -> Unit, onDragUpdate: (dragging: Boolean) -> Unit) {
     val density = AmbientDensity.current
     val actionHandler = ActionHandlerAmbient.current
     val movingComponent = remember { mutableStateOf<PrototypeComponent?>(null) }
@@ -76,10 +76,12 @@ fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifi
                     } as PrototypeComponent.Group
                     println("updated tree = $updatedTree")
                     movingComponent.value = null
+                    onDragUpdate.invoke(false)
                     onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
                 }
                 is DropState.OverNone -> {
                     movingComponent.value = null
+                    onDragUpdate.invoke(false)
                 }
             }
         }
@@ -140,11 +142,13 @@ fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifi
                 when (drawerState) {
                     is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = movingComponent.value?.let { dragDropState.getDropState() }) {
                         val updatedTree = sandboxState.openedTree.tree.minusChildFromTree(it) as PrototypeComponent.Group
+                        onDragUpdate.invoke(true)
                         onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
                         movingComponent.value = it
                     }
                     DrawerState.AddComponent -> ComponentList(project = sandboxState.project) {
                         movingComponent.value = it
+                        onDragUpdate.invoke(true)
                         actionHandler.invoke(UserAction.Back)
                     }
                     is DrawerState.EditComponent -> DrawerEditProperties(drawerState.component, actionHandler) { updatedComponent ->
@@ -239,25 +243,31 @@ private fun getDrawerContentTransition(
 }
 
 @Composable
-fun DrawerHeader(title: String, modifier: Modifier = Modifier, icon: ImageVector = Icons.Default.ArrowBack, onIconClick: () -> Unit, actions: (@Composable RowScope.() -> Unit)? = null) {
-
+fun DrawerHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+    screenName: String? = null,
+    icon: ImageVector = Icons.Default.ArrowBack,
+    iconSlot: @Composable (icon: ImageVector) -> Unit = { Icon(imageVector = it, modifier = Modifier.clickable(onClick = onIconClick, indication = rememberRipple(bounded = false, radius = 16.dp))) },
+    onIconClick: () -> Unit,
+    actions: (@Composable RowScope.() -> Unit)? = null
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier.padding(32.dp).fillMaxWidth()
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                modifier = Modifier.clickable(onClick = onIconClick)
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.h6,
-                modifier = Modifier.padding(start = 16.dp)
-            )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            iconSlot(icon)
+            Column(Modifier.padding(start = 16.dp)) {
+                if (screenName != null) {
+                    Text(text = screenName, style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSecondary)
+                }
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.h6,
+                )
+            }
         }
 
         if (actions != null) {
@@ -278,7 +288,7 @@ private fun ComponentDragDropItem(component: PrototypeComponent, position: Posit
         modifier = Modifier
             .offset(position.x, position.y)
             .shadow(4.dp, RoundedCornerShape(8.dp))
-            .background(Color.White, shape = RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colors.background, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
     )
 }

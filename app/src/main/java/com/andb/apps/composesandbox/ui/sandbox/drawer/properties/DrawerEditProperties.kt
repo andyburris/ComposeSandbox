@@ -5,9 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ControlPointDuplicate
 import androidx.compose.runtime.Composable
@@ -26,7 +24,12 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.toShadow
 fun DrawerEditProperties(component: PrototypeComponent, actionHandler: ActionHandler, onUpdate: (PrototypeComponent) -> Unit) {
     val scrollState = rememberScrollState()
     Column {
-        DrawerEditPropertiesHeader(component, modifier = Modifier.shadow(scrollState.toShadow()).background(MaterialTheme.colors.background))
+        DrawerEditPropertiesHeader(
+            component,
+            modifier = Modifier
+                .shadow(scrollState.toShadow())
+                .background(AmbientElevationOverlay.current?.apply(color = MaterialTheme.colors.surface, elevation = AmbientAbsoluteElevation.current + scrollState.toShadow()) ?: MaterialTheme.colors.surface)
+        )
         ScrollableColumn(scrollState = scrollState, modifier = Modifier.padding(horizontal = 32.dp)) {
             when (component) {
                 is PrototypeComponent.Text -> TextProperties(component.properties) {
@@ -72,7 +75,7 @@ fun DrawerEditProperties(component: PrototypeComponent, actionHandler: ActionHan
 @Composable
 private fun DrawerEditPropertiesHeader(component: PrototypeComponent, modifier: Modifier = Modifier){
     val actionHandler = ActionHandlerAmbient.current
-    DrawerHeader(title = component.name, modifier = modifier, onIconClick = { actionHandler.invoke(UserAction.Back) }) {
+    DrawerHeader(title = component.name, screenName = "Edit Component".toUpperCase(), modifier = modifier, onIconClick = { actionHandler.invoke(UserAction.Back) }) {
         Icon(imageVector = Icons.Default.ControlPointDuplicate)
     }
 }

@@ -94,7 +94,7 @@ private fun SlotItem(slot: Slot, modifier: Modifier = Modifier, indent: Int, onM
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
-        ProvideTextStyle(value = TextStyle.Default.copy(fontStyle = FontStyle.Italic)) {
+        ProvideTextStyle(value = TextStyle.Default.copy(fontStyle = FontStyle.Italic, color = MaterialTheme.colors.onSecondary)) {
             Row (
                 modifier = Modifier.onGloballyPositioned {
                     val hoverItem = TreeHoverItem(
@@ -114,15 +114,8 @@ private fun SlotItem(slot: Slot, modifier: Modifier = Modifier, indent: Int, onM
                 )
             }
         }
-        if (slot.tree is PrototypeComponent.Group) {
-            GenericTree(items = (slot.tree as PrototypeComponent.Group).children) { child ->
-                TreeItem(child, indent = indent + 1, onMoveComponent = onMoveComponent)
-            }
-        }
-        if (slot.tree is PrototypeComponent.Slotted) {
-            GenericTree(items = (slot.tree as PrototypeComponent.Slotted).slots) { slot ->
-
-            }
+        GenericTree(items = slot.tree.children) { child ->
+            TreeItem(child, indent = indent + 1, onMoveComponent = onMoveComponent)
         }
     }
 }
@@ -153,7 +146,7 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
                         modifier = Modifier
                             .padding(start = treeConfig.horizontalPaddingStart, top = treeConfig.verticalPositionOnItem, end = treeConfig.horizontalPaddingEnd)
                             .size(treeConfig.horizontalLineLength, treeConfig.lineWidth)
-                            .background(Color.Black.copy(alpha = .25f))
+                            .background(MaterialTheme.colors.onBackground.copy(alpha = .25f))
                     )
                     component(item)
                 }
@@ -164,7 +157,7 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
                 modifier = Modifier
                     .padding(start = treeConfig.horizontalPaddingStart - 1.dp, top = treeConfig.verticalPaddingTop)
                     .size(1.dp, (with(AmbientDensity.current) { height.toDp() } - (with(AmbientDensity.current) { lastItemHeight.toDp() } - treeConfig.verticalPositionOnItem) + 1.dp).coerceAtLeast(0.dp) - treeConfig.verticalPaddingTop)
-                    .background(MaterialTheme.colors.secondaryVariant)
+                    .background(MaterialTheme.colors.onBackground.copy(alpha = .25f))
             )
         }
     }
@@ -186,7 +179,7 @@ fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier) 
     }
 
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Icon(imageVector = icon)
+        Icon(imageVector = icon, tint = MaterialTheme.colors.onSecondary)
         Text(text = component.name, modifier = Modifier.padding(start = 16.dp))
     }
 }

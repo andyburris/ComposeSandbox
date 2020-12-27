@@ -13,7 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.icon
 import com.andb.apps.composesandbox.model.PrototypeModifier
@@ -24,7 +23,7 @@ import com.andb.apps.composesandbox.model.summary
 @Composable
 fun ModifiersEditor(modifiers: List<PrototypeModifier>, modifier: Modifier = Modifier, onAdd: () -> Unit, onOpenModifier: (PrototypeModifier) -> Unit, onUpdate: (List<PrototypeModifier>) -> Unit) {
     val dialogShowing = remember { mutableStateOf(false) }
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = modifier) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = modifier) {
         GenericPropertyEditor(label = "Modifiers") {
             Row {
                 Icon(
@@ -43,7 +42,7 @@ fun ModifiersEditor(modifiers: List<PrototypeModifier>, modifier: Modifier = Mod
         }
         Column(
             modifier = Modifier
-                .background(Color.Black.copy(alpha = .12f), RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colors.secondary, RoundedCornerShape(8.dp))
                 .padding(horizontal = 16.dp, vertical = 12.dp)
                 .fillMaxWidth()
         ) {
