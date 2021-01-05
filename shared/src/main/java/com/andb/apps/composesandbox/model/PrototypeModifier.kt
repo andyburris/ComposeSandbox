@@ -88,7 +88,7 @@ fun List<PrototypeModifier>.toCode(): String {
     if (isEmpty()) return ""
 
     return buildString {
-        append(", modifier = Modifier.")
+        append("modifier = Modifier.")
         append(this@toCode.joinToString(".") { it.toCode() })
     }
 }

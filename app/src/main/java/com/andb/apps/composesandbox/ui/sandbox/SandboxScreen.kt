@@ -60,7 +60,7 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) ->
                 scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState),
                 sheetShape = RoundedCornerShape(topLeft = cornerRadius, topRight = cornerRadius),
                 sheetPeekHeight = 88.dp,
-                sheetGesturesEnabled = false,
+                sheetGesturesEnabled = true,
                 sheetContent = {
                     Drawer(
                         sandboxState = sandboxState,

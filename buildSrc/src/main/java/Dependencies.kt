@@ -6,7 +6,7 @@ object Versions {
     const val kotlinCoroutines = "1.4.1"
     const val koin = "2.1.5"
     const val compose = "1.0.0-alpha09"
-    const val colorPicker = "0.1.1-alpha09"
+    const val colorPicker = "0.2.0-alpha09"
     const val kaseChange = "1.3.0"
 }
 
