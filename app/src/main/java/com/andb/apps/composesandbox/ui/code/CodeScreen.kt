@@ -95,7 +95,7 @@ private fun CodeCard(screen: PrototypeScreen, opened: Boolean, modifier: Modifie
             FileItem(screen = screen, onToggle = onToggle)
             AnimatedVisibility(visible = opened) {
                 Row(Modifier.padding(start = 16.dp, bottom = 16.dp)) {
-                    val code = screen.tree.toCode()
+                    val code = screen.toCode()
                     Text(
                         text = (1..code.lines().size).joinToString("\n"),
                         style = codeStyle.copy(textAlign = TextAlign.End),

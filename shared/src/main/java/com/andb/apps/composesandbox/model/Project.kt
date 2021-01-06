@@ -1,5 +1,6 @@
 package com.andb.apps.composesandbox.model
 
+import com.andb.apps.composesandbox.toPascalCase
 import kotlinx.serialization.Serializable
 import java.util.*
 
@@ -32,3 +33,9 @@ fun Project.updatedComponent(component: PrototypeComponent) = this.copy(
 
 @Serializable
 data class PrototypeScreen(val id: String = UUID.randomUUID().toString(), val name: String, val tree: PrototypeComponent.Group = PrototypeComponent.Group.Column())
+fun PrototypeScreen.toCode() = """
+    |@Composable
+    |fun ${name.toPascalCase()}() {
+    |${tree.toCode().prependIndent("    ")}
+    |}
+""".trimMargin()
