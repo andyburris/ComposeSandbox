@@ -1,5 +1,6 @@
-package com.andb.apps.composesandbox
+package com.andb.apps.composesandboxdata
 
+import com.andb.apps.composesandboxdata.Database
 import com.squareup.sqldelight.android.AndroidSqliteDriver
 import com.squareup.sqldelight.db.SqlDriver
 import org.koin.android.ext.koin.androidContext

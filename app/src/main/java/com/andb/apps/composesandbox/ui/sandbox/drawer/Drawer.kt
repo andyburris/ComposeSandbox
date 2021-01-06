@@ -29,8 +29,6 @@ import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
-import com.andb.apps.composesandbox.model.*
-import com.andb.apps.composesandbox.plusElement
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerState
 import com.andb.apps.composesandbox.state.UserAction
@@ -43,6 +41,8 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.DrawerTree
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.toDpPosition
 import com.andb.apps.composesandbox.ui.util.ItemSwitcher
 import com.andb.apps.composesandbox.ui.util.ItemTransitionState
+import com.andb.apps.composesandboxdata.model.*
+import com.andb.apps.composesandboxdata.plusElement
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

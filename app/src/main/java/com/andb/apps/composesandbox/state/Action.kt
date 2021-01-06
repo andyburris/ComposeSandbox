@@ -1,6 +1,6 @@
 package com.andb.apps.composesandbox.state
 
-import com.andb.apps.composesandbox.model.Project
+import com.andb.apps.composesandboxdata.model.Project
 
 sealed class Action
 

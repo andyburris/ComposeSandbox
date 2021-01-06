@@ -1,9 +1,9 @@
 package com.andb.apps.composesandbox.state
 
-import com.andb.apps.composesandbox.model.Project
-import com.andb.apps.composesandbox.model.PrototypeComponent
-import com.andb.apps.composesandbox.model.PrototypeModifier
-import com.andb.apps.composesandbox.model.PrototypeTree
+import com.andb.apps.composesandboxdata.model.Project
+import com.andb.apps.composesandboxdata.model.PrototypeComponent
+import com.andb.apps.composesandboxdata.model.PrototypeModifier
+import com.andb.apps.composesandboxdata.model.PrototypeTree
 
 sealed class Screen {
     object Projects : Screen()

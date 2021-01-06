@@ -1,7 +1,7 @@
 package com.andb.apps.composesandbox.data.model
 
 import androidx.compose.ui.text.font.FontWeight
-import com.andb.apps.composesandbox.model.Properties
+import com.andb.apps.composesandboxdata.model.Properties
 
 fun Properties.Text.Weight.toFontWeight() = when (this) {
     Properties.Text.Weight.Thin -> FontWeight.Thin

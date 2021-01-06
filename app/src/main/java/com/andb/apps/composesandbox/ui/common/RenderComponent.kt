@@ -13,9 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andb.apps.composesandbox.data.model.*
-import com.andb.apps.composesandbox.model.PrototypeComponent
-import com.andb.apps.composesandbox.model.Theme
-import com.andb.apps.composesandbox.model.TreeType
+import com.andb.apps.composesandbox.data.model.toFabPosition
+import com.andb.apps.composesandboxdata.model.PrototypeComponent
+import com.andb.apps.composesandboxdata.model.Theme
+import com.andb.apps.composesandboxdata.model.TreeType
 
 @Composable
 fun RenderComponentParent(theme: Theme, component: PrototypeComponent) {

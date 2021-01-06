@@ -4,16 +4,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.model.Project
 import com.andb.apps.composesandbox.state.Handler
 import com.andb.apps.composesandbox.state.Screen
 import com.andb.apps.composesandbox.state.UserAction
+import com.andb.apps.composesandboxdata.model.Project
 
 @Composable
 fun ProjectsScreen(projects: List<Project>) {
@@ -68,6 +69,19 @@ fun <T> LazyGridFor(items: List<T>, columns: Int, modifier: Modifier = Modifier,
                 repeat(columns - rowItems.size) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
+            }
+        }
+    }
+}
+
+fun <T> LazyListScope.gridItems(items: List<T>, columns: Int, itemContent: @Composable() RowScope.(T) -> Unit) {
+    items(items.chunked(columns)) { rowItems ->
+        Row {
+            rowItems.forEach {
+                itemContent(it)
+            }
+            repeat(columns - rowItems.size) {
+                Spacer(modifier = Modifier.weight(1f))
             }
         }
     }

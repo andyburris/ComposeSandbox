@@ -1,6 +1,6 @@
-package com.andb.apps.composesandbox.model
+package com.andb.apps.composesandboxdata.model
 
-import com.andb.apps.composesandbox.plusElement
+import com.andb.apps.composesandboxdata.plusElement
 import kotlinx.serialization.Serializable
 import java.util.*
 

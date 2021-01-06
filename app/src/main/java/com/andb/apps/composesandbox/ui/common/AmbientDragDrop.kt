@@ -7,7 +7,7 @@ import androidx.compose.runtime.staticAmbientOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.model.PrototypeComponent
+import com.andb.apps.composesandboxdata.model.PrototypeComponent
 
 
 data class DragDropState(val dragPosition: MutableState<Position>, val globalOffset: MutableState<Position>, val treeItems: MutableList<TreeHoverItem>, val onDrop: (DropState)->Unit) {

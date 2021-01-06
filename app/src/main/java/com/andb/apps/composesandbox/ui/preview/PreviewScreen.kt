@@ -1,8 +1,8 @@
 package com.andb.apps.composesandbox.ui.preview
 
 import androidx.compose.runtime.Composable
-import com.andb.apps.composesandbox.model.Project
-import com.andb.apps.composesandbox.model.PrototypeTree
+import com.andb.apps.composesandboxdata.model.Project
+import com.andb.apps.composesandboxdata.model.PrototypeTree
 import com.andb.apps.composesandbox.ui.common.ProjectProvider
 import com.andb.apps.composesandbox.ui.common.RenderComponentParent
 

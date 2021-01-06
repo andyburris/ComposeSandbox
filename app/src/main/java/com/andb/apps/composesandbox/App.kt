@@ -1,6 +1,7 @@
 package com.andb.apps.composesandbox
 
 import android.app.Application
+import com.andb.apps.composesandboxdata.dataModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin

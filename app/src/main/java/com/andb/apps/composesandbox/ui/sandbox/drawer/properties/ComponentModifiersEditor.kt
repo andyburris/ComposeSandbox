@@ -15,9 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.icon
-import com.andb.apps.composesandbox.model.PrototypeModifier
-import com.andb.apps.composesandbox.model.name
-import com.andb.apps.composesandbox.model.summary
+import com.andb.apps.composesandboxdata.model.PrototypeModifier
+import com.andb.apps.composesandboxdata.model.name
+import com.andb.apps.composesandboxdata.model.summary
 
 
 @Composable

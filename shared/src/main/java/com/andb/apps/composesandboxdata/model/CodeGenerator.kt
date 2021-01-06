@@ -1,7 +1,7 @@
-package com.andb.apps.composesandbox.model
+package com.andb.apps.composesandboxdata.model
 
-import com.andb.apps.composesandbox.toCamelCase
-import com.andb.apps.composesandbox.toPascalCase
+import com.andb.apps.composesandboxdata.toCamelCase
+import com.andb.apps.composesandboxdata.toPascalCase
 
 class CodeGenerator(val project: Project) {
     fun PrototypeTree.toCode() = """

@@ -1,5 +1,6 @@
 package com.andb.apps.composesandbox.data.model
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -12,7 +13,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.R
-import com.andb.apps.composesandbox.model.PrototypeModifier
+import com.andb.apps.composesandboxdata.model.PrototypeModifier
 
 @Composable
 val PrototypeModifier.icon: ImageVector
@@ -26,6 +27,7 @@ val PrototypeModifier.icon: ImageVector
         is PrototypeModifier.FillMaxHeight -> Icons.Default.UnfoldMore
     }
 
+@SuppressLint("ComposableModifierFactory", "ModifierFactoryExtensionFunction")
 @Composable
 fun List<PrototypeModifier>.toModifier() : Modifier {
     return this.fold<PrototypeModifier, Modifier>(Modifier) { acc, prototypeModifier ->

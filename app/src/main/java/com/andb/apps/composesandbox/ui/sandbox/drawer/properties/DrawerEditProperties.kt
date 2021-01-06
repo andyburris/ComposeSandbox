@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.name
-import com.andb.apps.composesandbox.model.PrototypeComponent
+import com.andb.apps.composesandboxdata.model.PrototypeComponent
 import com.andb.apps.composesandbox.state.ActionHandler
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerScreen

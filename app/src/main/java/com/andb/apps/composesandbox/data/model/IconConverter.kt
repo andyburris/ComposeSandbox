@@ -3,7 +3,7 @@ package com.andb.apps.composesandbox.data.model
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.andb.apps.composesandbox.model.PrototypeIcon
+import com.andb.apps.composesandboxdata.model.PrototypeIcon
 
 val ImageVector.readableName get() = this.name.removePrefix("Filled.")
 

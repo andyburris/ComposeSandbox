@@ -25,10 +25,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.model.CodeGenerator
-import com.andb.apps.composesandbox.model.Project
-import com.andb.apps.composesandbox.model.PrototypeTree
-import com.andb.apps.composesandbox.model.TreeType
+import com.andb.apps.composesandboxdata.model.CodeGenerator
+import com.andb.apps.composesandboxdata.model.Project
+import com.andb.apps.composesandboxdata.model.PrototypeTree
+import com.andb.apps.composesandboxdata.model.TreeType
 import com.andb.apps.composesandbox.state.Handler
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.util.endBorder

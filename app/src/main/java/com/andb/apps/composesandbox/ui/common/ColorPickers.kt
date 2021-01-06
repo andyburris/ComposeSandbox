@@ -30,10 +30,10 @@ import com.andb.apps.composesandbox.data.model.name
 import com.andb.apps.composesandbox.data.model.projectColor
 import com.andb.apps.composesandbox.data.model.toColor
 import com.andb.apps.composesandbox.data.model.toPrototypeColor
-import com.andb.apps.composesandbox.model.PrototypeColor
-import com.andb.apps.composesandbox.model.Theme
-import com.andb.apps.composesandbox.model.getColor
-import com.andb.apps.composesandbox.model.updateColor
+import com.andb.apps.composesandboxdata.model.PrototypeColor
+import com.andb.apps.composesandboxdata.model.Theme
+import com.andb.apps.composesandboxdata.model.getColor
+import com.andb.apps.composesandboxdata.model.updateColor
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.GenericTree
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.TreeConfig
 import com.andb.apps.composesandbox.util.isDark

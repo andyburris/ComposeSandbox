@@ -3,7 +3,7 @@
     package="com.andb.apps.composesandbox">
 
     <application
-        android:name=".App"
+        android:name="com.andb.apps.composesandbox.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ComposeSandbox">
         <activity
-            android:name=".MainActivity"
+            android:name="com.andb.apps.composesandbox.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.ComposeSandbox.NoActionBar">
             <intent-filter>

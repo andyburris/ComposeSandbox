@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.model
+package com.andb.apps.composesandboxdata.model
 
 
 data class IconSection(val sectionName: String, val icons: List<PrototypeIcon>)

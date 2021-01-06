@@ -8,8 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.savedinstancestate.savedInstanceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.model.PrototypeColor
-import com.andb.apps.composesandbox.model.PrototypeModifier
+import com.andb.apps.composesandboxdata.model.PrototypeColor
+import com.andb.apps.composesandboxdata.model.PrototypeModifier
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.ModifierItem

@@ -24,12 +24,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.andb.apps.composesandbox.BuildConfig
-import com.andb.apps.composesandbox.model.*
 import com.andb.apps.composesandbox.state.*
 import com.andb.apps.composesandbox.ui.common.ProjectProvider
 import com.andb.apps.composesandbox.ui.common.RenderComponentParent
 import com.andb.apps.composesandbox.ui.sandbox.drawer.Drawer
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.ComponentItem
+import com.andb.apps.composesandboxdata.model.*
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

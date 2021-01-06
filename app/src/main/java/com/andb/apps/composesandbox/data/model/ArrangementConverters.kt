@@ -3,8 +3,8 @@ package com.andb.apps.composesandbox.data.model
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.InternalLayoutApi
 import androidx.compose.ui.Alignment
-import com.andb.apps.composesandbox.model.PrototypeAlignment
-import com.andb.apps.composesandbox.model.PrototypeArrangement
+import com.andb.apps.composesandboxdata.model.PrototypeAlignment
+import com.andb.apps.composesandboxdata.model.PrototypeArrangement
 
 /***** Arrangements *****/
 

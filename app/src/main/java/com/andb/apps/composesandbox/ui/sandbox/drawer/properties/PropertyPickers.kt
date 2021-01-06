@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.andb.apps.composesandbox.data.model.imageVector
 import com.andb.apps.composesandbox.data.model.projectColor
-import com.andb.apps.composesandbox.model.*
+import com.andb.apps.composesandboxdata.model.*
 import com.andb.apps.composesandbox.ui.common.ColorPickerCircle
 import com.andb.apps.composesandbox.ui.common.ColorPickerWithTheme
 import com.andb.apps.composesandbox.util.bottomBorder

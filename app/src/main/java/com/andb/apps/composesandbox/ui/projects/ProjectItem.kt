@@ -23,7 +23,7 @@ import androidx.compose.ui.platform.AmbientConfiguration
 import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.model.Project
+import com.andb.apps.composesandboxdata.model.Project
 import com.andb.apps.composesandbox.ui.common.ProjectProvider
 import com.andb.apps.composesandbox.ui.common.RenderComponentParent
 

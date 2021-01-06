@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.model
+package com.andb.apps.composesandboxdata.model
 
 
 internal val actionIcons = listOf(

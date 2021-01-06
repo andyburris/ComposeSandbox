@@ -1,10 +1,10 @@
-package com.andb.apps.composesandbox.local
+package com.andb.apps.composesandboxdata.local
 
-import com.andb.apps.composesandbox.Database
-import com.andb.apps.composesandbox.ProjectData
-import com.andb.apps.composesandbox.model.Project
-import com.andb.apps.composesandbox.model.PrototypeTree
-import com.andb.apps.composesandbox.model.Theme
+import com.andb.apps.composesandboxdata.Database
+import com.andb.apps.composesandboxdata.ProjectData
+import com.andb.apps.composesandboxdata.model.Project
+import com.andb.apps.composesandboxdata.model.PrototypeTree
+import com.andb.apps.composesandboxdata.model.Theme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.builtins.ListSerializer

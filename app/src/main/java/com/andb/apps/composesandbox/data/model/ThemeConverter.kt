@@ -3,8 +3,8 @@ package com.andb.apps.composesandbox.data.model
 import androidx.compose.material.Colors
 import androidx.compose.material.lightColors
 import androidx.compose.ui.graphics.toArgb
-import com.andb.apps.composesandbox.model.PrototypeColor
-import com.andb.apps.composesandbox.model.Theme
+import com.andb.apps.composesandboxdata.model.PrototypeColor
+import com.andb.apps.composesandboxdata.model.Theme
 
 
 fun Theme.toColors(): Colors = lightColors(

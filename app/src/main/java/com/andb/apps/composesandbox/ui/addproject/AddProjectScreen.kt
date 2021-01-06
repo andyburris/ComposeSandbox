@@ -1,10 +1,8 @@
 package com.andb.apps.composesandbox.ui.addproject
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -15,10 +13,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.toTheme
-import com.andb.apps.composesandbox.model.*
-import com.andb.apps.composesandbox.model.Properties
-import com.andb.apps.composesandbox.ui.projects.LazyGridFor
 import com.andb.apps.composesandbox.ui.projects.ProjectItem
+import com.andb.apps.composesandbox.ui.projects.gridItems
+import com.andb.apps.composesandboxdata.model.*
+import com.andb.apps.composesandboxdata.model.Properties
 import java.util.*
 
 private val templates = listOf(
@@ -84,44 +82,55 @@ fun AddProjectScreen(onAddProject: (Project) -> Unit) {
             )
         },
         bodyContent = {
-            LazyGridFor(
-                items = templates,
-                columns = 2,
-                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                header = {
-                    Column(Modifier.padding(horizontal = 16.dp)) {
-                        Text(
-                            text = "Add Project",
-                            style = MaterialTheme.typography.h4,
-                            modifier = Modifier.padding(vertical = 32.dp)
-                        )
-                        OutlinedTextField(
-                            value = name.value,
-                            onValueChange = { name.value = it },
-                            label = {
-                                Text(text = "Name")
-                            },
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-                        )
-                    }
+            LazyColumn(
+                Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(32.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 32.dp)
+            ) {
+                item {
+                    Text(
+                        text = "Add Project",
+                        style = MaterialTheme.typography.h4,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
                 }
-            ) { project ->
-                ProjectItem(
-                    project = project,
-                    selected = selectedTemplateID.value == project.id,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(16.dp)
-                        .clickable {
-                            if (name.value.isEmpty()) {
-                                name.value = project.name
+
+                item {
+                    OutlinedTextField(
+                        value = name.value,
+                        onValueChange = { name.value = it },
+                        label = {
+                            Text(text = "Name")
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
+                    )
+                }
+
+                item {
+                    Text(
+                        text = "TEMPLATES",
+                        style = MaterialTheme.typography.subtitle1,
+                        color = MaterialTheme.colors.primary,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+
+                gridItems(templates, 2) { project ->
+                    ProjectItem(
+                        project = project,
+                        selected = selectedTemplateID.value == project.id,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(16.dp)
+                            .clickable {
+                                if (name.value.isEmpty()) {
+                                    name.value = project.name
+                                }
+                                selectedTemplateID.value = project.id
                             }
-                            selectedTemplateID.value = project.id
-                        }
-                )
+                    )
+                }
             }
-
-
         }
     )
 

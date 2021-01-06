@@ -4,7 +4,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import com.andb.apps.composesandbox.model.PrototypeColor
+import com.andb.apps.composesandboxdata.model.PrototypeColor
 import com.andb.apps.composesandbox.ui.common.ProjectTheme
 
 fun Color.toPrototypeColor() = PrototypeColor.FixedColor(this.toArgb())

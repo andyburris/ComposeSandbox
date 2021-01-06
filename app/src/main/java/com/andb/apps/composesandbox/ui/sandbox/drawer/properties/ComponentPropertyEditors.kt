@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.ExperimentalLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.toReadableString
-import com.andb.apps.composesandbox.model.*
+import com.andb.apps.composesandboxdata.model.*
 
 @Composable
 fun TextProperties(properties: Properties.Text, onUpdate: (Properties.Text) -> Unit) {
