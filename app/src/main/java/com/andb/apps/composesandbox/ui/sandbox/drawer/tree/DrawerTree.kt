@@ -1,6 +1,7 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.tree
 
 import androidx.compose.animation.animate
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -12,6 +13,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -28,6 +31,7 @@ import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerScreen
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.*
+import com.andb.apps.composesandbox.ui.sandbox.drawer.DragDropScrolling
 import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
 import com.andb.apps.composesandbox.ui.sandbox.drawer.toShadow
 
@@ -39,8 +43,18 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.toShadow
  */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DrawerTree(opened: PrototypeScreen, sheetState: BottomSheetState, hovering: DropState?, onMoveComponent: (PrototypeComponent) -> Unit) {
+fun DrawerTree(opened: PrototypeScreen, sheetState: BottomSheetState, hovering: DropState?, scrolling: DragDropScrolling, onMoveComponent: (PrototypeComponent) -> Unit) {
     val scrollState = rememberScrollState()
+    val density = AmbientDensity.current
+    val distanceToTop = remember(scrolling) { with(density) { scrollState.value.toDp() } }
+    val distanceToBottom = remember(scrolling) { with(density) { (scrollState.maxValue - scrollState.value).toDp() } }
+    LaunchedEffect(subject = scrolling) {
+        when(scrolling) {
+            DragDropScrolling.ScrollingUp -> scrollState.smoothScrollTo(0f, tween(distanceToTop.value.toInt() * 2))
+            DragDropScrolling.ScrollingDown -> scrollState.smoothScrollTo(scrollState.maxValue, tween(distanceToBottom.value.toInt() * 2))
+            DragDropScrolling.None -> scrollState.stopAnimation()
+        }
+    }
     Box {
         Column {
             DrawerTreeHeader(

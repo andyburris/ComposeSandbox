@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.gesture.DragObserver
 import androidx.compose.ui.gesture.dragGestureFilter
 import androidx.compose.ui.graphics.graphicsLayer
@@ -27,6 +28,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import com.andb.apps.composesandbox.model.*
 import com.andb.apps.composesandbox.plusElement
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
@@ -48,7 +50,7 @@ fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifi
     val density = AmbientDensity.current
     val actionHandler = ActionHandlerAmbient.current
     val movingComponent = remember { mutableStateOf<PrototypeComponent?>(null) }
-    val (contentWidth, setContentWidth) = remember { mutableStateOf(0) }
+    val (contentSize, setContentSize) = remember { mutableStateOf(Size(0f, 0f)) }
     val drawerState = sandboxState.drawerStack.last()
     println("drawerState = $drawerState")
     val dragPosition = remember { mutableStateOf(Position(0.dp, 0.dp)) }
@@ -89,7 +91,7 @@ fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifi
     DragDropProvider(dragDropState = dragDropState) {
         val oldState = remember { mutableStateOf<DrawerState?>(null) }
         val transitionDefinition = getDrawerContentTransition(
-            offsetPx = contentWidth.toFloat(),
+            offsetPx = contentSize.width.toFloat(),
             reverse = when (drawerState) {
                 is DrawerState.Tree -> true // always at bottom of stack
                 is DrawerState.AddComponent, is DrawerState.AddModifier, is DrawerState.EditModifier, is DrawerState.EditTheme -> false // always at top of stack
@@ -98,6 +100,14 @@ fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifi
             enabled = oldState.value != null && oldState.value!!::class != drawerState::class
         )
         oldState.value = drawerState
+        val dragDropScrolling = if (movingComponent.value != null) {
+            val heightDp = with(density) { contentSize.height.toDp() }
+                when(dragPosition.value.y) {
+                    in 88.dp..112.dp -> DragDropScrolling.ScrollingUp
+                    in heightDp - 24.dp..heightDp -> DragDropScrolling.ScrollingDown
+                    else -> DragDropScrolling.None
+                }
+        } else DragDropScrolling.None
         ItemSwitcher(
             current = drawerState,
             animateIf = { old, current -> old != null && old::class != current::class },
@@ -129,8 +139,8 @@ fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifi
                     false
                 }
                 .onGloballyPositioned {
-                    setContentWidth(it.size.width)
-                    dragDropState.globalPosition.value = it.globalPosition.toDpPosition(density)
+                    setContentSize(it.size.toSize())
+                    dragDropState.globalOffset.value = it.globalPosition.toDpPosition(density)
                 }
         ) { drawerState, transitionState ->
             Box(
@@ -140,7 +150,7 @@ fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifi
                 )
             ) {
                 when (drawerState) {
-                    is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = movingComponent.value?.let { dragDropState.getDropState() }) {
+                    is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = movingComponent.value?.let { dragDropState.getDropState() }, scrolling = dragDropScrolling) {
                         val updatedTree = sandboxState.openedTree.tree.minusChildFromTree(it) as PrototypeComponent.Group
                         onDragUpdate.invoke(true)
                         onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
@@ -178,6 +188,8 @@ fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifi
         }
     }
 }
+
+enum class DragDropScrolling { ScrollingUp, None, ScrollingDown }
 
 private val Alpha = FloatPropKey()
 private val ContentOffset = FloatPropKey()

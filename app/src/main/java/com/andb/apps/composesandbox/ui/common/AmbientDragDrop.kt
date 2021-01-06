@@ -10,14 +10,14 @@ import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.model.PrototypeComponent
 
 
-data class DragDropState(val dragPosition: MutableState<Position>, val globalPosition: MutableState<Position>, val treeItems: MutableList<TreeHoverItem>, val onDrop: (DropState)->Unit) {
+data class DragDropState(val dragPosition: MutableState<Position>, val globalOffset: MutableState<Position>, val treeItems: MutableList<TreeHoverItem>, val onDrop: (DropState)->Unit) {
     fun updateTreeItem(item: TreeHoverItem) {
         treeItems.removeAll { it.component.id == item.component.id }
         treeItems.add(item)
     }
     private fun hoveringOverItem(): TreeHoverItem? {
         val dragPosition = dragPosition.value
-        val treeItemsWithGlobalOffset = treeItems.map { it.copy(position = it.position.copy(y = it.position.y - globalPosition.value.y)) }
+        val treeItemsWithGlobalOffset = treeItems.map { it.copy(position = it.position.copy(y = it.position.y - globalOffset.value.y)) }
         val dragIsBelowTree = dragPosition.y > treeItemsWithGlobalOffset.maxOfOrNull { it.position.y + it.height } ?: 0.dp
         return if (dragIsBelowTree) {
             val indent = (dragPosition.x.value / 40).toInt().coerceIn(0, treeItemsWithGlobalOffset.maxOfOrNull { it.indent } ?: 0)
@@ -33,7 +33,7 @@ data class DragDropState(val dragPosition: MutableState<Position>, val globalPos
     }
 
     fun getDropState(): DropState {
-        val treeItemsWithGlobalOffset = treeItems.map { it.copy(position = it.position.copy(y = it.position.y - globalPosition.value.y)) }
+        val treeItemsWithGlobalOffset = treeItems.map { it.copy(position = it.position.copy(y = it.position.y - globalOffset.value.y)) }
         val dragPosition = dragPosition.value
         val hoveringItem = hoveringOverItem() ?: return DropState.OverNone
         val hoverDropPosition = hoveringItem.getDropPosition(dragPosition)
