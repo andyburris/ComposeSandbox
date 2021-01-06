@@ -1,8 +1,7 @@
 CREATE TABLE projectData (
     id TEXT NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
-    screens TEXT NOT NULL,
-    components TEXT NOT NULL,
+    trees TEXT NOT NULL,
     theme TEXT NOT NULL
 );
 
@@ -18,8 +17,8 @@ FROM projectData
 WHERE id = ?;
 
 insert:
-INSERT OR REPLACE INTO projectData(id, name, screens, components, theme)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO projectData(id, name, trees, theme)
+VALUES (?, ?, ?, ?);
 
 delete:
 DELETE FROM projectData WHERE id = ?;

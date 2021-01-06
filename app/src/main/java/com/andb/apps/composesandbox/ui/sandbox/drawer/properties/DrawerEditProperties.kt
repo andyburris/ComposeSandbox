@@ -2,6 +2,7 @@ package com.andb.apps.composesandbox.ui.sandbox.drawer.properties
 
 import androidx.compose.foundation.ScrollableColumn
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -12,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
+import com.andb.apps.composesandbox.data.model.name
 import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.state.ActionHandler
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
@@ -30,7 +32,7 @@ fun DrawerEditProperties(component: PrototypeComponent, actionHandler: ActionHan
                 .shadow(scrollState.toShadow())
                 .background(AmbientElevationOverlay.current?.apply(color = MaterialTheme.colors.surface, elevation = AmbientAbsoluteElevation.current + scrollState.toShadow()) ?: MaterialTheme.colors.surface)
         )
-        ScrollableColumn(scrollState = scrollState, modifier = Modifier.padding(horizontal = 32.dp)) {
+        ScrollableColumn(scrollState = scrollState, modifier = Modifier.padding(horizontal = 32.dp), verticalArrangement = Arrangement.spacedBy(32.dp)) {
             when (component) {
                 is PrototypeComponent.Text -> TextProperties(component.properties) {
                     onUpdate(component.copy(properties = it))
@@ -57,10 +59,10 @@ fun DrawerEditProperties(component: PrototypeComponent, actionHandler: ActionHan
                 is PrototypeComponent.Slotted.Scaffold -> ScaffoldProperties(properties = component.properties) {
                     onUpdate(component.copy(properties = it))
                 }
+                is PrototypeComponent.Custom -> {}
             }
             ModifiersEditor(
                 modifiers = component.modifiers,
-                modifier = Modifier.padding(vertical = 32.dp),
                 onAdd = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.AddModifier)) },
                 onOpenModifier = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditModifier(it.id))) },
                 onUpdate = {

@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.model.PrototypeComponent
-import com.andb.apps.composesandbox.model.PrototypeScreen
+import com.andb.apps.composesandbox.model.PrototypeTree
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerScreen
 import com.andb.apps.composesandbox.state.UserAction
@@ -43,7 +43,7 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.toShadow
  */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DrawerTree(opened: PrototypeScreen, sheetState: BottomSheetState, hovering: DropState?, scrolling: DragDropScrolling, onMoveComponent: (PrototypeComponent) -> Unit) {
+fun DrawerTree(opened: PrototypeTree, sheetState: BottomSheetState, hovering: DropState?, scrolling: DragDropScrolling, onMoveComponent: (PrototypeComponent) -> Unit) {
     val scrollState = rememberScrollState()
     val density = AmbientDensity.current
     val distanceToTop = remember(scrolling) { with(density) { scrollState.value.toDp() } }
@@ -51,7 +51,7 @@ fun DrawerTree(opened: PrototypeScreen, sheetState: BottomSheetState, hovering: 
     LaunchedEffect(subject = scrolling) {
         when(scrolling) {
             DragDropScrolling.ScrollingUp -> scrollState.smoothScrollTo(0f, tween(distanceToTop.value.toInt() * 2))
-            DragDropScrolling.ScrollingDown -> scrollState.smoothScrollTo(scrollState.maxValue, tween(distanceToBottom.value.toInt() * 2))
+            DragDropScrolling.ScrollingDown -> if (scrollState.maxValue > 0) scrollState.smoothScrollTo(scrollState.maxValue, tween(distanceToBottom.value.toInt() * 2))
             DragDropScrolling.None -> scrollState.stopAnimation()
         }
     }
@@ -84,7 +84,7 @@ fun DrawerTree(opened: PrototypeScreen, sheetState: BottomSheetState, hovering: 
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun DrawerTreeHeader(opened: PrototypeScreen, modifier: Modifier = Modifier, isExpanded: Boolean, onClick: () -> Unit) {
+private fun DrawerTreeHeader(opened: PrototypeTree, modifier: Modifier = Modifier, isExpanded: Boolean, onClick: () -> Unit) {
     val actionHandler = ActionHandlerAmbient.current
     val iconRotation = animate(target = if (isExpanded) 180f else 0f)
     DrawerHeader(

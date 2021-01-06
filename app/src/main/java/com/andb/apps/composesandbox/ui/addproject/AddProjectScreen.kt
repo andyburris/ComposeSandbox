@@ -25,9 +25,8 @@ private val templates = listOf(
     //******** Empty *******//
     Project(
         name = "Empty",
-        screens = listOf(
-            PrototypeScreen(name = "Screen 1")
-
+        trees = listOf(
+            PrototypeTree(name = "Screen 1", treeType = TreeType.Screen)
         ),
         theme = lightColors().toTheme()
     ),
@@ -35,8 +34,8 @@ private val templates = listOf(
     //******** Hello World *******//
     Project(
         name = "Hello World",
-        screens = listOf(
-            PrototypeScreen(
+        trees = listOf(
+            PrototypeTree(
                 name = "Screen 1",
                 tree = PrototypeComponent.Group.Column(
                     properties = Properties.Group.Column(
@@ -49,7 +48,8 @@ private val templates = listOf(
                             properties = Properties.Text("Hello World")
                         )
                     )
-                )
+                ),
+                treeType = TreeType.Screen
             )
         ),
         theme = lightColors().toTheme()

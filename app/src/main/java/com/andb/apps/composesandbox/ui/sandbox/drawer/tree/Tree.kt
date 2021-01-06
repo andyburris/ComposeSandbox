@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.filled.Toll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +28,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.R
+import com.andb.apps.composesandbox.data.model.name
 import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.model.Slot
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
@@ -94,7 +96,7 @@ private fun SlotItem(slot: Slot, modifier: Modifier = Modifier, indent: Int, onM
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
-        ProvideTextStyle(value = TextStyle.Default.copy(fontStyle = FontStyle.Italic, color = MaterialTheme.colors.onSecondary)) {
+        ProvideTextStyle(value = TextStyle.Default.copy(fontStyle = FontStyle.Italic)) {
             Row (
                 modifier = Modifier.onGloballyPositioned {
                     val hoverItem = TreeHoverItem(
@@ -109,8 +111,10 @@ private fun SlotItem(slot: Slot, modifier: Modifier = Modifier, indent: Int, onM
 
             ){
                 ComponentItem(
-                    component = slot.tree.copy(name = slot.name + " Slot"),
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    component = slot.tree,
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    name = slot.name + " Slot",
+                    colors = Pair(MaterialTheme.colors.onSecondary, MaterialTheme.colors.onSecondary)
                 )
             }
         }
@@ -165,7 +169,7 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
 
 
 @Composable
-fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier) {
+fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier, name: String = component.name, colors: Pair<Color, Color> = Pair(MaterialTheme.colors.onSecondary, MaterialTheme.colors.onBackground)) {
     val icon = when (component) {
         is PrototypeComponent.Text -> Icons.Default.TextFields
         is PrototypeComponent.Icon -> Icons.Default.Image
@@ -176,10 +180,11 @@ fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier) 
         is PrototypeComponent.Slotted.TopAppBar -> vectorResource(id = R.drawable.ic_top_app_bar)
         is PrototypeComponent.Slotted.BottomAppBar -> vectorResource(id = R.drawable.ic_bottom_app_bar)
         is PrototypeComponent.Slotted.Scaffold -> vectorResource(id = R.drawable.ic_scaffold)
+        is PrototypeComponent.Custom -> Icons.Default.Toll
     }
 
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Icon(imageVector = icon, tint = MaterialTheme.colors.onSecondary)
-        Text(text = component.name, modifier = Modifier.padding(start = 16.dp))
+        Icon(imageVector = icon, tint = colors.first)
+        Text(text = name, modifier = Modifier.padding(start = 16.dp), color = colors.second)
     }
 }

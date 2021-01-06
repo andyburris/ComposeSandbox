@@ -1,8 +1,6 @@
 package com.andb.apps.composesandbox.model
 
 import com.andb.apps.composesandbox.plusElement
-import com.andb.apps.composesandbox.toCamelCase
-import com.andb.apps.composesandbox.toPascalCase
 import kotlinx.serialization.Serializable
 import java.util.*
 
@@ -24,18 +22,16 @@ sealed class PrototypeComponent {
     abstract val modifiers: List<PrototypeModifier>
     abstract val properties: Properties
 
-    abstract val name: String
-
     @Serializable
     data class Text(
         override val properties: Properties.Text = Properties.Text("Text"),
-        override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(), override val name: String = "Text",
+        override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(),
     ) : PrototypeComponent()
 
     @Serializable
     data class Icon(
         override val properties: Properties.Icon = Properties.Icon(PrototypeIcon.Image),
-        override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(), override val name: String = "Icon",
+        override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(),
     ) : PrototypeComponent()
 
     @Serializable
@@ -48,20 +44,20 @@ sealed class PrototypeComponent {
         data class Row(
             override val properties: Properties.Group.Row = Properties.Group.Row(),
             override val children: List<PrototypeComponent> = emptyList(),
-            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(), override val name: String = "Row",
+            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(),
         ) : Group()
 
         @Serializable
         data class Column(
             override val properties: Properties.Group.Column = Properties.Group.Column(),
             override val children: List<PrototypeComponent> = emptyList(),
-            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(), override val name: String = "Column",
+            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(),
         ) : Group()
         @Serializable
         data class Box(
             override val properties: Properties.Group.Box = Properties.Group.Box,
             override val children: List<PrototypeComponent> = emptyList(),
-            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(), override val name: String = "Box",
+            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(),
         ) : Group()
     }
 
@@ -77,45 +73,62 @@ sealed class PrototypeComponent {
         data class TopAppBar(
             override val properties: Properties.Slotted.TopAppBar = Properties.Slotted.TopAppBar(),
             override val slots: List<Slot> = listOf(Slot("Navigation Icon"), Slot("Title", optional = false), Slot("Actions", PrototypeComponent.Group.Row())),
-            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(), override val name: String = "TopAppBar",
+            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(),
         ) : Slotted()
 
         @Serializable
         data class BottomAppBar(
             override val properties: Properties.Slotted.BottomAppBar = Properties.Slotted.BottomAppBar(),
             override val slots: List<Slot> = listOf(Slot("Content", PrototypeComponent.Group.Row(), optional = false)),
-            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(), override val name: String = "BottomAppBar",
+            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(),
         ) : Slotted()
 
         @Serializable
         data class ExtendedFloatingActionButton(
             override val properties: Properties.Slotted.ExtendedFloatingActionButton = Properties.Slotted.ExtendedFloatingActionButton(),
             override val slots: List<Slot> = listOf(Slot("Icon"), Slot("Text", optional = false)),
-            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(), override val name: String = "ExtendedFloatingActionButton",
+            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(),
         ) : Slotted()
 
         @Serializable
         data class Scaffold(
             override val properties: Properties.Slotted.Scaffold = Properties.Slotted.Scaffold(),
             override val slots: List<Slot> = listOf(Slot("Top App Bar"), Slot("Bottom App Bar"), Slot("Floating Action Button"), Slot("Drawer"), Slot("Body Content", optional = false)),
-            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(), override val name: String = "Scaffold",
+            override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(),
         ) : Slotted()
     }
+
+    @Serializable
+    data class Custom(val treeID: String, override val properties: Properties = Properties.Blank, override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList()) : PrototypeComponent()
+
     fun copy(
         id: String = this.id,
         modifiers: List<PrototypeModifier> = this.modifiers,
-        properties: Properties = this.properties,
-        name: String = this.name,
+        properties: Properties = this.properties
     ): PrototypeComponent = when (this) {
-        is Text -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Text, name = name)
-        is Icon -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Icon, name = name)
-        is Group.Row -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Group.Row, name = name)
-        is Group.Column -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Group.Column, name = name)
-        is Group.Box -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Group.Box, name = name)
-        is Slotted.TopAppBar -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Slotted.TopAppBar, name = name)
-        is Slotted.BottomAppBar -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Slotted.BottomAppBar, name = name)
-        is Slotted.ExtendedFloatingActionButton -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Slotted.ExtendedFloatingActionButton, name = name)
-        is Slotted.Scaffold -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Slotted.Scaffold, name = name)
+        is Text -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Text)
+        is Icon -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Icon)
+        is Group.Row -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Group.Row)
+        is Group.Column -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Group.Column)
+        is Group.Box -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Group.Box)
+        is Slotted.TopAppBar -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Slotted.TopAppBar)
+        is Slotted.BottomAppBar -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Slotted.BottomAppBar)
+        is Slotted.ExtendedFloatingActionButton -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Slotted.ExtendedFloatingActionButton)
+        is Slotted.Scaffold -> this.copy(id = id, modifiers = modifiers, properties = properties as Properties.Slotted.Scaffold)
+        is Custom -> this.copy(treeID = this.treeID, id = id, modifiers = modifiers, properties = properties as Properties.Blank)
+    }
+
+    fun name(project: Project) = when (this) {
+        is Text -> "Text"
+        is Icon -> "Icon"
+        is Group.Row -> "Row"
+        is Group.Column -> "Column"
+        is Group.Box -> "Box"
+        is Slotted.TopAppBar -> "TopAppBar"
+        is Slotted.BottomAppBar -> "BottomAppBar"
+        is Slotted.ExtendedFloatingActionButton -> "ExtendedFloatingActionButton"
+        is Slotted.Scaffold -> "Scaffold"
+        is Custom -> project.trees.first { it.id == this.treeID }.name
     }
 }
 
@@ -203,6 +216,8 @@ sealed class Properties {
             }
         }
     }
+
+    object Blank : Properties()
 }
 
 fun <T: Properties.Slotted> T.withSlotsEnabled(slotsEnabled: Map<String, Boolean>): T = when(this) {
@@ -342,88 +357,26 @@ fun PrototypeComponent.findModifierByIDInTree(id: String): PrototypeModifier? {
     }
 }
 
-fun PrototypeComponent.toCode(): String {
-    val functionName = name.toPascalCase()
-    val properties = properties.toCode()
-    val modifiers = modifiers.toCode()
-    val slots = when (this) {
-        is PrototypeComponent.Slotted -> this.slotsToCode()
-        else -> ""
+/**
+ * Creates a copy of a component tree with a custom component replaced by another tree. Finds original component in tree based on [PrototypeComponent.id]
+ * Used recursively, and returns copy of component tree with no changes if [component] can't be found.
+ * @param customTreeID the id of the custom component to replace in the tree
+ * @param replacementComponent the component to replace it with
+ */
+fun PrototypeComponent.replaceCustomWith(customTreeID: String, replacementComponent: PrototypeComponent) : PrototypeComponent {
+    return when {
+        this is PrototypeComponent.Custom && this.treeID == customTreeID -> replacementComponent
+        this is PrototypeComponent.Group -> this.withChildren(children = this.children.map { it.replaceCustomWith(customTreeID, replacementComponent) })
+        this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(tree = it.tree.replaceCustomWith(customTreeID, replacementComponent) as PrototypeComponent.Group) })
+        else -> this
     }
-    val parameters = listOf(properties, modifiers, slots).filter { it.isNotBlank() }.joinToString(", \n")
-    val body = when (this) {
-        is PrototypeComponent.Group -> {
-            val children = this.childrenToCode()
-            when {
-                children.isNotEmpty() -> "{\n" + children.prependIndent("    ") + "\n}"
-                else -> ""
-            }
-
-        }
-        else -> ""
-    }
-    val parenthesis = when {
-        parameters.isNotEmpty() -> "(\n" + parameters.prependIndent("    ") + "\n)"
-        body.isNotEmpty() -> " "
-        else -> "() "
-    }
-    return (functionName + parenthesis + body)
 }
 
-
-fun Properties.toCode(): String = when (this) {
-    is Properties.Text -> """
-        |text = "$text", 
-        |color = ${color.toCode()}
-    """.trimMargin()
-    is Properties.Icon -> """
-        |imageVector = Icons.Default.${icon.name}, 
-        |tint = ${tint.toCode()}
-    """.trimMargin()
-    is Properties.Group.Row -> """
-        |horizontalArrangement = ${horizontalArrangement.toCodeString()}, 
-        |verticalAlignment = ${verticalAlignment.toCodeString()}
-    """.trimMargin()
-    is Properties.Group.Column -> """
-        |verticalArrangement = ${verticalArrangement.toCodeString()},
-        |horizontalAlignment = ${horizontalAlignment.toCodeString()}
-    """.trimMargin()
-    is Properties.Group.Box -> ""
-    is Properties.Slotted.ExtendedFloatingActionButton -> """
-        |backgroundColor = ${backgroundColor.toCode()}, 
-        |defaultElevation = ${defaultElevation}.dp, 
-        |pressedElevation = $pressedElevation.dp
-    """.trimMargin()
-    is Properties.Slotted.TopAppBar -> """
-        |backgroundColor = ${backgroundColor.toCode()}, 
-        |elevation = $elevation.dp
-    """.trimMargin()
-    is Properties.Slotted.BottomAppBar -> """
-        |backgroundColor = ${backgroundColor.toCode()}, 
-        |elevation = $elevation.dp
-    """.trimMargin()
-    is Properties.Slotted.Scaffold -> """
-        |backgroundColor = ${backgroundColor.toCode()}, 
-        |contentColor = ${contentColor.toCode()}, 
-        |drawerBackgroundColor = ${drawerBackgroundColor.toCode()}, 
-        |drawerContentColor = ${drawerContentColor.toCode()}, 
-        |drawerElevation = $drawerElevation.dp, 
-        |floatingActionButtonPosition = ${floatingActionButtonPosition.toCode()}, 
-        |isFloatingActionButtonDocked = $isFloatingActionButtonDocked
-    """.trimMargin()
-}
-
-fun Any?.toCodeString(): String = when (this) {
-    is String -> "\"$this\""
-    is PrototypeIcon -> "Icons.Default.${this.name}"
-    is PrototypeColor -> this.toCode()
-    is PrototypeAlignment -> this.toCode()
-    is PrototypeArrangement -> this.toCode()
-    else -> this.toString()
-}
-
-fun PrototypeComponent.Group.childrenToCode() = children.joinToString("\n") { it.toCode() }
-
-fun PrototypeComponent.Slotted.slotsToCode() = slots.filter { !it.optional || properties.slotsEnabled[it.name] == true }.joinToString(", \n") {
-    it.name.toCamelCase() + " = {\n" + it.tree.childrenToCode().prependIndent("    ") + "\n}"
+fun PrototypeComponent.containsCustomComponent(customTreeID: String): Boolean {
+    return when {
+        this is PrototypeComponent.Custom && this.treeID == customTreeID -> true
+        this is PrototypeComponent.Group -> this.children.any { it.containsCustomComponent(customTreeID) }
+        this is PrototypeComponent.Slotted -> this.slots.any { it.tree.containsCustomComponent(customTreeID) }
+        else -> false
+    }
 }

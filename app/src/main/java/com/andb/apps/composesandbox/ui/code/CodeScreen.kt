@@ -25,9 +25,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.andb.apps.composesandbox.model.CodeGenerator
 import com.andb.apps.composesandbox.model.Project
-import com.andb.apps.composesandbox.model.PrototypeScreen
-import com.andb.apps.composesandbox.model.toCode
+import com.andb.apps.composesandbox.model.PrototypeTree
+import com.andb.apps.composesandbox.model.TreeType
 import com.andb.apps.composesandbox.state.Handler
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.util.endBorder
@@ -37,6 +38,7 @@ private val codeStyle = TextStyle(fontFamily = FontFamily.Monospace)
 @Composable
 fun CodeScreen(project: Project) {
     val actionHandler = Handler
+    val generator = remember(project) { CodeGenerator(project) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -57,8 +59,20 @@ fun CodeScreen(project: Project) {
         bodyContent = {
             val opened = remember { mutableStateOf<String?>(null) }
             LazyColumn {
-                items(project.screens) {
-                    CodeCard(screen = it, opened = opened.value == it.id) {
+                item {
+                    Text(text = "SCREENS", style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.primary, modifier = Modifier.padding(16.dp))
+                }
+                val (screens, components) = project.trees.partition { it.treeType == TreeType.Screen }
+                items(screens) {
+                    CodeCard(generator = generator, tree = it, opened = opened.value == it.id) {
+                        opened.value = if (opened.value == it.id) null else it.id
+                    }
+                }
+                item {
+                    Text(text = "CUSTOM COMPONENTS", style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.primary, modifier = Modifier.padding(16.dp))
+                }
+                items(components) {
+                    CodeCard(generator = generator, tree = it, opened = opened.value == it.id) {
                         opened.value = if (opened.value == it.id) null else it.id
                     }
                 }
@@ -72,7 +86,7 @@ fun CodeScreen(project: Project) {
                 onClick = {
                     val sendIntent: Intent = Intent().apply {
                         action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_TEXT, project.screens.first().tree.toCode())
+                        putExtra(Intent.EXTRA_TEXT, with(generator) { project.trees.first().tree.toCode() })
                         type = "text/plain"
                     }
 
@@ -87,15 +101,15 @@ fun CodeScreen(project: Project) {
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-private fun CodeCard(screen: PrototypeScreen, opened: Boolean, modifier: Modifier = Modifier, onToggle: () -> Unit) {
+private fun CodeCard(generator: CodeGenerator, tree: PrototypeTree, opened: Boolean, modifier: Modifier = Modifier, onToggle: () -> Unit) {
     val padding = animate(if (opened) 8.dp else 0.dp)
     val elevation = animate(if (opened) 4.dp else 0.dp)
     Card(modifier.padding(padding), elevation = elevation, shape = RoundedCornerShape(padding)) {
         Column {
-            FileItem(screen = screen, onToggle = onToggle)
+            FileItem(tree = tree, onToggle = onToggle)
             AnimatedVisibility(visible = opened) {
                 Row(Modifier.padding(start = 16.dp, bottom = 16.dp)) {
-                    val code = screen.toCode()
+                    val code = with(generator) { tree.toCode() }
                     Text(
                         text = (1..code.lines().size).joinToString("\n"),
                         style = codeStyle.copy(textAlign = TextAlign.End),
@@ -112,11 +126,11 @@ private fun CodeCard(screen: PrototypeScreen, opened: Boolean, modifier: Modifie
 }
 
 @Composable
-private fun FileItem(screen: PrototypeScreen, modifier: Modifier = Modifier, onToggle: () -> Unit) {
+private fun FileItem(tree: PrototypeTree, modifier: Modifier = Modifier, onToggle: () -> Unit) {
     Row(modifier.clickable(onClick = onToggle).padding(16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column {
-            Text(text = screen.name)
-            Text(text = "${screen.name.capitalize().filter { it != ' ' }}.kt", style = codeStyle)
+            Text(text = tree.name)
+            Text(text = "${tree.name.capitalize().filter { it != ' ' }}.kt", style = codeStyle)
         }
         Icon(imageVector = Icons.Default.UnfoldLess)
     }

@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
                             is ViewState.Sandbox -> SandboxScreen(state) {
                                 handler.invoke(UserAction.UpdateProject(it))
                             }
-                            is ViewState.Preview -> PreviewScreen(state.project, state.currentScreen)
+                            is ViewState.Preview -> PreviewScreen(state.project, state.currentTree)
                             is ViewState.Code -> CodeScreen(state.project)
                             is ViewState.Test -> TestScreen()
                         }

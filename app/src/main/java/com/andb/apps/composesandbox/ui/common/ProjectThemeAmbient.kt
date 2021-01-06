@@ -3,16 +3,16 @@ package com.andb.apps.composesandbox.ui.common
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Providers
 import androidx.compose.runtime.staticAmbientOf
-import com.andb.apps.composesandbox.model.Theme
+import com.andb.apps.composesandbox.model.Project
 
-val ProjectThemeAmbient = staticAmbientOf<Theme>()
-
-@Composable
-val ProjectTheme get() = ProjectThemeAmbient.current
+val AmbientProject = staticAmbientOf<Project>()
 
 @Composable
-fun ProjectThemeProvider(projectTheme: Theme, content: @Composable() () -> Unit){
-    Providers(ProjectThemeAmbient provides projectTheme) {
+val ProjectTheme get() = AmbientProject.current.theme
+
+@Composable
+fun ProjectProvider(project: Project, content: @Composable() () -> Unit){
+    Providers(AmbientProject provides project) {
         content()
     }
 }

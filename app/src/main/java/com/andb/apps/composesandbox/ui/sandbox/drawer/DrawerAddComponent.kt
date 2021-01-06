@@ -1,72 +1,76 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.savedinstancestate.savedInstanceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.gesture.longPressGestureFilter
-import androidx.compose.ui.layout.globalPosition
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.AmbientDensity
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.model.Project
-import com.andb.apps.composesandbox.model.PrototypeComponent
-import com.andb.apps.composesandbox.model.allComponents
+import com.andb.apps.composesandbox.model.*
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
-import com.andb.apps.composesandbox.ui.common.AmbientDragDrop
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.ComponentItem
 import java.util.*
 
 @Composable
-fun ComponentList(project: Project, onSelect: (PrototypeComponent) -> Unit) {
-    Column {
-        ComponentListHeader()
-        val searchTerm = savedInstanceState { "" }
-
-        AddComponentHeader(text = "Common Components")
-        allComponents.forEach { component ->
-            AddComponentItem(component = component, onSelect = { onSelect.invoke(component.copy(id = UUID.randomUUID().toString())) })
+fun ComponentList(project: Project, currentTreeID: String,  onSelect: (PrototypeComponent) -> Unit) {
+    ScrollableDrawer(
+        header = {
+            ComponentListHeader()
+        },
+        content = {
+            val searchTerm = savedInstanceState { "" }
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Column {
+                    AddComponentHeader(text = "Common Components")
+                    allComponents.forEach { component ->
+                        AddComponentItem(
+                            component = component,
+                            onSelect = { onSelect.invoke(component.copy(id = UUID.randomUUID().toString())) }
+                        )
+                    }
+                }
+                Column {
+                    AddComponentHeader(text = "Custom Components")
+                    project.trees.filter { it.treeType == TreeType.Component }.forEach { tree ->
+                        val component = PrototypeComponent.Custom(treeID = tree.id)
+                        val enabled = tree.id != currentTreeID && !tree.tree.containsCustomComponent(currentTreeID)
+                        AddComponentItem(
+                            component = component,
+                            enabled = enabled,
+                            onSelect = { onSelect.invoke(component.copy(treeID = tree.id, id = UUID.randomUUID().toString())) }
+                        )
+                    }
+                }
+            }
         }
-    }
+    )
 }
 
 @Composable
 fun AddComponentHeader(text: String) {
-    Text(text = text.toUpperCase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.primary, modifier = Modifier.padding(horizontal = 32.dp))
+    Text(text = text.toUpperCase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.primary, modifier = Modifier.padding(start = 32.dp, end = 32.dp, bottom = 8.dp))
 }
 
 @Composable
-private fun AddComponentItem(component: PrototypeComponent, onSelect: (PrototypeComponent) -> Unit) {
-    val dragDropState = AmbientDragDrop.current
-    val density = AmbientDensity.current
-    val globalPositionOffset = remember { mutableStateOf(Offset.Zero) }
+private fun AddComponentItem(component: PrototypeComponent, enabled: Boolean = true, onSelect: (PrototypeComponent) -> Unit) {
+    val color = if (enabled) Color.Unspecified else MaterialTheme.colors.secondary
     ComponentItem(
         component = component,
         modifier = Modifier
-            .longPressGestureFilter {
-                //dragDropState.dragPosition.value = it.toDpPosition(density) + globalPositionOffset.value.toDpPosition(density) - dragDropState.globalPosition.value
-                onSelect.invoke(component)
-            }
-            .onGloballyPositioned {
-                globalPositionOffset.value = it.globalPosition
-            }
+                then (if (enabled) Modifier.clickable(onLongClick = { onSelect.invoke(component) }, onClick = {}) else Modifier)
             .padding(horizontal = 32.dp, vertical = 8.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        colors = Pair(color, color)
     )
+
 }
 
 @Composable

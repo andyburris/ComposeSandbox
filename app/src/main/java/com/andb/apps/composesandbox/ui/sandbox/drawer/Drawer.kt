@@ -1,12 +1,12 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer
 
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.ripple.rememberRipple
@@ -46,7 +46,7 @@ import com.andb.apps.composesandbox.ui.util.ItemTransitionState
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifier: Modifier = Modifier, onScreenUpdate: (PrototypeScreen) -> Unit, onThemeUpdate: (Theme) -> Unit, onDragUpdate: (dragging: Boolean) -> Unit) {
+fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifier: Modifier = Modifier, onScreenUpdate: (PrototypeTree) -> Unit, onThemeUpdate: (Theme) -> Unit, onDragUpdate: (dragging: Boolean) -> Unit) {
     val density = AmbientDensity.current
     val actionHandler = ActionHandlerAmbient.current
     val movingComponent = remember { mutableStateOf<PrototypeComponent?>(null) }
@@ -156,7 +156,7 @@ fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifi
                         onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
                         movingComponent.value = it
                     }
-                    DrawerState.AddComponent -> ComponentList(project = sandboxState.project) {
+                    DrawerState.AddComponent -> ComponentList(project = sandboxState.project, currentTreeID = sandboxState.openedTree.id) {
                         movingComponent.value = it
                         onDragUpdate.invoke(true)
                         actionHandler.invoke(UserAction.Back)
@@ -286,6 +286,23 @@ fun DrawerHeader(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 actions()
             }
+        }
+    }
+}
+
+@Composable
+fun ScrollableDrawer(header: @Composable () -> Unit, content: @Composable ColumnScope.() -> Unit) {
+    val scrollState = rememberScrollState()
+    Column {
+        Box(
+            modifier = Modifier
+                .shadow(scrollState.toShadow())
+                .background(AmbientElevationOverlay.current?.apply(color = MaterialTheme.colors.surface, elevation = AmbientAbsoluteElevation.current + scrollState.toShadow()) ?: MaterialTheme.colors.surface)
+        ) {
+            header()
+        }
+        ScrollableColumn(scrollState = scrollState) {
+            content()
         }
     }
 }

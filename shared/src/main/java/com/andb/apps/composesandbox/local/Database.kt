@@ -3,8 +3,7 @@ package com.andb.apps.composesandbox.local
 import com.andb.apps.composesandbox.Database
 import com.andb.apps.composesandbox.ProjectData
 import com.andb.apps.composesandbox.model.Project
-import com.andb.apps.composesandbox.model.PrototypeComponent
-import com.andb.apps.composesandbox.model.PrototypeScreen
+import com.andb.apps.composesandbox.model.PrototypeTree
 import com.andb.apps.composesandbox.model.Theme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,10 +31,9 @@ object DatabaseHelper : KoinComponent {
             buffer.value += project
         }
 
-        val serializedScreens = json.encodeToString(ListSerializer(PrototypeScreen.serializer()), project.screens)
-        val serializedComponents = json.encodeToString(ListSerializer(PrototypeComponent.serializer()), project.components)
+        val serializedTrees = json.encodeToString(ListSerializer(PrototypeTree.serializer()), project.trees)
         val serializedTheme = json.encodeToString(Theme.serializer(), project.theme)
-        database.projectQueries.insert(project.id, project.name, serializedScreens, serializedComponents, serializedTheme)
+        database.projectQueries.insert(project.id, project.name, serializedTrees, serializedTheme)
     }
 
     fun deleteProject(project: Project) {
@@ -44,9 +42,8 @@ object DatabaseHelper : KoinComponent {
     }
 
     private fun ProjectData.toProject(): Project {
-        val screens = json.decodeFromString(ListSerializer(PrototypeScreen.serializer()), this.screens)
-        val components = json.decodeFromString(ListSerializer(PrototypeComponent.serializer()), this.components)
+        val trees = json.decodeFromString(ListSerializer(PrototypeTree.serializer()), this.trees)
         val theme = json.decodeFromString(Theme.serializer(), this.theme)
-        return Project(id, name, screens, components, theme)
+        return Project(id, name, trees, theme)
     }
 }

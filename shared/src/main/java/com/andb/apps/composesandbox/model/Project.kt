@@ -1,6 +1,5 @@
 package com.andb.apps.composesandbox.model
 
-import com.andb.apps.composesandbox.toPascalCase
 import kotlinx.serialization.Serializable
 import java.util.*
 
@@ -8,34 +7,19 @@ import java.util.*
 data class Project(
     val id: String = UUID.randomUUID().toString(),
     val name: String,
-    val screens: List<PrototypeScreen>,
-    val components: List<PrototypeComponent> = listOf(),
+    val trees: List<PrototypeTree>,
     val theme: Theme,
 )
 
-fun Project.updatedScreen(screen: PrototypeScreen) = this.copy(
-    screens = this.screens.map {
+fun Project.updatedTree(tree: PrototypeTree) = this.copy(
+    trees = this.trees.map {
         when (it.id) {
-            screen.id -> screen
+            tree.id -> tree
             else -> it
         }
     },
 )
 
-fun Project.updatedComponent(component: PrototypeComponent) = this.copy(
-    components = this.components.map {
-        when (it.id) {
-            component.id -> component
-            else -> it
-        }
-    }
-)
-
 @Serializable
-data class PrototypeScreen(val id: String = UUID.randomUUID().toString(), val name: String, val tree: PrototypeComponent.Group = PrototypeComponent.Group.Column())
-fun PrototypeScreen.toCode() = """
-    |@Composable
-    |fun ${name.toPascalCase()}() {
-    |${tree.toCode().prependIndent("    ")}
-    |}
-""".trimMargin()
+data class PrototypeTree(val id: String = UUID.randomUUID().toString(), val name: String, val treeType: TreeType, val tree: PrototypeComponent.Group = PrototypeComponent.Group.Column())
+enum class TreeType { Screen, Component }

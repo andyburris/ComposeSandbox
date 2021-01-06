@@ -3,12 +3,12 @@ package com.andb.apps.composesandbox.state
 import com.andb.apps.composesandbox.model.Project
 import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.model.PrototypeModifier
-import com.andb.apps.composesandbox.model.PrototypeScreen
+import com.andb.apps.composesandbox.model.PrototypeTree
 
 sealed class Screen {
     object Projects : Screen()
     object AddProject : Screen()
-    data class Sandbox(val projectID: String, val openedScreenID: String, val drawerScreens: List<DrawerScreen> = listOf(DrawerScreen.Tree)) : Screen()
+    data class Sandbox(val projectID: String, val openedTreeID: String, val drawerScreens: List<DrawerScreen> = listOf(DrawerScreen.Tree)) : Screen()
     data class Preview(val projectID: String, val currentScreenID: String) : Screen()
     data class Code(val projectID: String) : Screen()
     object Test : Screen()
@@ -17,7 +17,7 @@ sealed class Screen {
 sealed class ViewState {
     data class Projects (val projects: List<Project>) : ViewState()
     object AddProject : ViewState()
-    data class Sandbox(val project: Project, val openedTree: PrototypeScreen, val drawerStack: List<DrawerState>) : ViewState() {
+    data class Sandbox(val project: Project, val openedTree: PrototypeTree, val drawerStack: List<DrawerState>) : ViewState() {
         val editingComponent: PrototypeComponent get() {
             if (drawerStack.none { it is DrawerState.EditComponent }) throw Error("Can't access editingComponent until drawerStack contains a DrawerState.EditComponent, currently is $drawerStack")
             return drawerStack.filterIsInstance<DrawerState.EditComponent>().first().component
@@ -27,7 +27,7 @@ sealed class ViewState {
             return drawerStack.filterIsInstance<DrawerState.EditModifier>().first().modifier
         }
     }
-    data class Preview(val project: Project, val currentScreen: PrototypeScreen) : ViewState()
+    data class Preview(val project: Project, val currentTree: PrototypeTree) : ViewState()
     data class Code(val project: Project) : ViewState()
     object Test : ViewState()
 }
@@ -36,7 +36,7 @@ fun ViewState.toScreen() = when (this) {
     is ViewState.Projects -> Screen.Projects
     ViewState.AddProject -> Screen.AddProject
     is ViewState.Sandbox -> Screen.Sandbox(project.id, openedTree.id, drawerStack.map { it.toDrawerScreen() })
-    is ViewState.Preview -> Screen.Preview(project.id, currentScreen.id)
+    is ViewState.Preview -> Screen.Preview(project.id, currentTree.id)
     is ViewState.Code -> Screen.Code(project.id)
     ViewState.Test -> Screen.Test
 }

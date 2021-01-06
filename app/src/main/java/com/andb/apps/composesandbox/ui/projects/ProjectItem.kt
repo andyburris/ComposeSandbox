@@ -19,11 +19,12 @@ import androidx.compose.ui.graphics.LinearGradient
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.WithConstraints
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.AmbientConfiguration
 import androidx.compose.ui.platform.AmbientDensity
-import androidx.compose.ui.platform.ConfigurationAmbient
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.model.Project
+import com.andb.apps.composesandbox.ui.common.ProjectProvider
 import com.andb.apps.composesandbox.ui.common.RenderComponentParent
 
 @Composable
@@ -33,17 +34,19 @@ fun ProjectItem(project: Project, modifier: Modifier = Modifier, selected: Boole
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
                 .border(2.dp, MaterialTheme.colors.secondaryVariant, RoundedCornerShape(8.dp))
-                .aspectRatio(ConfigurationAmbient.current.screenWidthDp.toFloat() / ConfigurationAmbient.current.screenHeightDp)
+                .aspectRatio(AmbientConfiguration.current.screenWidthDp.toFloat() / AmbientConfiguration.current.screenHeightDp)
                 .fillMaxWidth()
         ) {
             WithConstraints {
-                val width = ConfigurationAmbient.current.screenWidthDp
-                val height = ConfigurationAmbient.current.screenHeightDp
+                val width = AmbientConfiguration.current.screenWidthDp
+                val height = AmbientConfiguration.current.screenHeightDp
                 val scaleX = with(AmbientDensity.current) { constraints.maxWidth.toDp().value } / width.toFloat()
                 val scaleY = with(AmbientDensity.current) { constraints.maxHeight.toDp().value } / height.toFloat()
                 println("projectItem, scaleX = $scaleX, scaleY = $scaleY")
-                Box(modifier = Modifier.graphicsLayer(scaleX = scaleX, scaleY = scaleY).size(width.dp, height.dp)) {
-                    RenderComponentParent(theme = project.theme, component = project.screens.first().tree)
+                ProjectProvider(project = project) {
+                    Box(modifier = Modifier.graphicsLayer(scaleX = scaleX, scaleY = scaleY).size(width.dp, height.dp)) {
+                        RenderComponentParent(theme = project.theme, component = project.trees.first().tree)
+                    }
                 }
             }
             if (selected) {

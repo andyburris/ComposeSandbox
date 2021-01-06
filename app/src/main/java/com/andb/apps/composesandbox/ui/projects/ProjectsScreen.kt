@@ -45,7 +45,7 @@ fun ProjectsScreen(projects: List<Project>) {
             ProjectItem(
                 project = project,
                 modifier = Modifier.weight(1f).padding(16.dp).clickable {
-                    val screen = Screen.Sandbox(project.id, project.screens.first().id)
+                    val screen = Screen.Sandbox(project.id, project.trees.first().id)
                     println("screen = $screen")
                     handler.invoke(UserAction.OpenScreen(screen))
                 }

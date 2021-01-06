@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import com.andb.apps.composesandbox.data.model.*
 import com.andb.apps.composesandbox.model.PrototypeComponent
 import com.andb.apps.composesandbox.model.Theme
+import com.andb.apps.composesandbox.model.TreeType
 
 @Composable
 fun RenderComponentParent(theme: Theme, component: PrototypeComponent) {
@@ -86,6 +87,10 @@ fun RenderComponent(component: PrototypeComponent){
             backgroundColor = component.properties.backgroundColor.renderColor(),
             contentColor = component.properties.contentColor.renderColor(),
         )
+        is PrototypeComponent.Custom -> {
+            val treeComponent = AmbientProject.current.trees.filter { it.treeType == TreeType.Component }.first { it.id == component.treeID }.tree
+            RenderComponent(component = treeComponent.copy(modifiers = component.modifiers + treeComponent.modifiers)) //instance modifiers wrap the component's modifiers
+        }
     }
 }
 

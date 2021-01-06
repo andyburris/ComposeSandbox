@@ -20,7 +20,7 @@ class Machine(coroutineScope: CoroutineScope) {
                 Screen.AddProject -> ViewState.AddProject
                 is Screen.Sandbox -> {
                     val project = projects.first { it.id == screen.projectID }
-                    val openedTree = project.screens.first { it.id == screen.openedScreenID }
+                    val openedTree = project.trees.first { it.id == screen.openedTreeID }
                     val drawerStack = screen.drawerScreens.map { drawerScreen ->
                         when (drawerScreen) {
                             DrawerScreen.Tree -> DrawerState.Tree
@@ -35,7 +35,7 @@ class Machine(coroutineScope: CoroutineScope) {
                 }
                 is Screen.Preview -> {
                     val project = projects.first { it.id == screen.projectID }
-                    val currentScreen = project.screens.first { it.id == screen.currentScreenID }
+                    val currentScreen = project.trees.first { it.id == screen.currentScreenID }
                     ViewState.Preview(project, currentScreen)
                 }
                 is Screen.Code -> ViewState.Code(projects.first { it.id == screen.projectID })
@@ -56,7 +56,7 @@ class Machine(coroutineScope: CoroutineScope) {
             }
             is UserAction.AddProject -> {
                 DatabaseHelper.upsertProject(action.project)
-                screens.value = listOf(Screen.Projects, Screen.Sandbox(action.project.id, action.project.screens.first().id))
+                screens.value = listOf(Screen.Projects, Screen.Sandbox(action.project.id, action.project.trees.first().id))
             }
             is UserAction.UpdateProject -> DatabaseHelper.upsertProject(action.project)
             is UserAction.DeleteProject -> {
