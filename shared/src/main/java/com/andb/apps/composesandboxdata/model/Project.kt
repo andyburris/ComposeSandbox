@@ -21,5 +21,5 @@ fun Project.updatedTree(tree: PrototypeTree) = this.copy(
 )
 
 @Serializable
-data class PrototypeTree(val id: String = UUID.randomUUID().toString(), val name: String, val treeType: TreeType, val tree: PrototypeComponent.Group = PrototypeComponent.Group.Column())
+data class PrototypeTree(val id: String = UUID.randomUUID().toString(), val name: String, val treeType: TreeType, val tree: PrototypeComponent.Group = PrototypeComponent.Group.Column(modifiers = listOf(PrototypeModifier.FillMaxSize())))
 enum class TreeType { Screen, Component }

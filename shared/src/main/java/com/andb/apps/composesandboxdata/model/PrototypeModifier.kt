@@ -15,8 +15,22 @@ sealed class PrototypeModifier {
     @Serializable data class Background(val color: PrototypeColor, val cornerRadius: Int, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
     @Serializable data class Width(val width: Int, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
     @Serializable data class Height(val height: Int, override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
+    @Serializable sealed class Size : PrototypeModifier() {
+        @Serializable data class Individual(val width: Int, val height: Int, override val id: String = UUID.randomUUID().toString()) : Size()
+        @Serializable data class All(val size: Int, override val id: String = UUID.randomUUID().toString()) : Size()
+        fun toAll() = when(this) {
+            is Individual -> All(width, id)
+            is All -> this
+        }
+        fun toIndividual() = when(this) {
+            is Individual -> this
+            is All -> Individual(size, size, id)
+        }
+
+    }
     @Serializable data class FillMaxWidth(override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
     @Serializable data class FillMaxHeight(override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
+    @Serializable data class FillMaxSize(override val id: String = UUID.randomUUID().toString()) : PrototypeModifier()
 }
 
 val PrototypeModifier.name: String
@@ -26,8 +40,10 @@ val PrototypeModifier.name: String
         is PrototypeModifier.Background -> "Background"
         is PrototypeModifier.Height -> "Height"
         is PrototypeModifier.Width -> "Width"
+        is PrototypeModifier.Size -> "Size"
         is PrototypeModifier.FillMaxWidth -> "Fill Max Width"
         is PrototypeModifier.FillMaxHeight -> "Fill Max Height"
+        is PrototypeModifier.FillMaxSize -> "Fill Max Size"
     }
 
 val PrototypeModifier.summary: String
@@ -39,8 +55,11 @@ val PrototypeModifier.summary: String
         is PrototypeModifier.Background -> "Corners: $cornerRadius"
         is PrototypeModifier.Height -> "$height"
         is PrototypeModifier.Width -> "$width"
+        is PrototypeModifier.Size.All -> "$size"
+        is PrototypeModifier.Size.Individual -> "Width: $width, Height: $height"
         is PrototypeModifier.FillMaxWidth -> ""
         is PrototypeModifier.FillMaxHeight -> ""
+        is PrototypeModifier.FillMaxSize -> ""
     }
 
 
@@ -101,6 +120,9 @@ fun PrototypeModifier.toCode() = when (this) {
     is PrototypeModifier.Padding.All -> "padding($padding.dp)"
     is PrototypeModifier.Height -> "height(height = $height.dp)"
     is PrototypeModifier.Width -> "width(width = $width.dp)"
+    is PrototypeModifier.Size.All -> "size(size = $size.dp)"
+    is PrototypeModifier.Size.Individual -> "size(width = $width.dp, height = $height.dp)"
     is PrototypeModifier.FillMaxWidth -> "fillMaxWidth()"
     is PrototypeModifier.FillMaxHeight -> "fillMaxHeight()"
+    is PrototypeModifier.FillMaxSize -> "fillMaxSize()"
 }

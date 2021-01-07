@@ -7,13 +7,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandboxdata.model.*
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.Chip
 import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
 import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.ColorPicker
 import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.NumberPicker
+import com.andb.apps.composesandboxdata.model.*
 
 @Composable
 fun DrawerEditModifiers(prototypeModifier: PrototypeModifier, onEdit: (PrototypeModifier) -> Unit) {
@@ -27,8 +27,10 @@ fun DrawerEditModifiers(prototypeModifier: PrototypeModifier, onEdit: (Prototype
                 is PrototypeModifier.Background -> BackgroundModifierEditor(prototypeModifier = prototypeModifier, onEdit)
                 is PrototypeModifier.Width -> WidthModifierEditor(prototypeModifier = prototypeModifier, onEdit = onEdit)
                 is PrototypeModifier.Height -> HeightModifierEditor(prototypeModifier = prototypeModifier, onEdit = onEdit)
+                is PrototypeModifier.Size -> SizeModifierEditor(prototypeModifier = prototypeModifier, onEdit = onEdit)
                 is PrototypeModifier.FillMaxWidth -> NoOptions()
                 is PrototypeModifier.FillMaxHeight -> NoOptions()
+                is PrototypeModifier.FillMaxSize -> NoOptions()
             }
         }
     }
@@ -118,6 +120,35 @@ private fun BackgroundModifierEditor(prototypeModifier: PrototypeModifier.Backgr
     }
     NumberPicker(label = "Corner Radius", current = prototypeModifier.cornerRadius) {
         onEdit.invoke(prototypeModifier.copy(cornerRadius = it))
+    }
+}
+
+@Composable
+fun SizeModifierEditor(prototypeModifier: PrototypeModifier.Size, onEdit: (PrototypeModifier) -> Unit) {
+    Row {
+        Chip(
+            label = "All",
+            selected = prototypeModifier is PrototypeModifier.Size.All,
+            modifier = Modifier.padding(end = 8.dp).clickable { onEdit(prototypeModifier.toAll()) }
+        )
+        Chip(
+            label = "Individual",
+            selected = prototypeModifier is PrototypeModifier.Size.Individual,
+            modifier = Modifier.padding(end = 8.dp).clickable { onEdit(prototypeModifier.toIndividual()) }
+        )
+    }
+    when(prototypeModifier) {
+        is PrototypeModifier.Size.Individual -> {
+            NumberPicker(label = "Width", current = prototypeModifier.width) {
+                onEdit.invoke(prototypeModifier.copy(width = it))
+            }
+            NumberPicker(label = "Height", current = prototypeModifier.height) {
+                onEdit.invoke(prototypeModifier.copy(height = it))
+            }
+        }
+        is PrototypeModifier.Size.All -> NumberPicker(label = "Size", current = prototypeModifier.size) {
+            onEdit.invoke(prototypeModifier.copy(size = it))
+        }
     }
 }
 

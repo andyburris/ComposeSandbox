@@ -23,8 +23,10 @@ val PrototypeModifier.icon: ImageVector
         is PrototypeModifier.Background -> Icons.Default.FormatPaint
         is PrototypeModifier.Height -> Icons.Default.Height
         is PrototypeModifier.Width -> vectorResource(id = R.drawable.ic_width)
+        is PrototypeModifier.Size -> Icons.Default.ZoomOutMap
         is PrototypeModifier.FillMaxWidth -> vectorResource(id = R.drawable.ic_max_width)
         is PrototypeModifier.FillMaxHeight -> Icons.Default.UnfoldMore
+        is PrototypeModifier.FillMaxSize -> Icons.Default.Fullscreen
     }
 
 @SuppressLint("ComposableModifierFactory", "ModifierFactoryExtensionFunction")
@@ -39,8 +41,11 @@ fun List<PrototypeModifier>.toModifier() : Modifier {
             is PrototypeModifier.Background -> Modifier.background(prototypeModifier.color.renderColor(), shape = RoundedCornerShape(prototypeModifier.cornerRadius.dp))
             is PrototypeModifier.Height -> Modifier.height(prototypeModifier.height.dp)
             is PrototypeModifier.Width -> Modifier.width(prototypeModifier.width.dp)
+            is PrototypeModifier.Size.Individual -> Modifier.size(width = prototypeModifier.width.dp, height = prototypeModifier.height.dp)
+            is PrototypeModifier.Size.All -> Modifier.size(size = prototypeModifier.size.dp)
             is PrototypeModifier.FillMaxWidth -> Modifier.fillMaxWidth()
             is PrototypeModifier.FillMaxHeight -> Modifier.fillMaxHeight()
+            is PrototypeModifier.FillMaxSize -> Modifier.fillMaxSize()
         }
     }
 }

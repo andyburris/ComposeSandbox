@@ -40,7 +40,7 @@ private val templates = listOf(
                         horizontalAlignment = PrototypeAlignment.Horizontal.CenterHorizontally,
                         verticalArrangement = PrototypeArrangement.Vertical.Center,
                     ),
-                    modifiers = listOf(PrototypeModifier.FillMaxHeight(), PrototypeModifier.FillMaxWidth()),
+                    modifiers = listOf(PrototypeModifier.FillMaxSize()),
                     children = listOf(
                         PrototypeComponent.Text(
                             properties = Properties.Text("Hello World")
