@@ -25,13 +25,14 @@ class Machine(coroutineScope: CoroutineScope) {
                         when (drawerScreen) {
                             DrawerScreen.Tree -> DrawerState.Tree
                             DrawerScreen.AddComponent -> DrawerState.AddComponent
-                            is DrawerScreen.EditComponent -> DrawerState.EditComponent(openedTree.tree.findByIDInTree(drawerScreen.componentID)!!)
+                            is DrawerScreen.EditComponent -> openedTree.tree.findByIDInTree(drawerScreen.componentID)?.let { DrawerState.EditComponent(it) }
                             DrawerScreen.AddModifier -> DrawerState.AddModifier
-                            is DrawerScreen.EditModifier -> DrawerState.EditModifier(openedTree.tree.findModifierByIDInTree(drawerScreen.modifierID)!!)
+                            is DrawerScreen.EditModifier -> openedTree.tree.findModifierByIDInTree(drawerScreen.modifierID)?.let { DrawerState.EditModifier(it) }
                             DrawerScreen.EditTheme -> DrawerState.EditTheme
                         }
                     }
-                    ViewState.Sandbox(project, openedTree, drawerStack)
+                    val validStack = drawerStack.takeWhile { it != null }.filterNotNull()
+                    ViewState.Sandbox(project, openedTree, validStack)
                 }
                 is Screen.Preview -> {
                     val project = projects.first { it.id == screen.projectID }

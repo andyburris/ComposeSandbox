@@ -46,7 +46,15 @@ import com.andb.apps.composesandboxdata.plusElement
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifier: Modifier = Modifier, onScreenUpdate: (PrototypeTree) -> Unit, onThemeUpdate: (Theme) -> Unit, onDragUpdate: (dragging: Boolean) -> Unit) {
+fun Drawer(
+    sandboxState: ViewState.Sandbox,
+    sheetState: BottomSheetState,
+    modifier: Modifier = Modifier,
+    onScreenUpdate: (PrototypeTree) -> Unit,
+    onThemeUpdate: (Theme) -> Unit,
+    onExtractComponent: (PrototypeComponent) -> Unit,
+    onDragUpdate: (dragging: Boolean) -> Unit
+) {
     val density = AmbientDensity.current
     val actionHandler = ActionHandlerAmbient.current
     val movingComponent = remember { mutableStateOf<PrototypeComponent?>(null) }
@@ -151,7 +159,7 @@ fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifi
             ) {
                 when (drawerState) {
                     is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = movingComponent.value?.let { dragDropState.getDropState() }, scrolling = dragDropScrolling) {
-                        val updatedTree = sandboxState.openedTree.tree.minusChildFromTree(it) as PrototypeComponent.Group
+                        val updatedTree = sandboxState.openedTree.tree.minusChildFromTree(it)
                         onDragUpdate.invoke(true)
                         onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
                         movingComponent.value = it
@@ -161,19 +169,19 @@ fun Drawer(sandboxState: ViewState.Sandbox, sheetState: BottomSheetState, modifi
                         onDragUpdate.invoke(true)
                         actionHandler.invoke(UserAction.Back)
                     }
-                    is DrawerState.EditComponent -> DrawerEditProperties(drawerState.component, actionHandler) { updatedComponent ->
-                        val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(updatedComponent) as PrototypeComponent.Group
+                    is DrawerState.EditComponent -> DrawerEditProperties(drawerState.component, actionHandler, onExtractComponent = onExtractComponent) { updatedComponent ->
+                        val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(updatedComponent)
                         onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
                     }
                     is DrawerState.AddModifier -> AddModifierList {
                         val withModifier = sandboxState.editingComponent.copy(modifiers = sandboxState.editingComponent.modifiers.plusElement(it, 0))
-                        val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(withModifier) as PrototypeComponent.Group
+                        val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(withModifier)
                         onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
                         actionHandler.invoke(UserAction.Back)
                     }
                     is DrawerState.EditModifier -> DrawerEditModifiers(prototypeModifier = drawerState.modifier) {
                         println("edited modifier = $it")
-                        val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it)) as PrototypeComponent.Group
+                        val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it))
                         onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
                     }
                     is DrawerState.EditTheme -> DrawerEditTheme(theme = sandboxState.project.theme) {

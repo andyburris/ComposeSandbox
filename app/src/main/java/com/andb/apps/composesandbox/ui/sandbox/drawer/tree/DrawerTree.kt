@@ -25,8 +25,6 @@ import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandboxdata.model.PrototypeComponent
-import com.andb.apps.composesandboxdata.model.PrototypeTree
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerScreen
 import com.andb.apps.composesandbox.state.UserAction
@@ -34,6 +32,8 @@ import com.andb.apps.composesandbox.ui.common.*
 import com.andb.apps.composesandbox.ui.sandbox.drawer.DragDropScrolling
 import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
 import com.andb.apps.composesandbox.ui.sandbox.drawer.toShadow
+import com.andb.apps.composesandboxdata.model.PrototypeComponent
+import com.andb.apps.composesandboxdata.model.PrototypeTree
 
 /**
  * Tree representing prototype components. Holds drag-and-drop logic currently. Uses [GenericTree] under the hood
@@ -64,7 +64,7 @@ fun DrawerTree(opened: PrototypeTree, sheetState: BottomSheetState, hovering: Dr
                     .background(AmbientElevationOverlay.current?.apply(color = MaterialTheme.colors.surface, elevation = AmbientAbsoluteElevation.current + scrollState.toShadow()) ?: MaterialTheme.colors.surface),
                 isExpanded = sheetState.targetValue == BottomSheetValue.Expanded
             ) { if (sheetState.isExpanded) sheetState.collapse() else sheetState.expand() }
-            ScrollableColumn(scrollState = scrollState) {
+            ScrollableColumn(scrollState = scrollState, contentPadding = PaddingValues(bottom = 32.dp)) {
                 Tree(
                     parent = opened.tree,
                     modifier = Modifier.padding(start = 32.dp, end = 32.dp),
@@ -109,7 +109,7 @@ private fun DrawerTreeHeader(opened: PrototypeTree, modifier: Modifier = Modifie
 @Composable
 private fun DropIndicator(dropState: DropState.OverTreeItem) {
     val position = dropState.indicatorState.position
-    Row(modifier = Modifier.padding(start = 24.dp, top = position).fillMaxWidth()) {
+    Row(modifier = Modifier.offset(x = 24.dp, y = position).fillMaxWidth()) {
         repeat(dropState.indicatorState.indent) {
             Box(
                 Modifier.size(40.dp, 2.dp).padding(end = 2.dp).background(MaterialTheme.colors.primary.copy(alpha = .5f)),

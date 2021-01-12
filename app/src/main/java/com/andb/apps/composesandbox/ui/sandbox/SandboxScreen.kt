@@ -69,6 +69,12 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) ->
                         modifier = Modifier.height(with(AmbientDensity.current) { (height/2).toDp() } + 88.dp),
                         onScreenUpdate = { onUpdateProject.invoke(sandboxState.project.updatedTree(it)) },
                         onThemeUpdate = { onUpdateProject.invoke(sandboxState.project.copy(theme = it)) },
+                        onExtractComponent = { oldComponent ->
+                            val customTree = PrototypeTree(name = sandboxState.project.nextComponentName(), treeType = TreeType.Component, tree = oldComponent)
+                            val customComponent = PrototypeComponent.Custom(treeID = customTree.id)
+                            val editedTrees = sandboxState.project.trees.map { it.copy(tree = it.tree.replaceWithCustom(oldComponent.id, customComponent)) }
+                            onUpdateProject.invoke(sandboxState.project.copy(trees = editedTrees + customTree))
+                        },
                         onDragUpdate = { canDragSheet.value = !it }
                     )
                 }
@@ -156,9 +162,7 @@ private fun SandboxBackdrop(sandboxState: ViewState.Sandbox, onUpdateProject: (P
     Column(Modifier.padding(vertical = 8.dp)) {
         val (screens, components) = sandboxState.project.trees.partition { it.treeType == TreeType.Screen }
         CategoryHeader(category = "Screens", modifier = Modifier.padding(bottom = 8.dp)) {
-            val oldScreensMax = screens.mapNotNull { it.name.removePrefix("Screen ").toIntOrNull() }.maxOrNull() ?: 0
-            val screenNumber = maxOf(oldScreensMax, screens.size) + 1
-            onUpdateProject.invoke(sandboxState.project.copy(trees = sandboxState.project.trees + PrototypeTree(name = "Screen $screenNumber", treeType = TreeType.Screen)))
+            onUpdateProject.invoke(sandboxState.project.copy(trees = sandboxState.project.trees + PrototypeTree(name = sandboxState.project.nextScreenName(), treeType = TreeType.Screen)))
         }
         val showEditDialog = savedInstanceState<String?> { null }
         screens.forEach { screen ->
@@ -173,9 +177,7 @@ private fun SandboxBackdrop(sandboxState: ViewState.Sandbox, onUpdateProject: (P
             }
         }
         CategoryHeader(category = "Components", modifier = Modifier.padding(bottom = 8.dp, top = 16.dp)) {
-            val oldComponentsMax = components.mapNotNull { it.name.removePrefix("Component ").toIntOrNull() }.maxOrNull() ?: 0
-            val componentNumber = maxOf(oldComponentsMax, components.size) + 1
-            onUpdateProject.invoke(sandboxState.project.copy(trees = sandboxState.project.trees + PrototypeTree(name = "Component $componentNumber", treeType = TreeType.Component)))
+            onUpdateProject.invoke(sandboxState.project.copy(trees = sandboxState.project.trees + PrototypeTree(name = sandboxState.project.nextComponentName(), treeType = TreeType.Component)))
         }
         components.forEach { component ->
             TreeItem(
@@ -202,7 +204,7 @@ private fun SandboxBackdrop(sandboxState: ViewState.Sandbox, onUpdateProject: (P
                         onDelete = {
                             showEditDialog.value = null
                             val newTrees = sandboxState.project.trees.filter { it.id != openedTree.id }.map {
-                                it.copy(tree = it.tree.replaceCustomWith(openedTree.id, openedTree.tree) as PrototypeComponent.Group)
+                                it.copy(tree = it.tree.replaceCustomWith(openedTree.id, openedTree.tree))
                             }
                             actionHandler.invoke(UserAction.UpdateSandbox((sandboxState.toScreen() as Screen.Sandbox).copy(openedTreeID = newTrees.first().id)))
                             onUpdateProject.invoke(sandboxState.project.copy(trees = newTrees))
@@ -285,7 +287,17 @@ private fun EditTreeDialog(tree: PrototypeTree, canDelete: Boolean, onDismiss: (
         Row (horizontalArrangement = Arrangement.End, modifier = Modifier.padding(16.dp).fillMaxWidth()){
             TextButton(
                 onClick = {
-                    val newTree = baseComponent.value.withChildren(tree.tree.children).copy(modifiers = tree.tree.modifiers, properties = if (tree.tree::class == baseComponent::class) tree.tree.properties else baseComponent.value.properties) as PrototypeComponent.Group
+                    val oldChildren = when(val tree = tree.tree) {
+                        is PrototypeComponent.Group -> tree.children
+                        is PrototypeComponent.Slotted -> tree.slots.flatMap { it.tree.children }
+                        else -> emptyList()
+                    }
+                    val newBaseComponent = when (val baseComponent = baseComponent.value) {
+                        is PrototypeComponent.Group -> baseComponent.withChildren(oldChildren)
+                        is PrototypeComponent.Slotted -> baseComponent.withSlots(baseComponent.slots.mapIndexed { index, slot -> if (index == 0) slot.copy(tree = slot.tree.withChildren(oldChildren)) else slot })
+                        else -> baseComponent
+                    }
+                    val newTree = newBaseComponent.copy(modifiers = tree.tree.modifiers, properties = if (tree.tree::class == baseComponent::class) tree.tree.properties else baseComponent.value.properties)
                     val newScreen = tree.copy(name = name.value, tree = newTree)
                     onUpdateScreen.invoke(newScreen)
                 }

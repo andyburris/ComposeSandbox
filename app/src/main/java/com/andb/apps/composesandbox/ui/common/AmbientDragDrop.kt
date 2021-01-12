@@ -47,7 +47,7 @@ data class DragDropState(val dragPosition: MutableState<Position>, val globalOff
                 else -> when (hoveringItem.component) {
                     is PrototypeComponent.Slotted -> Pair(null, hoverDropPosition)
                     is PrototypeComponent.Group -> Pair(hoveringItem, if (hoverDropPosition == DropPosition.ABOVE) DropPosition.NESTED.First else DropPosition.NESTED.Last)
-                    else -> throw Error("Components that are not Group or Slotted should always be able to be dropped around")
+                    else -> return DropState.OverNone // if a non-group or slotted component is top level, all other component drops are invalid
                 }
             }
             is DropPosition.NESTED -> when (hoveringItem.component) {

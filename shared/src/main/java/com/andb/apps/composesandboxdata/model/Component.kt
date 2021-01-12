@@ -365,9 +365,18 @@ fun PrototypeComponent.findModifierByIDInTree(id: String): PrototypeModifier? {
  */
 fun PrototypeComponent.replaceCustomWith(customTreeID: String, replacementComponent: PrototypeComponent) : PrototypeComponent {
     return when {
-        this is PrototypeComponent.Custom && this.treeID == customTreeID -> replacementComponent
+        this is PrototypeComponent.Custom && this.treeID == customTreeID -> replacementComponent.copy(id = UUID.randomUUID().toString(), modifiers = this.modifiers + replacementComponent.modifiers)
         this is PrototypeComponent.Group -> this.withChildren(children = this.children.map { it.replaceCustomWith(customTreeID, replacementComponent) })
         this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(tree = it.tree.replaceCustomWith(customTreeID, replacementComponent) as PrototypeComponent.Group) })
+        else -> this
+    }
+}
+
+fun PrototypeComponent.replaceWithCustom(oldTreeID: String, replacementCustomComponent: PrototypeComponent.Custom): PrototypeComponent {
+    return when {
+        this.id == oldTreeID -> replacementCustomComponent.copy(id = UUID.randomUUID().toString())
+        this is PrototypeComponent.Group -> this.withChildren(this.children.map { it.replaceWithCustom(oldTreeID, replacementCustomComponent) })
+        this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(tree = it.tree.replaceWithCustom(oldTreeID, replacementCustomComponent) as PrototypeComponent.Group) })
         else -> this
     }
 }
