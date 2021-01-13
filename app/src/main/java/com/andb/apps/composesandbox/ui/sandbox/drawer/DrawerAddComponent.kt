@@ -7,11 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.savedinstancestate.savedInstanceState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -78,8 +75,8 @@ fun ComponentList(project: Project, currentTreeID: String, title: String = "Add 
 }
 
 @Composable
-fun AddComponentHeader(text: String) {
-    Text(text = text.toUpperCase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.primary, modifier = Modifier.padding(start = 0.dp, end = 32.dp, bottom = 8.dp))
+fun AddComponentHeader(text: String, modifier: Modifier = Modifier) {
+    Text(text = text.toUpperCase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.primary, modifier = modifier.padding(start = 0.dp, end = 32.dp, bottom = 8.dp))
 }
 
 @Composable
@@ -115,22 +112,8 @@ private fun AddComponentItem(component: PrototypeComponent, modifier: Modifier =
 
 @Composable
 private fun ComponentListHeader(title: String) {
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(32.dp).fillMaxWidth()
-    ) {
-        val actionHandler = ActionHandlerAmbient.current
-        Icon(
-            imageVector = Icons.Default.ArrowBack,
-            modifier = Modifier.clickable { actionHandler.invoke(UserAction.Back) }
-        )
-        Text(
-            text = title,
-            style = MaterialTheme.typography.h6,
-            modifier = Modifier.padding(start = 16.dp)
-        )
-    }
+    val actionHandler = ActionHandlerAmbient.current
+    DrawerHeader(title = title, onIconClick = { actionHandler.invoke(UserAction.Back) })
 }
 
 private val PrototypeComponent.documentation

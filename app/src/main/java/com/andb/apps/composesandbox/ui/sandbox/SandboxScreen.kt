@@ -1,12 +1,10 @@
 package com.andb.apps.composesandbox.ui.sandbox
 
-import androidx.compose.animation.animate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -22,15 +20,17 @@ import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.BuildConfig
 import com.andb.apps.composesandbox.state.*
+import com.andb.apps.composesandbox.ui.common.MenuItem
+import com.andb.apps.composesandbox.ui.common.OverflowMenu
 import com.andb.apps.composesandbox.ui.common.ProjectProvider
 import com.andb.apps.composesandbox.ui.common.RenderComponentParent
 import com.andb.apps.composesandbox.ui.sandbox.drawer.Drawer
-import com.andb.apps.composesandbox.ui.sandbox.drawer.SandboxBackdrop
 import com.andb.apps.composesandboxdata.model.*
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) -> Unit) {
+    val actionHandler = Handler
     ProjectProvider(project = sandboxState.project) {
         val backdropState = rememberBackdropScaffoldState(initialValue = BackdropValue.Concealed)
         BackdropScaffold(
@@ -50,20 +50,18 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) ->
             }
         ) {
             val bottomSheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
-            val cornerRadius = animate(target = if (bottomSheetState.targetValue == BottomSheetValue.Expanded) 16.dp else 32.dp)
             val (height, setHeight) = remember { mutableStateOf(0) }
             val canDragSheet = remember { mutableStateOf(true) }
             BottomSheetScaffold(
                 modifier = Modifier.onGloballyPositioned { setHeight(it.size.height) },
                 scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState),
-                sheetShape = RoundedCornerShape(topLeft = cornerRadius, topRight = cornerRadius),
                 sheetPeekHeight = 88.dp,
                 sheetGesturesEnabled = true,
                 sheetContent = {
                     Drawer(
                         sandboxState = sandboxState,
                         sheetState = bottomSheetState,
-                        modifier = Modifier.height(with(AmbientDensity.current) { (height/2).toDp() } + 88.dp),
+                        modifier = Modifier.height(with(AmbientDensity.current) { (height / 2).toDp() } + 88.dp),
                         onScreenUpdate = { onUpdateProject.invoke(sandboxState.project.updatedTree(it)) },
                         onThemeUpdate = { onUpdateProject.invoke(sandboxState.project.copy(theme = it)) },
                         onExtractComponent = { oldComponent ->
@@ -72,26 +70,34 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) ->
                             val editedTrees = sandboxState.project.trees.map { it.copy(component = it.component.replaceWithCustom(oldComponent.id, customComponent)) }
                             onUpdateProject.invoke(sandboxState.project.copy(trees = editedTrees + customTree))
                         },
-                        onDragUpdate = { canDragSheet.value = !it }
+                        onDragUpdate = { canDragSheet.value = !it },
+                        onDeleteTree = {
+                            val newTrees = sandboxState.project.trees.filter { it.id != sandboxState.openedTree.id }.map {
+                                it.copy(component = it.component.replaceCustomWith(sandboxState.openedTree.id, sandboxState.openedTree.component))
+                            }
+                            actionHandler.invoke(UserAction.UpdateSandbox((sandboxState.toScreen() as Screen.Sandbox).copy(openedTreeID = newTrees.first().id)))
+                            onUpdateProject.invoke(sandboxState.project.copy(trees = newTrees))
+                        }
                     )
+                },
+                bodyContent = {
+                    val offset = if (bottomSheetState.offset.value.isNaN()) 0f else bottomSheetState.offset.value
+                    val scale = (offset / height).coerceIn(0f..1f)
+                    println("height = $height, offset = ${bottomSheetState.offset.value}, scale = $scale")
+                    //Box(Modifier.background(Color.Red).size(128.dp))
+                    Box(
+                        modifier = Modifier
+                            .background(MaterialTheme.colors.secondary)
+                            .graphicsLayer(scaleX = scale, scaleY = scale, transformOrigin = TransformOrigin(0.5f, 0f))
+                            .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 32.dp)
+                            .clipToBounds()
+                            .background(MaterialTheme.colors.background)
+                            .fillMaxSize()
+                    ) {
+                        RenderComponentParent(theme = sandboxState.project.theme, component = sandboxState.openedTree.component)
+                    }
                 }
-            ) {
-                val offset = if (bottomSheetState.offset.value.isNaN()) 0f else bottomSheetState.offset.value
-                val scale = (offset / height).coerceIn(0f..1f)
-                println("height = $height, offset = ${bottomSheetState.offset.value}, scale = $scale")
-                //Box(Modifier.background(Color.Red).size(128.dp))
-                Box(
-                    modifier = Modifier
-                        .background(MaterialTheme.colors.secondary)
-                        .graphicsLayer(scaleX = scale, scaleY = scale, transformOrigin = TransformOrigin(0.5f, 0f))
-                        .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 32.dp /*+ with(AmbientDensity.current) { (height-offset).toDp() }*/)
-                        .clipToBounds()
-                        .background(MaterialTheme.colors.background)
-                        .fillMaxSize()
-                ) {
-                    RenderComponentParent(theme = sandboxState.project.theme, component = sandboxState.openedTree.component)
-                }
-            }
+            )
         }
     }
 }
@@ -99,7 +105,6 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) ->
 @Composable
 private fun SandboxAppBar(sandboxState: ViewState.Sandbox, project: Project, iconState: BackdropValue, onToggle: () -> Unit) {
     val actionHandler = Handler
-    val menuShowing = remember { mutableStateOf(false) }
     TopAppBar(
         navigationIcon = {
             IconToggleButton(
@@ -113,38 +118,21 @@ private fun SandboxAppBar(sandboxState: ViewState.Sandbox, project: Project, ico
         actions = {
             IconButton(onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditTheme)) }) { Icon(imageVector = Icons.Default.Palette) }
             IconButton(onClick = { actionHandler.invoke(UserAction.OpenScreen(Screen.Preview(project.id, sandboxState.openedTree.id))) }) { Icon(imageVector = Icons.Default.PlayCircleFilled) }
-            DropdownMenu(
-                toggle = {
-                    IconButton(onClick = { menuShowing.value = true }) {
-                        Icon(imageVector = Icons.Default.MoreVert)
-                    }
-                },
-                expanded = menuShowing.value,
-                onDismissRequest = {
-                    menuShowing.value = false
+            OverflowMenu {
+                MenuItem(icon = Icons.Default.Share, title = "Export Code") {
+                    val action = UserAction.OpenScreen(Screen.Code(project.id))
+                    actionHandler.invoke(action)
                 }
-            ) {
-                DropdownMenuItem(
-                    onClick = {
-                        val action = UserAction.OpenScreen(Screen.Code(project.id))
-                        actionHandler.invoke(action)
-                    }
-                ) {
-                    Text("Export Code")
-                }
+
                 if (BuildConfig.DEBUG) {
-                    DropdownMenuItem(onClick = {
+                    MenuItem(icon = Icons.Default.Build, title = "Test Screen") {
                         val action = UserAction.OpenScreen(Screen.Test)
                         actionHandler.invoke(action)
-                    }) {
-                        Text("Open Test Screen")
                     }
                 }
-                DropdownMenuItem(onClick = {
+                MenuItem(icon = Icons.Default.Delete, title = "Delete Project") {
                     val action = UserAction.DeleteProject(sandboxState.project)
                     actionHandler.invoke(action)
-                }) {
-                    Text("Delete Project")
                 }
             }
         },

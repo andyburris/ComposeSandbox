@@ -100,7 +100,9 @@ private fun BaseComponentSwitcher(component: PrototypeComponent, onClick: () -> 
 private fun DrawerEditPropertiesHeader(component: PrototypeComponent, isBaseComponent: Boolean, modifier: Modifier = Modifier, onExtractToComponent: () -> Unit){
     val actionHandler = ActionHandlerAmbient.current
     DrawerHeader(title = component.name, screenName = (if (isBaseComponent) "Edit Base Component" else "Edit Component").toUpperCase(), modifier = modifier, onIconClick = { actionHandler.invoke(UserAction.Back) }) {
-        Icon(imageVector = Icons.Default.ControlPointDuplicate, modifier = Modifier.clickable(onClick = onExtractToComponent))
+        IconButton(onClick = onExtractToComponent) {
+            Icon(imageVector = Icons.Default.ControlPointDuplicate)
+        }
     }
 }
 

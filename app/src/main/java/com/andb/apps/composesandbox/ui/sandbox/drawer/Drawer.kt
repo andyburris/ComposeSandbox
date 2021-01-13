@@ -5,31 +5,20 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.gesture.DragObserver
-import androidx.compose.ui.gesture.dragGestureFilter
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.globalPosition
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
-import androidx.compose.ui.zIndex
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerState
 import com.andb.apps.composesandbox.state.UserAction
@@ -41,7 +30,7 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.ComponentItem
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.DrawerTree
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.toDpPosition
 import com.andb.apps.composesandbox.ui.util.ItemSwitcher
-import com.andb.apps.composesandbox.ui.util.ItemTransitionState
+import com.andb.apps.composesandbox.ui.util.draggable2D
 import com.andb.apps.composesandboxdata.model.*
 import com.andb.apps.composesandboxdata.plusElement
 
@@ -53,6 +42,7 @@ fun Drawer(
     modifier: Modifier = Modifier,
     onScreenUpdate: (PrototypeTree) -> Unit,
     onThemeUpdate: (Theme) -> Unit,
+    onDeleteTree: (PrototypeTree) -> Unit,
     onExtractComponent: (PrototypeComponent) -> Unit,
     onDragUpdate: (dragging: Boolean) -> Unit
 ) {
@@ -100,7 +90,7 @@ fun Drawer(
     DragDropProvider(dragDropState = dragDropState) {
         val oldState = remember { mutableStateOf<DrawerState?>(null) }
         val transitionDefinition = getDrawerContentTransition(
-            offsetPx = contentSize.width.toFloat(),
+            offsetPx = contentSize.width,
             reverse = when (drawerState) {
                 is DrawerState.Tree -> true // always at bottom of stack
                 is DrawerState.AddComponent, is DrawerState.AddModifier, is DrawerState.EditModifier, is DrawerState.EditTheme, is DrawerState.PickBaseComponent -> false // always at top of stack
@@ -123,34 +113,18 @@ fun Drawer(
             keyFinder = { it::class },
             transitionDefinition = transitionDefinition,
             modifier = modifier
-                .dragGestureFilter(
-                    dragObserver = object : DragObserver {
-                        override fun onDrag(dragDistance: Offset): Offset {
-                            dragDropState.dragPosition.value = dragDropState.dragPosition.value + dragDistance.toDpPosition(density)
-                            println("dragging, value = ${dragDropState.dragPosition.value}")
-                            return dragDistance
-                        }
-
-                        override fun onStop(velocity: Offset) {
-                            dragDropState.drop()
-                        }
-
-                        override fun onCancel() {
-                            dragDropState.drop()
-                        }
-                    },
-                    canDrag = { drawerState is DrawerState.Tree && movingComponent.value != null },
-                    startDragImmediately = false
-                )
-                .pointerInteropFilter { event ->
-                    println("pointerEvent = $event")
-                    dragDropState.dragPosition.value = Offset(event.x, event.y).toDpPosition(density)
-                    false
+                .draggable2D(
+                    dragDropState.dragPosition.value,
+                    onDrop = { dragDropState.drop() },
+                    canDrag = { drawerState is DrawerState.Tree && movingComponent.value != null }
+                ) {
+                    dragDropState.dragPosition.value = it
                 }
                 .onGloballyPositioned {
                     setContentSize(it.size.toSize())
                     dragDropState.globalOffset.value = it.globalPosition.toDpPosition(density)
                 }
+
         ) { drawerState, transitionState ->
             Box(
                 modifier = Modifier.graphicsLayer(
@@ -159,12 +133,20 @@ fun Drawer(
                 )
             ) {
                 when (drawerState) {
-                    is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = movingComponent.value?.let { dragDropState.getDropState() }, scrolling = dragDropScrolling) {
-                        val updatedTree = sandboxState.openedTree.component.minusChildFromTree(it)
-                        onDragUpdate.invoke(true)
-                        onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
-                        movingComponent.value = it
-                    }
+                    is DrawerState.Tree -> DrawerTree(
+                        sandboxState = sandboxState,
+                        sheetState = sheetState,
+                        hovering = movingComponent.value?.let { dragDropState.getDropState() },
+                        scrolling = dragDropScrolling,
+                        onTreeNameChanged = { onScreenUpdate.invoke(it) },
+                        onMoveComponent = {
+                            val updatedTree = sandboxState.openedTree.component.minusChildFromTree(it)
+                            onDragUpdate.invoke(true)
+                            onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
+                            movingComponent.value = it
+                        },
+                        onDeleteTree = onDeleteTree
+                    )
                     DrawerState.AddComponent -> ComponentList(project = sandboxState.project, currentTreeID = sandboxState.openedTree.id, requiresLongClick = true) {
                         movingComponent.value = it
                         onDragUpdate.invoke(true)
@@ -231,126 +213,6 @@ fun Drawer(
 }
 
 enum class DragDropScrolling { ScrollingUp, None, ScrollingDown }
-
-private val Alpha = FloatPropKey()
-private val ContentOffset = FloatPropKey()
-
-@Composable
-private fun getDrawerContentTransition(
-    duration: Int = 183,
-    offsetPx: Float,
-    reverse: Boolean = false,
-    enabled: Boolean = true
-): TransitionDefinition<ItemTransitionState> = remember(reverse, offsetPx, duration, enabled) {
-    val enabledDuration: Int = if (enabled) duration else 0
-    transitionDefinition {
-        state(ItemTransitionState.Visible) {
-            this[Alpha] = 1f
-            this[ContentOffset] = 0f
-        }
-        state(ItemTransitionState.BecomingVisible) {
-            this[Alpha] = 0f
-            this[ContentOffset] = if (reverse) -offsetPx else offsetPx
-        }
-        state(ItemTransitionState.BecomingNotVisible) {
-            this[Alpha] = 0f
-            this[ContentOffset] = if (reverse) offsetPx else -offsetPx
-        }
-
-        val halfDuration = enabledDuration / 2
-
-        transition(
-            fromState = ItemTransitionState.BecomingVisible,
-            toState = ItemTransitionState.Visible
-        ) {
-            // TODO: look at whether this can be implemented using `spring` to enable
-            //  interruptions, etc
-            Alpha using tween(
-                durationMillis = halfDuration,
-                delayMillis = halfDuration,
-                easing = LinearEasing
-            )
-            ContentOffset using tween(
-                durationMillis = halfDuration,
-                delayMillis = halfDuration,
-                easing = LinearOutSlowInEasing
-            )
-        }
-
-        transition(
-            fromState = ItemTransitionState.Visible,
-            toState = ItemTransitionState.BecomingNotVisible
-        ) {
-            Alpha using tween(
-                durationMillis = halfDuration,
-                easing = LinearEasing,
-                delayMillis = 24
-            )
-            ContentOffset using tween(
-                durationMillis = halfDuration,
-                easing = LinearOutSlowInEasing,
-                delayMillis = 24
-            )
-        }
-    }
-}
-
-@Composable
-fun DrawerHeader(
-    title: String,
-    modifier: Modifier = Modifier,
-    screenName: String? = null,
-    icon: ImageVector = Icons.Default.ArrowBack,
-    iconSlot: @Composable (icon: ImageVector) -> Unit = { Icon(imageVector = it, modifier = Modifier.clickable(onClick = onIconClick, indication = rememberRipple(bounded = false, radius = 16.dp))) },
-    onIconClick: () -> Unit,
-    actions: (@Composable RowScope.() -> Unit)? = null
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = modifier.padding(32.dp).fillMaxWidth()
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            iconSlot(icon)
-            Column(Modifier.padding(start = 16.dp)) {
-                if (screenName != null) {
-                    Text(text = screenName, style = MaterialTheme.typography.overline, color = MaterialTheme.colors.onSecondary)
-                }
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.h6,
-                )
-            }
-        }
-
-        if (actions != null) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                actions()
-            }
-        }
-    }
-}
-
-@Composable
-fun ScrollableDrawer(header: @Composable () -> Unit, content: @Composable ColumnScope.() -> Unit) {
-    val scrollState = rememberScrollState()
-    Column {
-        Box(
-            modifier = Modifier
-                .zIndex(4f)
-                .shadow(scrollState.toShadow())
-                .background(AmbientElevationOverlay.current?.apply(color = MaterialTheme.colors.surface, elevation = AmbientAbsoluteElevation.current + scrollState.toShadow()) ?: MaterialTheme.colors.surface)
-        ) {
-            header()
-        }
-        ScrollableColumn(scrollState = scrollState) {
-            content()
-        }
-    }
-}
-
-@Composable
-fun ScrollState.toShadow() = with(AmbientDensity.current){ this@toShadow.value.toDp() }.coerceAtMost(4.dp)
 
 @Composable
 private fun ComponentDragDropItem(component: PrototypeComponent, position: Position) {

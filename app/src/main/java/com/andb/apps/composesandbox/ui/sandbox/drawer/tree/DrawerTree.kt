@@ -4,14 +4,12 @@ import androidx.compose.animation.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -22,18 +20,22 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.AmbientDensity
+import androidx.compose.ui.text.InternalTextApi
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerScreen
 import com.andb.apps.composesandbox.state.UserAction
+import com.andb.apps.composesandbox.state.ViewState
 import com.andb.apps.composesandbox.ui.common.*
 import com.andb.apps.composesandbox.ui.sandbox.drawer.DragDropScrolling
 import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
 import com.andb.apps.composesandbox.ui.sandbox.drawer.toShadow
 import com.andb.apps.composesandboxdata.model.PrototypeComponent
 import com.andb.apps.composesandboxdata.model.PrototypeTree
+import com.andb.apps.composesandboxdata.model.TreeType
+import com.andb.apps.composesandboxdata.model.screens
 
 /**
  * Tree representing prototype components. Holds drag-and-drop logic currently. Uses [GenericTree] under the hood
@@ -43,7 +45,15 @@ import com.andb.apps.composesandboxdata.model.PrototypeTree
  */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DrawerTree(opened: PrototypeTree, sheetState: BottomSheetState, hovering: DropState?, scrolling: DragDropScrolling, onMoveComponent: (PrototypeComponent) -> Unit) {
+fun DrawerTree(
+    sandboxState: ViewState.Sandbox,
+    sheetState: BottomSheetState,
+    hovering: DropState?,
+    scrolling: DragDropScrolling,
+    onMoveComponent: (PrototypeComponent) -> Unit,
+    onTreeNameChanged: (PrototypeTree) -> Unit,
+    onDeleteTree: (PrototypeTree) -> Unit,
+) {
     val scrollState = rememberScrollState()
     val density = AmbientDensity.current
     val distanceToTop = remember(scrolling) { with(density) { scrollState.value.toDp() } }
@@ -58,15 +68,24 @@ fun DrawerTree(opened: PrototypeTree, sheetState: BottomSheetState, hovering: Dr
     Box {
         Column {
             DrawerTreeHeader(
-                opened,
+                sandboxState,
                 modifier = Modifier
                     .shadow(scrollState.toShadow())
                     .background(AmbientElevationOverlay.current?.apply(color = MaterialTheme.colors.surface, elevation = AmbientAbsoluteElevation.current + scrollState.toShadow()) ?: MaterialTheme.colors.surface),
-                isExpanded = sheetState.targetValue == BottomSheetValue.Expanded
-            ) { if (sheetState.isExpanded) sheetState.collapse() else sheetState.expand() }
+                isExpanded = sheetState.targetValue == BottomSheetValue.Expanded,
+                onToggleExpand = {
+                    if (sheetState.isExpanded) sheetState.collapse() else sheetState.expand()
+                },
+                onTreeNameChanged = {
+                    onTreeNameChanged.invoke(sandboxState.openedTree.copy(name = it))
+                },
+                onDeleteTree = {
+                    onDeleteTree.invoke(sandboxState.openedTree)
+                }
+            )
             ScrollableColumn(scrollState = scrollState, contentPadding = PaddingValues(bottom = 32.dp)) {
                 Tree(
-                    parent = opened.component,
+                    parent = sandboxState.openedTree.component,
                     modifier = Modifier.padding(start = 32.dp, end = 32.dp),
                     onMoveComponent = onMoveComponent
                 )
@@ -82,26 +101,49 @@ fun DrawerTree(opened: PrototypeTree, sheetState: BottomSheetState, hovering: Dr
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, InternalTextApi::class)
 @Composable
-private fun DrawerTreeHeader(opened: PrototypeTree, modifier: Modifier = Modifier, isExpanded: Boolean, onClick: () -> Unit) {
+private fun DrawerTreeHeader(sandboxState: ViewState.Sandbox, modifier: Modifier = Modifier, isExpanded: Boolean, onTreeNameChanged: (String) -> Unit, onDeleteTree: () -> Unit, onToggleExpand: () -> Unit) {
     val actionHandler = ActionHandlerAmbient.current
     val iconRotation = animate(target = if (isExpanded) 180f else 0f)
     DrawerHeader(
-        title = opened.name,
+        title = sandboxState.openedTree.name,
+        titleSlot = {
+            BasicTextField(
+                value = it,
+                textStyle = MaterialTheme.typography.h6,
+                onValueChange = {
+                    onTreeNameChanged.invoke(it)
+                }
+            )
+        },
         modifier = modifier,
         icon = Icons.Default.KeyboardArrowUp,
         iconSlot = {
-            Icon(
-                imageVector = Icons.Default.KeyboardArrowUp,
-                modifier = Modifier
-                    .clickable(onClick = onClick, indication = rememberRipple(bounded = false, radius = 16.dp))
-                    .graphicsLayer(rotationZ = iconRotation)
-            )
+            IconButton(onClick = onToggleExpand) {
+                Icon(
+                    imageVector = it,
+                    modifier = Modifier
+                        //.clickable(onClick = onToggleExpand, indication = rememberRipple(bounded = false, radius = 16.dp))
+                        .graphicsLayer(rotationZ = iconRotation)
+                )
+            }
         },
-        onIconClick = onClick
+        onIconClick = onToggleExpand
     ) {
-        Icon(imageVector = Icons.Default.Add, modifier = Modifier.clickable { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.AddComponent)) })
+        IconButton(onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.AddComponent)) }) {
+            Icon(imageVector = Icons.Default.Add)
+        }
+        OverflowMenu {
+            MenuItem(
+                icon = Icons.Default.Delete,
+                title = if (sandboxState.openedTree.treeType == TreeType.Screen) "Delete Screen" else "Delete Component",
+                enabled = sandboxState.openedTree.treeType == TreeType.Component || sandboxState.project.trees.screens().size >= 2,
+                onClick = {
+                    onDeleteTree.invoke()
+                }
+            )
+        }
     }
 }
 

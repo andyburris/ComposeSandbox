@@ -25,15 +25,18 @@ data class PrototypeTree(val id: String = UUID.randomUUID().toString(), val name
 enum class TreeType { Screen, Component }
 
 fun Project.nextScreenName(): String {
-    val screens = trees.filter { it.treeType == TreeType.Screen }
+    val screens = trees.screens()
     val oldComponentsMax = screens.mapNotNull { it.name.removePrefix("Screen ").toIntOrNull() }.maxOrNull() ?: 0
     val componentNumber = maxOf(oldComponentsMax, screens.size) + 1
     return "Screen $componentNumber"
 }
 
 fun Project.nextComponentName(): String {
-    val components = trees.filter { it.treeType == TreeType.Component }
+    val components = trees.components()
     val oldComponentsMax = components.mapNotNull { it.name.removePrefix("Component ").toIntOrNull() }.maxOrNull() ?: 0
     val componentNumber = maxOf(oldComponentsMax, components.size) + 1
     return "Component $componentNumber"
 }
+
+fun List<PrototypeTree>.screens() = this.filter { it.treeType == TreeType.Screen }
+fun List<PrototypeTree>.components() = this.filter { it.treeType == TreeType.Component }

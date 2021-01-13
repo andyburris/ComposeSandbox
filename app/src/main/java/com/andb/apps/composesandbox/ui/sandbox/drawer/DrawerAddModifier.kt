@@ -23,7 +23,7 @@ fun AddModifierList(onSelect: (PrototypeModifier) -> Unit) {
         content = {
             val searchTerm = savedInstanceState { "" }
 
-            AddComponentHeader(text = "MODIFIERS")
+            AddComponentHeader(text = "MODIFIERS", modifier = Modifier.padding(horizontal = 32.dp))
             AddModifierItem(PrototypeModifier.Padding.All(16), onSelect)
             AddModifierItem(PrototypeModifier.Border(1, PrototypeColor.ThemeColor.OnBackground, 0), onSelect)
             AddModifierItem(PrototypeModifier.Background(PrototypeColor.ThemeColor.Primary, 0), onSelect)
