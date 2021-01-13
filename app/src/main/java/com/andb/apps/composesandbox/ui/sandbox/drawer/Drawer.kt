@@ -5,7 +5,6 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -157,35 +156,15 @@ fun Drawer(
                         onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
                     }
                     is DrawerState.PickBaseComponent -> {
-                        val (dialogComponent, setDialogComponent) = remember { mutableStateOf<PrototypeComponent?>(null) }
-                        ComponentList(project = sandboxState.project, title = "Pick Base Component", currentTreeID = sandboxState.openedTree.id, requiresLongClick = false) {
-                            val (newBaseComponent, losesChildren) = sandboxState.openedTree.component.replaceParent(it)
-                            if (losesChildren) {
-                                setDialogComponent(newBaseComponent)
-                            } else {
-                                onScreenUpdate.invoke(sandboxState.openedTree.copy(component = newBaseComponent))
-                                actionHandler.invoke(UserAction.Back)
-                            }
-                        }
-                        if (dialogComponent != null) {
-                            AlertDialog(
-                                onDismissRequest = { setDialogComponent.invoke(null) },
-                                title = { Text(text = "Confirm Change?") },
-                                text = { Text(text = "This will delete all children of the old component") },
-                                confirmButton = {
-                                    TextButton(onClick = {
-                                        setDialogComponent.invoke(null)
-                                        onScreenUpdate.invoke(sandboxState.openedTree.copy(component = dialogComponent))
-                                    }) {
-                                        Text(text = "OK")
-                                    }
-                                },
-                                dismissButton = {
-                                    TextButton(onClick = { setDialogComponent.invoke(null) }) {
-                                        Text(text = "CANCEL")
-                                    }
+
+                        ConfirmationDialog() { confirmationState ->
+                            ComponentList(project = sandboxState.project, title = "Pick Base Component", currentTreeID = sandboxState.openedTree.id, requiresLongClick = false) {
+                                val (newBaseComponent, losesChildren) = sandboxState.openedTree.component.replaceParent(it)
+                                confirmationState.confirm(title = "Confirm Change?", summary = "This will delete all children of the old component", needToConfirm = losesChildren) {
+                                    onScreenUpdate.invoke(sandboxState.openedTree.copy(component = newBaseComponent))
+                                    actionHandler.invoke(UserAction.Back)
                                 }
-                            )
+                            }
                         }
                     }
                     is DrawerState.AddModifier -> AddModifierList {

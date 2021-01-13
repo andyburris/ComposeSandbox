@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -20,10 +21,7 @@ import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.BuildConfig
 import com.andb.apps.composesandbox.state.*
-import com.andb.apps.composesandbox.ui.common.MenuItem
-import com.andb.apps.composesandbox.ui.common.OverflowMenu
-import com.andb.apps.composesandbox.ui.common.ProjectProvider
-import com.andb.apps.composesandbox.ui.common.RenderComponentParent
+import com.andb.apps.composesandbox.ui.common.*
 import com.andb.apps.composesandbox.ui.sandbox.drawer.Drawer
 import com.andb.apps.composesandboxdata.model.*
 
@@ -114,7 +112,17 @@ private fun SandboxAppBar(sandboxState: ViewState.Sandbox, project: Project, ico
                 Icon(imageVector = if (iconState == BackdropValue.Concealed) Icons.Default.Menu else Icons.Default.Clear)
             }
         },
-        title = { Text(text = project.name) },
+        title = {
+            BasicTextField(
+                value = project.name,
+                textStyle = AmbientTextStyle.current.copy(color = AmbientContentColor.current),
+                cursorColor = AmbientContentColor.current,
+                onValueChange = {
+                    actionHandler.invoke(UserAction.UpdateProject(project.copy(name = it)))
+                }
+            )
+            //Text(text = project.name)
+        },
         actions = {
             IconButton(onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditTheme)) }) { Icon(imageVector = Icons.Default.Palette) }
             IconButton(onClick = { actionHandler.invoke(UserAction.OpenScreen(Screen.Preview(project.id, sandboxState.openedTree.id))) }) { Icon(imageVector = Icons.Default.PlayCircleFilled) }
@@ -130,9 +138,13 @@ private fun SandboxAppBar(sandboxState: ViewState.Sandbox, project: Project, ico
                         actionHandler.invoke(action)
                     }
                 }
-                MenuItem(icon = Icons.Default.Delete, title = "Delete Project") {
-                    val action = UserAction.DeleteProject(sandboxState.project)
-                    actionHandler.invoke(action)
+                ConfirmationDialog { confirmationState ->
+                    MenuItem(icon = Icons.Default.Delete, title = "Delete Project") {
+                        confirmationState.confirm("Delete Project?", "You cannot undo this action") {
+                            val action = UserAction.DeleteProject(sandboxState.project)
+                            actionHandler.invoke(action)
+                        }
+                    }
                 }
             }
         },
