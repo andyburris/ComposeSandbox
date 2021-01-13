@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.toTheme
 import com.andb.apps.composesandbox.ui.projects.ProjectItem
-import com.andb.apps.composesandbox.ui.projects.gridItems
+import com.andb.apps.composesandbox.util.gridItems
 import com.andb.apps.composesandboxdata.model.*
 import com.andb.apps.composesandboxdata.model.Properties
 import java.util.*

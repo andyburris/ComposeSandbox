@@ -17,10 +17,13 @@ val typography = Typography(
         fontSize = 14.sp,
         letterSpacing = 0.15.sp
     ),
-    caption = TextStyle(
+    overline = TextStyle(
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp
     ),
+    body2 = TextStyle(
+        fontSize = 12.sp
+    )
     /* Other default text styles to override
     button = TextStyle(
         fontFamily = FontFamily.Default,

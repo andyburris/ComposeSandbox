@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.zIndex
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerState
 import com.andb.apps.composesandbox.state.UserAction
@@ -111,7 +112,7 @@ fun Drawer(
         val dragDropScrolling = if (movingComponent.value != null) {
             val heightDp = with(density) { contentSize.height.toDp() }
                 when(dragPosition.value.y) {
-                    in 88.dp..112.dp -> DragDropScrolling.ScrollingUp
+                    in 0.dp..112.dp -> DragDropScrolling.ScrollingUp
                     in heightDp - 24.dp..heightDp -> DragDropScrolling.ScrollingDown
                     else -> DragDropScrolling.None
                 }
@@ -281,7 +282,7 @@ fun DrawerHeader(
             iconSlot(icon)
             Column(Modifier.padding(start = 16.dp)) {
                 if (screenName != null) {
-                    Text(text = screenName, style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSecondary)
+                    Text(text = screenName, style = MaterialTheme.typography.overline, color = MaterialTheme.colors.onSecondary)
                 }
                 Text(
                     text = title,
@@ -304,6 +305,7 @@ fun ScrollableDrawer(header: @Composable () -> Unit, content: @Composable Column
     Column {
         Box(
             modifier = Modifier
+                .zIndex(4f)
                 .shadow(scrollState.toShadow())
                 .background(AmbientElevationOverlay.current?.apply(color = MaterialTheme.colors.surface, elevation = AmbientAbsoluteElevation.current + scrollState.toShadow()) ?: MaterialTheme.colors.surface)
         ) {

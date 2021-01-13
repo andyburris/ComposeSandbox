@@ -1,7 +1,9 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -11,57 +13,92 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.savedinstancestate.savedInstanceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import com.andb.apps.composesandbox.data.model.icon
+import com.andb.apps.composesandbox.data.model.name
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
-import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.ComponentItem
+import com.andb.apps.composesandbox.util.gridItems
 import com.andb.apps.composesandboxdata.model.*
 import java.util.*
 
+
+private val separated = allComponents.partition { it is PrototypeComponent.Text || it is PrototypeComponent.Icon || it is PrototypeComponent.Group || it is PrototypeComponent.Slotted.Scaffold }
+private val commonComponents = separated.first
+private val otherComponents = separated.second
+
 @Composable
-fun ComponentList(project: Project, currentTreeID: String,  onSelect: (PrototypeComponent) -> Unit) {
+fun ComponentList(project: Project, currentTreeID: String, title: String = "Add Component", onSelect: (PrototypeComponent) -> Unit) {
     ScrollableDrawer(
         header = {
-            ComponentListHeader()
-        },
-        content = {
-            val searchTerm = savedInstanceState { "" }
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Column {
-                    AddComponentHeader(text = "Common Components")
-                    allComponents.forEach { component ->
-                        AddComponentItem(
-                            component = component,
-                            onSelect = { onSelect.invoke(component.copy(id = UUID.randomUUID().toString())) }
-                        )
-                    }
-                }
-                Column {
-                    AddComponentHeader(text = "Custom Components")
-                    project.trees.filter { it.treeType == TreeType.Component }.forEach { tree ->
-                        val component = PrototypeComponent.Custom(treeID = tree.id)
-                        val enabled = tree.id != currentTreeID && !tree.tree.containsCustomComponent(currentTreeID)
-                        AddComponentItem(
-                            component = component,
-                            enabled = enabled,
-                            onSelect = { onSelect.invoke(component.copy(treeID = tree.id, id = UUID.randomUUID().toString())) }
-                        )
-                    }
-                }
-            }
+            ComponentListHeader(title)
         }
-    )
+    ) {
+        val searchTerm = savedInstanceState { "" }
+
+        Column(modifier = Modifier.padding(horizontal = 32.dp), verticalArrangement = Arrangement.spacedBy(16.dp),) {
+
+            AddComponentHeader(text = "Common Components")
+            gridItems(commonComponents, rowArrangement = Arrangement.spacedBy(16.dp)) { component ->
+                AddComponentItem(
+                    component = component,
+                    modifier = Modifier.weight(1f),
+                    onSelect = { onSelect.invoke(it.copy(id = UUID.randomUUID().toString())) }
+                )
+            }
+
+            AddComponentHeader(text = "Custom Components")
+            gridItems(project.trees.filter { it.treeType == TreeType.Component }, rowArrangement = Arrangement.spacedBy(16.dp)) { tree ->
+                val component = PrototypeComponent.Custom(tree.id)
+                AddComponentItem(
+                    component = component,
+                    modifier = Modifier.weight(1f),
+                    enabled = tree.id != currentTreeID && !tree.tree.containsCustomComponent(currentTreeID),
+                    onSelect = { onSelect.invoke(component.copy(treeID = tree.id, id = UUID.randomUUID().toString())) }
+                )
+            }
+
+            AddComponentHeader(text = "Other Components")
+            gridItems(otherComponents, rowArrangement = Arrangement.spacedBy(16.dp)) { component ->
+                AddComponentItem(
+                    component = component,
+                    modifier = Modifier.weight(1f),
+                    onSelect = { onSelect.invoke(it.copy(id = UUID.randomUUID().toString())) }
+                )
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
 }
 
 @Composable
 fun AddComponentHeader(text: String) {
-    Text(text = text.toUpperCase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.primary, modifier = Modifier.padding(start = 32.dp, end = 32.dp, bottom = 8.dp))
+    Text(text = text.toUpperCase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.primary, modifier = Modifier.padding(start = 0.dp, end = 32.dp, bottom = 8.dp))
 }
 
 @Composable
-private fun AddComponentItem(component: PrototypeComponent, enabled: Boolean = true, onSelect: (PrototypeComponent) -> Unit) {
-    val color = if (enabled) Color.Unspecified else MaterialTheme.colors.secondary
+private fun AddComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier, enabled: Boolean = true, onSelect: (PrototypeComponent) -> Unit) {
+    Column(
+        modifier = modifier
+            .graphicsLayer(alpha = if (enabled) 1.0f else 0.5f)
+            //.draggable(Orientation.Horizontal, onDragStarted = { onSelect.invoke(component) }) {},
+            .shadow(2.dp, shape = RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colors.surface, shape = RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(onLongClick = { onSelect.invoke(component) }, onClick = {})
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(imageVector = component.icon, tint = MaterialTheme.colors.onSecondary)
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(text = component.name, style = MaterialTheme.typography.subtitle1)
+            Text(text = component.documentation, style = MaterialTheme.typography.body2, color = MaterialTheme.colors.onSecondary)
+        }
+    }
+/*    val color = if (enabled) Color.Unspecified else MaterialTheme.colors.secondary
     ComponentItem(
         component = component,
         modifier = Modifier
@@ -69,12 +106,12 @@ private fun AddComponentItem(component: PrototypeComponent, enabled: Boolean = t
             .padding(horizontal = 32.dp, vertical = 8.dp)
             .fillMaxWidth(),
         colors = Pair(color, color)
-    )
+    )*/
 
 }
 
 @Composable
-private fun ComponentListHeader() {
+private fun ComponentListHeader(title: String) {
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -86,22 +123,23 @@ private fun ComponentListHeader() {
             modifier = Modifier.clickable { actionHandler.invoke(UserAction.Back) }
         )
         Text(
-            text = "Add Component",
+            text = title,
             style = MaterialTheme.typography.h6,
             modifier = Modifier.padding(start = 16.dp)
         )
     }
 }
 
-private val PrototypeComponent.documentation get() = when (this) {
-    is PrototypeComponent.Text -> "Displays text on the screen"
-    is PrototypeComponent.Icon -> "Displays an icon on the screen"
-    is PrototypeComponent.Group.Row -> "Arranges child components horizontally"
-    is PrototypeComponent.Group.Column -> "Arranges child components vertically"
-    is PrototypeComponent.Group.Box -> "Arranges child components overlapping each other"
-    is PrototypeComponent.Slotted.TopAppBar -> "Arranges components in common layouts like app bars, FABs, and drawers"
-    is PrototypeComponent.Slotted.BottomAppBar -> "Arranges the title and relevant actions on a screen"
-    is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> "A FAB with text and an optional icon"
-    is PrototypeComponent.Slotted.Scaffold -> "Arranges components in common layout positions app bars, FABs, and drawers"
-    is PrototypeComponent.Custom -> ""
-}
+private val PrototypeComponent.documentation
+    get() = when (this) {
+        is PrototypeComponent.Text -> "Displays text on the screen"
+        is PrototypeComponent.Icon -> "Displays an icon on the screen"
+        is PrototypeComponent.Group.Row -> "Arranges child components horizontally"
+        is PrototypeComponent.Group.Column -> "Arranges child components vertically"
+        is PrototypeComponent.Group.Box -> "Arranges child components overlapping each other"
+        is PrototypeComponent.Slotted.TopAppBar -> "An app bar arranges the title and relevant actions on a screen"
+        is PrototypeComponent.Slotted.BottomAppBar -> "An app bar arranges the title and relevant actions on a screen"
+        is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> "A FAB with text and an optional icon"
+        is PrototypeComponent.Slotted.Scaffold -> "Arranges components in common layout positions app bars, FABs, and drawers"
+        is PrototypeComponent.Custom -> ""
+    }

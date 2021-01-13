@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -74,16 +73,4 @@ fun <T> LazyGridFor(items: List<T>, columns: Int, modifier: Modifier = Modifier,
     }
 }
 
-fun <T> LazyListScope.gridItems(items: List<T>, columns: Int, itemContent: @Composable() RowScope.(T) -> Unit) {
-    items(items.chunked(columns)) { rowItems ->
-        Row {
-            rowItems.forEach {
-                itemContent(it)
-            }
-            repeat(columns - rowItems.size) {
-                Spacer(modifier = Modifier.weight(1f))
-            }
-        }
-    }
-}
 

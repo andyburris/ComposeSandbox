@@ -7,11 +7,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.filled.TextFields
-import androidx.compose.material.icons.filled.Toll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,20 +17,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.globalPosition
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.AmbientDensity
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.R
+import com.andb.apps.composesandbox.data.model.icon
 import com.andb.apps.composesandbox.data.model.name
-import com.andb.apps.composesandboxdata.model.PrototypeComponent
-import com.andb.apps.composesandboxdata.model.Slot
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerScreen
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.AmbientDragDrop
 import com.andb.apps.composesandbox.ui.common.TreeHoverItem
+import com.andb.apps.composesandboxdata.model.PrototypeComponent
+import com.andb.apps.composesandboxdata.model.Slot
 
 
 @Composable
@@ -170,21 +164,8 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
 
 @Composable
 fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier, name: String = component.name, colors: Pair<Color, Color> = Pair(MaterialTheme.colors.onSecondary, MaterialTheme.colors.onBackground)) {
-    val icon = when (component) {
-        is PrototypeComponent.Text -> Icons.Default.TextFields
-        is PrototypeComponent.Icon -> Icons.Default.Image
-        is PrototypeComponent.Group.Column -> vectorResource(id = R.drawable.ic_column)
-        is PrototypeComponent.Group.Row -> vectorResource(id = R.drawable.ic_row)
-        is PrototypeComponent.Group.Box -> Icons.Default.Layers
-        is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> vectorResource(id = R.drawable.ic_extended_fab)
-        is PrototypeComponent.Slotted.TopAppBar -> vectorResource(id = R.drawable.ic_top_app_bar)
-        is PrototypeComponent.Slotted.BottomAppBar -> vectorResource(id = R.drawable.ic_bottom_app_bar)
-        is PrototypeComponent.Slotted.Scaffold -> vectorResource(id = R.drawable.ic_scaffold)
-        is PrototypeComponent.Custom -> Icons.Default.Toll
-    }
-
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Icon(imageVector = icon, tint = colors.first)
+        Icon(imageVector = component.icon, tint = colors.first)
         Text(text = name, modifier = Modifier.padding(start = 16.dp), color = colors.second)
     }
 }
