@@ -73,22 +73,22 @@ fun Drawer(
                     val isNesting = dropState.dropPosition is DropPosition.NESTED
                     println("isNesting = $isNesting")
                     val updatedTree = when (dropState.dropPosition) {
-                        is DropPosition.NESTED.First -> sandboxState.openedTree.tree.plusChildInTree(moving, dropState.hoveringComponent as PrototypeComponent.Group, 0)
-                        is DropPosition.NESTED.Last -> sandboxState.openedTree.tree.plusChildInTree(moving, dropState.hoveringComponent as PrototypeComponent.Group, dropState.hoveringComponent.children.size)
+                        is DropPosition.NESTED.First -> sandboxState.openedTree.component.plusChildInTree(moving, dropState.hoveringComponent as PrototypeComponent.Group, 0)
+                        is DropPosition.NESTED.Last -> sandboxState.openedTree.component.plusChildInTree(moving, dropState.hoveringComponent as PrototypeComponent.Group, dropState.hoveringComponent.children.size)
                         else -> {
-                            val (parent, index) = sandboxState.openedTree.tree.findParentOfComponent(dropState.hoveringComponent)!!
+                            val (parent, index) = sandboxState.openedTree.component.findParentOfComponent(dropState.hoveringComponent)!!
                             println("not nesting, parent = $parent, index = $index")
                             when (dropState.dropPosition) {
-                                DropPosition.ABOVE -> sandboxState.openedTree.tree.plusChildInTree(moving, parent, index)
-                                DropPosition.BELOW -> sandboxState.openedTree.tree.plusChildInTree(moving, parent, index + 1)
+                                DropPosition.ABOVE -> sandboxState.openedTree.component.plusChildInTree(moving, parent, index)
+                                DropPosition.BELOW -> sandboxState.openedTree.component.plusChildInTree(moving, parent, index + 1)
                                 else -> throw Error("will never reach here")
                             }
                         }
-                    } as PrototypeComponent.Group
+                    }
                     println("updated tree = $updatedTree")
                     movingComponent.value = null
                     onDragUpdate.invoke(false)
-                    onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
+                    onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
                 }
                 is DropState.OverNone -> {
                     movingComponent.value = null
@@ -103,7 +103,7 @@ fun Drawer(
             offsetPx = contentSize.width.toFloat(),
             reverse = when (drawerState) {
                 is DrawerState.Tree -> true // always at bottom of stack
-                is DrawerState.AddComponent, is DrawerState.AddModifier, is DrawerState.EditModifier, is DrawerState.EditTheme -> false // always at top of stack
+                is DrawerState.AddComponent, is DrawerState.AddModifier, is DrawerState.EditModifier, is DrawerState.EditTheme, is DrawerState.PickBaseComponent -> false // always at top of stack
                 is DrawerState.EditComponent -> oldState.value !is DrawerState.Tree
             },
             enabled = oldState.value != null && oldState.value!!::class != drawerState::class
@@ -160,30 +160,62 @@ fun Drawer(
             ) {
                 when (drawerState) {
                     is DrawerState.Tree -> DrawerTree(opened = sandboxState.openedTree, sheetState = sheetState, hovering = movingComponent.value?.let { dragDropState.getDropState() }, scrolling = dragDropScrolling) {
-                        val updatedTree = sandboxState.openedTree.tree.minusChildFromTree(it)
+                        val updatedTree = sandboxState.openedTree.component.minusChildFromTree(it)
                         onDragUpdate.invoke(true)
-                        onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
+                        onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
                         movingComponent.value = it
                     }
-                    DrawerState.AddComponent -> ComponentList(project = sandboxState.project, currentTreeID = sandboxState.openedTree.id) {
+                    DrawerState.AddComponent -> ComponentList(project = sandboxState.project, currentTreeID = sandboxState.openedTree.id, requiresLongClick = true) {
                         movingComponent.value = it
                         onDragUpdate.invoke(true)
                         actionHandler.invoke(UserAction.Back)
                     }
-                    is DrawerState.EditComponent -> DrawerEditProperties(drawerState.component, actionHandler, onExtractComponent = onExtractComponent) { updatedComponent ->
-                        val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(updatedComponent)
-                        onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
+                    is DrawerState.EditComponent -> DrawerEditProperties(drawerState.component, isBaseComponent = drawerState.component.id == sandboxState.openedTree.component.id, actionHandler, onExtractComponent = onExtractComponent) { updatedComponent ->
+                        val updatedTree = sandboxState.openedTree.component.updatedChildInTree(updatedComponent)
+                        onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
+                    }
+                    is DrawerState.PickBaseComponent -> {
+                        val (dialogComponent, setDialogComponent) = remember { mutableStateOf<PrototypeComponent?>(null) }
+                        ComponentList(project = sandboxState.project, title = "Pick Base Component", currentTreeID = sandboxState.openedTree.id, requiresLongClick = false) {
+                            val (newBaseComponent, losesChildren) = sandboxState.openedTree.component.replaceParent(it)
+                            if (losesChildren) {
+                                setDialogComponent(newBaseComponent)
+                            } else {
+                                onScreenUpdate.invoke(sandboxState.openedTree.copy(component = newBaseComponent))
+                                actionHandler.invoke(UserAction.Back)
+                            }
+                        }
+                        if (dialogComponent != null) {
+                            AlertDialog(
+                                onDismissRequest = { setDialogComponent.invoke(null) },
+                                title = { Text(text = "Confirm Change?") },
+                                text = { Text(text = "This will delete all children of the old component") },
+                                confirmButton = {
+                                    TextButton(onClick = {
+                                        setDialogComponent.invoke(null)
+                                        onScreenUpdate.invoke(sandboxState.openedTree.copy(component = dialogComponent))
+                                    }) {
+                                        Text(text = "OK")
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { setDialogComponent.invoke(null) }) {
+                                        Text(text = "CANCEL")
+                                    }
+                                }
+                            )
+                        }
                     }
                     is DrawerState.AddModifier -> AddModifierList {
                         val withModifier = sandboxState.editingComponent.copy(modifiers = sandboxState.editingComponent.modifiers.plusElement(it, 0))
-                        val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(withModifier)
-                        onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
+                        val updatedTree = sandboxState.openedTree.component.updatedChildInTree(withModifier)
+                        onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
                         actionHandler.invoke(UserAction.Back)
                     }
                     is DrawerState.EditModifier -> DrawerEditModifiers(prototypeModifier = drawerState.modifier) {
                         println("edited modifier = $it")
-                        val updatedTree = sandboxState.openedTree.tree.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it))
-                        onScreenUpdate.invoke(sandboxState.openedTree.copy(tree = updatedTree))
+                        val updatedTree = sandboxState.openedTree.component.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it))
+                        onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
                     }
                     is DrawerState.EditTheme -> DrawerEditTheme(theme = sandboxState.project.theme) {
                         onThemeUpdate.invoke(it)

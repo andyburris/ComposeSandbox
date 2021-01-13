@@ -31,7 +31,7 @@ private val commonComponents = separated.first
 private val otherComponents = separated.second
 
 @Composable
-fun ComponentList(project: Project, currentTreeID: String, title: String = "Add Component", onSelect: (PrototypeComponent) -> Unit) {
+fun ComponentList(project: Project, currentTreeID: String, title: String = "Add Component", requiresLongClick: Boolean, onSelect: (PrototypeComponent) -> Unit) {
     ScrollableDrawer(
         header = {
             ComponentListHeader(title)
@@ -46,6 +46,7 @@ fun ComponentList(project: Project, currentTreeID: String, title: String = "Add 
                 AddComponentItem(
                     component = component,
                     modifier = Modifier.weight(1f),
+                    requiresLongClick = requiresLongClick,
                     onSelect = { onSelect.invoke(it.copy(id = UUID.randomUUID().toString())) }
                 )
             }
@@ -56,7 +57,8 @@ fun ComponentList(project: Project, currentTreeID: String, title: String = "Add 
                 AddComponentItem(
                     component = component,
                     modifier = Modifier.weight(1f),
-                    enabled = tree.id != currentTreeID && !tree.tree.containsCustomComponent(currentTreeID),
+                    requiresLongClick = requiresLongClick,
+                    enabled = tree.id != currentTreeID && !tree.component.containsCustomComponent(currentTreeID),
                     onSelect = { onSelect.invoke(component.copy(treeID = tree.id, id = UUID.randomUUID().toString())) }
                 )
             }
@@ -66,6 +68,7 @@ fun ComponentList(project: Project, currentTreeID: String, title: String = "Add 
                 AddComponentItem(
                     component = component,
                     modifier = Modifier.weight(1f),
+                    requiresLongClick = requiresLongClick,
                     onSelect = { onSelect.invoke(it.copy(id = UUID.randomUUID().toString())) }
                 )
             }
@@ -80,7 +83,7 @@ fun AddComponentHeader(text: String) {
 }
 
 @Composable
-private fun AddComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier, enabled: Boolean = true, onSelect: (PrototypeComponent) -> Unit) {
+private fun AddComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier, enabled: Boolean = true, requiresLongClick: Boolean, onSelect: (PrototypeComponent) -> Unit) {
     Column(
         modifier = modifier
             .graphicsLayer(alpha = if (enabled) 1.0f else 0.5f)
@@ -88,7 +91,7 @@ private fun AddComponentItem(component: PrototypeComponent, modifier: Modifier =
             .shadow(2.dp, shape = RoundedCornerShape(8.dp))
             .background(MaterialTheme.colors.surface, shape = RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
-            .clickable(onLongClick = { onSelect.invoke(component) }, onClick = {})
+            .clickable(onLongClick = { if (requiresLongClick) onSelect.invoke(component) }, onClick = { if (!requiresLongClick) onSelect.invoke(component) })
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {

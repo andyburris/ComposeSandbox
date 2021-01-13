@@ -94,7 +94,7 @@ private fun SlotItem(slot: Slot, modifier: Modifier = Modifier, indent: Int, onM
             Row (
                 modifier = Modifier.onGloballyPositioned {
                     val hoverItem = TreeHoverItem(
-                        slot.tree,
+                        slot.group,
                         it.globalPosition.toDpPosition(density),
                         with(density) { it.size.height.toDp() },
                         indent,
@@ -105,14 +105,14 @@ private fun SlotItem(slot: Slot, modifier: Modifier = Modifier, indent: Int, onM
 
             ){
                 ComponentItem(
-                    component = slot.tree,
+                    component = slot.group,
                     modifier = Modifier.padding(vertical = 8.dp),
                     name = slot.name + " Slot",
                     colors = Pair(MaterialTheme.colors.onSecondary, MaterialTheme.colors.onSecondary)
                 )
             }
         }
-        GenericTree(items = slot.tree.children) { child ->
+        GenericTree(items = slot.group.children) { child ->
             TreeItem(child, indent = indent + 1, onMoveComponent = onMoveComponent)
         }
     }

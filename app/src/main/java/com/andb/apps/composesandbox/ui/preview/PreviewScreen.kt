@@ -9,6 +9,6 @@ import com.andb.apps.composesandbox.ui.common.RenderComponentParent
 @Composable
 fun PreviewScreen(project: Project, previewScreen: PrototypeTree) {
     ProjectProvider(project = project) {
-        RenderComponentParent(theme = project.theme, component = previewScreen.tree)
+        RenderComponentParent(theme = project.theme, component = previewScreen.component)
     }
 }

@@ -89,7 +89,7 @@ fun RenderComponent(component: PrototypeComponent){
             contentColor = component.properties.contentColor.renderColor(),
         )
         is PrototypeComponent.Custom -> {
-            val treeComponent = AmbientProject.current.trees.filter { it.treeType == TreeType.Component }.first { it.id == component.treeID }.tree
+            val treeComponent = AmbientProject.current.trees.filter { it.treeType == TreeType.Component }.first { it.id == component.treeID }.component
             RenderComponent(component = treeComponent.copy(modifiers = component.modifiers + treeComponent.modifiers)) //instance modifiers wrap the component's modifiers
         }
     }
@@ -99,7 +99,7 @@ fun RenderComponent(component: PrototypeComponent){
 private fun PrototypeComponent.Slotted.renderSlot(name: String): @Composable () -> Unit {
     val slot = remember(this) { this.slots.first { it.name == name } }
     if (slot.enabled) {
-        return { slot.tree.children.forEach { RenderComponent(component = it) } }
+        return { slot.group.children.forEach { RenderComponent(component = it) } }
     } else {
         return emptyContent()
     }
@@ -109,7 +109,7 @@ private fun PrototypeComponent.Slotted.renderSlot(name: String): @Composable () 
 private fun <T> PrototypeComponent.Slotted.renderScopedSlot(name: String): @Composable T.() -> Unit {
     val slot = remember(this) { this.slots.first { it.name == name } }
     if (slot.enabled) {
-        return { slot.tree.children.forEach { RenderComponent(component = it) } }
+        return { slot.group.children.forEach { RenderComponent(component = it) } }
     } else {
         return { emptyContent() }
     }
@@ -119,7 +119,7 @@ private fun <T> PrototypeComponent.Slotted.renderScopedSlot(name: String): @Comp
 private fun PrototypeComponent.Slotted.renderEnabledSlotOrNull(name: String): (@Composable () -> Unit)? {
     val slot = remember(this) { this.slots.first { it.name == name } }
     if (slot.enabled) {
-        return { slot.tree.children.forEach { RenderComponent(component = it) } }
+        return { slot.group.children.forEach { RenderComponent(component = it) } }
     } else {
         return null
     }
@@ -129,7 +129,7 @@ private fun PrototypeComponent.Slotted.renderEnabledSlotOrNull(name: String): (@
 private fun <T> PrototypeComponent.Slotted.renderEnabledScopedSlotOrNull(name: String): (@Composable T.() -> Unit)? {
     val slot = remember(this) { this.slots.first { it.name == name } }
     if (slot.enabled) {
-        return { slot.tree.children.forEach { RenderComponent(component = it) } }
+        return { slot.group.children.forEach { RenderComponent(component = it) } }
     } else {
         return null
     }

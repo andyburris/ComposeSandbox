@@ -66,7 +66,7 @@ fun DrawerTree(opened: PrototypeTree, sheetState: BottomSheetState, hovering: Dr
             ) { if (sheetState.isExpanded) sheetState.collapse() else sheetState.expand() }
             ScrollableColumn(scrollState = scrollState, contentPadding = PaddingValues(bottom = 32.dp)) {
                 Tree(
-                    parent = opened.tree,
+                    parent = opened.component,
                     modifier = Modifier.padding(start = 32.dp, end = 32.dp),
                     onMoveComponent = onMoveComponent
                 )

@@ -25,9 +25,10 @@ class Machine(coroutineScope: CoroutineScope) {
                         when (drawerScreen) {
                             DrawerScreen.Tree -> DrawerState.Tree
                             DrawerScreen.AddComponent -> DrawerState.AddComponent
-                            is DrawerScreen.EditComponent -> openedTree.tree.findByIDInTree(drawerScreen.componentID)?.let { DrawerState.EditComponent(it) }
+                            is DrawerScreen.EditComponent -> openedTree.component.findByIDInTree(drawerScreen.componentID)?.let { DrawerState.EditComponent(it) }
+                            is DrawerScreen.PickBaseComponent -> DrawerState.PickBaseComponent(openedTree.component)
                             DrawerScreen.AddModifier -> DrawerState.AddModifier
-                            is DrawerScreen.EditModifier -> openedTree.tree.findModifierByIDInTree(drawerScreen.modifierID)?.let { DrawerState.EditModifier(it) }
+                            is DrawerScreen.EditModifier -> openedTree.component.findModifierByIDInTree(drawerScreen.modifierID)?.let { DrawerState.EditModifier(it) }
                             DrawerScreen.EditTheme -> DrawerState.EditTheme
                         }
                     }

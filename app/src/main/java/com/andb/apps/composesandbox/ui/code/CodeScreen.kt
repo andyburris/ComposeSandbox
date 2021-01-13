@@ -86,7 +86,7 @@ fun CodeScreen(project: Project) {
                 onClick = {
                     val sendIntent: Intent = Intent().apply {
                         action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_TEXT, with(generator) { project.trees.first().tree.toCode() })
+                        putExtra(Intent.EXTRA_TEXT, with(generator) { project.trees.first().component.toCode() })
                         type = "text/plain"
                     }
 

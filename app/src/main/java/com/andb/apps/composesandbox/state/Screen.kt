@@ -45,6 +45,7 @@ sealed class DrawerScreen {
     object Tree : DrawerScreen()
     object AddComponent : DrawerScreen()
     data class EditComponent (val componentID: String) : DrawerScreen()
+    object PickBaseComponent : DrawerScreen()
     object AddModifier : DrawerScreen()
     data class EditModifier(val modifierID: String) : DrawerScreen()
     object EditTheme : DrawerScreen()
@@ -55,6 +56,7 @@ sealed class DrawerState {
     object Tree : DrawerState()
     object AddComponent : DrawerState()
     data class EditComponent (val component: PrototypeComponent) : DrawerState()
+    data class PickBaseComponent(val currentBaseComponent: PrototypeComponent) : DrawerState()
     object AddModifier : DrawerState()
     data class EditModifier(val modifier: PrototypeModifier) : DrawerState()
     object EditTheme : DrawerState()
@@ -65,6 +67,7 @@ fun DrawerState.toDrawerScreen() = when (this) {
     DrawerState.Tree -> DrawerScreen.Tree
     DrawerState.AddComponent -> DrawerScreen.AddComponent
     is DrawerState.EditComponent -> DrawerScreen.EditComponent(component.id)
+    is DrawerState.PickBaseComponent -> DrawerScreen.PickBaseComponent
     DrawerState.AddModifier -> DrawerScreen.AddModifier
     is DrawerState.EditModifier -> DrawerScreen.EditModifier(modifier.id)
     DrawerState.EditTheme -> DrawerScreen.EditTheme

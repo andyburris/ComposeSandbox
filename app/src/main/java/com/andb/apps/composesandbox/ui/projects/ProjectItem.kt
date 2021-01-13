@@ -45,7 +45,7 @@ fun ProjectItem(project: Project, modifier: Modifier = Modifier, selected: Boole
                 println("projectItem, scaleX = $scaleX, scaleY = $scaleY")
                 ProjectProvider(project = project) {
                     Box(modifier = Modifier.graphicsLayer(scaleX = scaleX, scaleY = scaleY).size(width.dp, height.dp)) {
-                        RenderComponentParent(theme = project.theme, component = project.trees.first().tree)
+                        RenderComponentParent(theme = project.theme, component = project.trees.first().component)
                     }
                 }
             }

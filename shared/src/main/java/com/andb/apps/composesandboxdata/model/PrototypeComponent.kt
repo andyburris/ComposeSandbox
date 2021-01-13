@@ -229,7 +229,7 @@ fun <T: Properties.Slotted> T.withSlotsEnabled(slotsEnabled: Map<String, Boolean
 }
 
 @Serializable
-data class Slot(val name: String, val tree: PrototypeComponent.Group = PrototypeComponent.Group.Box(), val optional: Boolean = true)
+data class Slot(val name: String, val group: PrototypeComponent.Group = PrototypeComponent.Group.Box(), val optional: Boolean = true)
 
 fun PrototypeComponent.Group.withChildren(children: List<PrototypeComponent> = this.children): PrototypeComponent.Group {
     return when (this) {
@@ -265,10 +265,10 @@ fun PrototypeComponent.plusChildInTree(adding: PrototypeComponent, parent: Proto
         }
         this is PrototypeComponent.Slotted -> {
             val newSlots = slots.map { slot ->
-                val newTree = slot.tree.plusChildInTree(adding, parent, indexInParent)
-                println("old = ${slot.tree}")
+                val newTree = slot.group.plusChildInTree(adding, parent, indexInParent)
+                println("old = ${slot.group}")
                 println("new = $newTree")
-                slot.copy(tree = newTree as PrototypeComponent.Group)
+                slot.copy(group = newTree as PrototypeComponent.Group)
             }
             this.withSlots(newSlots)
         }
@@ -286,7 +286,7 @@ fun PrototypeComponent.plusChildInTree(adding: PrototypeComponent, parent: Proto
  */
 fun PrototypeComponent.minusChildFromTree(component: PrototypeComponent): PrototypeComponent {
     return when {
-        this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { slot -> slot.copy(tree = slot.tree.minusChildFromTree(component) as PrototypeComponent.Group) })
+        this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { slot -> slot.copy(group = slot.group.minusChildFromTree(component) as PrototypeComponent.Group) })
         this !is PrototypeComponent.Group -> this
         component !in this.children -> this.withChildren(children = this.children.map { it.minusChildFromTree(component) })
         else -> this.withChildren(children = this.children - component)
@@ -302,7 +302,7 @@ fun PrototypeComponent.updatedChildInTree(component: PrototypeComponent): Protot
     return when {
         this.id == component.id -> component
         this is PrototypeComponent.Group -> this.withChildren(children = this.children.map { it.updatedChildInTree(component) })
-        this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(tree = it.tree.updatedChildInTree(component) as PrototypeComponent.Group) })
+        this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(group = it.group.updatedChildInTree(component) as PrototypeComponent.Group) })
         else -> this
     }
 }
@@ -321,7 +321,7 @@ fun PrototypeComponent.findByIDInTree(id: String): PrototypeComponent? {
     }
     if (this is PrototypeComponent.Slotted) {
         this.slots.forEach { slot ->
-            slot.tree.findByIDInTree(id)?.let { return it }
+            slot.group.findByIDInTree(id)?.let { return it }
         }
     }
     return null
@@ -333,7 +333,7 @@ fun PrototypeComponent.findByIDInTree(id: String): PrototypeComponent? {
  */
 fun PrototypeComponent.findParentOfComponent(component: PrototypeComponent): Pair<PrototypeComponent.Group, Int>? =
     when (this) {
-        is PrototypeComponent.Slotted -> this.slots.map { it.tree.findParentOfComponent(component) }.filterNotNull().firstOrNull()
+        is PrototypeComponent.Slotted -> this.slots.map { it.group.findParentOfComponent(component) }.filterNotNull().firstOrNull()
         is PrototypeComponent.Group -> {
             println("finding parent for $component, this = $this")
             val index = children.indexOf(component)
@@ -352,7 +352,7 @@ fun PrototypeComponent.findModifierByIDInTree(id: String): PrototypeModifier? {
     //if not try to find it in children
     return when (this) {
         is PrototypeComponent.Group -> children.mapNotNull { it.findModifierByIDInTree(id) }.firstOrNull()
-        is PrototypeComponent.Slotted -> slots.mapNotNull { it.tree.findModifierByIDInTree(id) }.firstOrNull()
+        is PrototypeComponent.Slotted -> slots.mapNotNull { it.group.findModifierByIDInTree(id) }.firstOrNull()
         else -> null
     }
 }
@@ -367,7 +367,7 @@ fun PrototypeComponent.replaceCustomWith(customTreeID: String, replacementCompon
     return when {
         this is PrototypeComponent.Custom && this.treeID == customTreeID -> replacementComponent.copy(id = UUID.randomUUID().toString(), modifiers = this.modifiers + replacementComponent.modifiers)
         this is PrototypeComponent.Group -> this.withChildren(children = this.children.map { it.replaceCustomWith(customTreeID, replacementComponent) })
-        this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(tree = it.tree.replaceCustomWith(customTreeID, replacementComponent) as PrototypeComponent.Group) })
+        this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(group = it.group.replaceCustomWith(customTreeID, replacementComponent) as PrototypeComponent.Group) })
         else -> this
     }
 }
@@ -376,7 +376,7 @@ fun PrototypeComponent.replaceWithCustom(oldTreeID: String, replacementCustomCom
     return when {
         this.id == oldTreeID -> replacementCustomComponent.copy(id = UUID.randomUUID().toString())
         this is PrototypeComponent.Group -> this.withChildren(this.children.map { it.replaceWithCustom(oldTreeID, replacementCustomComponent) })
-        this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(tree = it.tree.replaceWithCustom(oldTreeID, replacementCustomComponent) as PrototypeComponent.Group) })
+        this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(group = it.group.replaceWithCustom(oldTreeID, replacementCustomComponent) as PrototypeComponent.Group) })
         else -> this
     }
 }
@@ -385,7 +385,38 @@ fun PrototypeComponent.containsCustomComponent(customTreeID: String): Boolean {
     return when {
         this is PrototypeComponent.Custom && this.treeID == customTreeID -> true
         this is PrototypeComponent.Group -> this.children.any { it.containsCustomComponent(customTreeID) }
-        this is PrototypeComponent.Slotted -> this.slots.any { it.tree.containsCustomComponent(customTreeID) }
+        this is PrototypeComponent.Slotted -> this.slots.any { it.group.containsCustomComponent(customTreeID) }
         else -> false
     }
+}
+
+fun PrototypeComponent.replaceParent(replacementComponent: PrototypeComponent): Pair<PrototypeComponent, Boolean> {
+    val losesChildren = when (this) {
+        is PrototypeComponent.Group -> this.children.isNotEmpty() && !(replacementComponent is PrototypeComponent.Group || replacementComponent is PrototypeComponent.Slotted)
+        is PrototypeComponent.Slotted -> this.slots.flatMap { it.group.children }.isNotEmpty() && !(replacementComponent is PrototypeComponent.Group || replacementComponent is PrototypeComponent.Slotted)
+        else -> false
+    }
+    val oldChildrenSlots = when(this) {
+        is PrototypeComponent.Group -> listOf(this.children)
+        is PrototypeComponent.Slotted -> this.slots.map { it.group.children }
+        else -> emptyList()
+    }
+    val newParent = when (replacementComponent) {
+        is PrototypeComponent.Group -> replacementComponent.withChildren(oldChildrenSlots.flatten())
+        is PrototypeComponent.Slotted -> {
+            val newSlots = replacementComponent.slots.mapIndexed { index, slot ->
+                val isLastNewSlot = index == replacementComponent.slots.size - 1
+                val oldSlotChildren: List<PrototypeComponent> = when (isLastNewSlot) {
+                    false -> oldChildrenSlots.getOrNull(index) ?: emptyList()
+                    true -> oldChildrenSlots.slice(index.coerceAtMost(oldChildrenSlots.size - 1) until oldChildrenSlots.size).flatten()
+                }
+                val newGroup = slot.group.withChildren(slot.group.children + oldSlotChildren)
+                if (index == 0) slot.copy(group = newGroup) else slot
+            }
+            replacementComponent.withSlots(newSlots)
+        }
+        else -> replacementComponent
+    }
+    val newComponent = newParent.copy(id = this.id, modifiers = this.modifiers, properties = if (this::class == replacementComponent::class) this.properties else replacementComponent.properties)
+    return Pair(newComponent, losesChildren)
 }

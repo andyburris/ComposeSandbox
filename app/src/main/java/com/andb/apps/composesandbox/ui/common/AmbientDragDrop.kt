@@ -52,7 +52,7 @@ data class DragDropState(val dragPosition: MutableState<Position>, val globalOff
             }
             is DropPosition.NESTED -> when (hoveringItem.component) {
                 is PrototypeComponent.Slotted -> Pair(treeItemsWithGlobalOffset.first {
-                    val firstTree = hoveringItem.component.slots.first{ hoveringItem.component.properties.slotsEnabled[it.name] != false }.tree
+                    val firstTree = hoveringItem.component.slots.first{ hoveringItem.component.properties.slotsEnabled[it.name] != false }.group
                     it.component == firstTree
                 }, hoverDropPosition)
                 is PrototypeComponent.Group -> Pair(hoveringItem, hoverDropPosition)
@@ -111,7 +111,7 @@ data class TreeHoverItem(val component: PrototypeComponent, val position: Positi
         // if droppingItem is a Group, dropIndicator should be at the bottom of its last child
         is PrototypeComponent.Group -> treeItems.find { it.component == component.children.lastOrNull() }?.heightWithChildren(treeItems) ?: position.y + height
         // if droppingItem is a Slotted, dropIndicator should be at the bottom of its last slot's last child
-        is PrototypeComponent.Slotted -> treeItems.find { it.component == (component.slots.lastOrNull()?.tree as PrototypeComponent.Group).children.lastOrNull() }?.heightWithChildren(treeItems) ?: position.y + height
+        is PrototypeComponent.Slotted -> treeItems.find { it.component == (component.slots.lastOrNull()?.group as PrototypeComponent.Group).children.lastOrNull() }?.heightWithChildren(treeItems) ?: position.y + height
         else -> position.y + height
     }
 }

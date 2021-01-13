@@ -7,7 +7,7 @@ class CodeGenerator(val project: Project) {
     fun PrototypeTree.toCode() = """
         |@Composable
         |fun ${name.toPascalCase()}() {
-        |${tree.toCode().prependIndent("    ")}
+        |${component.toCode().prependIndent("    ")}
         |}
     """.trimMargin()
 
@@ -95,6 +95,6 @@ class CodeGenerator(val project: Project) {
     private fun PrototypeComponent.Group.childrenToCode() = children.joinToString("\n") { it.toCode() }
 
     private fun PrototypeComponent.Slotted.slotsToCode() = slots.filter { !it.optional || properties.slotsEnabled[it.name] == true }.joinToString(", \n") {
-        it.name.toCamelCase() + " = {\n" + it.tree.childrenToCode().prependIndent("    ") + "\n}"
+        it.name.toCamelCase() + " = {\n" + it.group.childrenToCode().prependIndent("    ") + "\n}"
     }
 }

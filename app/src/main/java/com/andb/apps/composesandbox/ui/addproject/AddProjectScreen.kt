@@ -35,7 +35,7 @@ private val templates = listOf(
         trees = listOf(
             PrototypeTree(
                 name = "Screen 1",
-                tree = PrototypeComponent.Group.Column(
+                component = PrototypeComponent.Group.Column(
                     properties = Properties.Group.Column(
                         horizontalAlignment = PrototypeAlignment.Horizontal.CenterHorizontally,
                         verticalArrangement = PrototypeArrangement.Vertical.Center,
