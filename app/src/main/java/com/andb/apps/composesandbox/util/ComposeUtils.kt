@@ -38,7 +38,6 @@ fun Color.isDark(): Boolean {
 }
 
 @Composable
-@OptIn(InternalLayoutApi::class)
 fun <T> ColumnScope.gridItems(
     items: List<T>,
     columns: Int = 2,
@@ -59,7 +58,7 @@ fun <T> ColumnScope.gridItems(
     }
 }
 
-@OptIn(InternalLayoutApi::class)
+
 fun <T> LazyListScope.gridItems(
     items: List<T>,
     columns: Int = 2,

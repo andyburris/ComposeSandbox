@@ -1,7 +1,6 @@
 package com.andb.apps.composesandbox.data.model
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.InternalLayoutApi
 import androidx.compose.ui.Alignment
 import com.andb.apps.composesandboxdata.model.PrototypeAlignment
 import com.andb.apps.composesandboxdata.model.PrototypeArrangement
@@ -21,7 +20,6 @@ fun PrototypeArrangement.toReadableString() = when (this) {
 }
 
 
-@OptIn(InternalLayoutApi::class)
 fun PrototypeArrangement.toHorizontalArrangement(): Arrangement.Horizontal = when(this) {
     PrototypeArrangement.Horizontal.Start -> Arrangement.Start
     PrototypeArrangement.Horizontal.Center -> Arrangement.Center
@@ -32,7 +30,6 @@ fun PrototypeArrangement.toHorizontalArrangement(): Arrangement.Horizontal = whe
     else -> throw Error("Not a horizontal arrangement!")
 }
 
-@OptIn(InternalLayoutApi::class)
 fun PrototypeArrangement.toVerticalArrangement(): Arrangement.Vertical = when(this) {
     PrototypeArrangement.Vertical.Top -> Arrangement.Top
     PrototypeArrangement.Vertical.Center -> Arrangement.Center
