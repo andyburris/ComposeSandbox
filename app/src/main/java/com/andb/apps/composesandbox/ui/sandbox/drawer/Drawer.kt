@@ -50,17 +50,12 @@ fun Drawer(
     val movingComponent = remember { mutableStateOf<PrototypeComponent?>(null) }
     val (contentSize, setContentSize) = remember { mutableStateOf(Size(0f, 0f)) }
     val drawerState = sandboxState.drawerStack.last()
-    println("drawerState = $drawerState")
-    val dragPosition = remember { mutableStateOf(Position(0.dp, 0.dp)) }
+    val dragPosition = remember { mutableStateOf(Position(0.dp, 0.dp)) } //remember separately so it isn't reset on the input change of dragDropState
     val dragDropState = remember(sandboxState.openedTree, drawerState) {
         DragDropState(dragPosition, mutableStateOf(Position(0.dp, 0.dp)), mutableListOf()) { dropState ->
             when (dropState) {
                 is DropState.OverTreeItem -> {
-                    println("dropping, movingComponent? = ${movingComponent.value}, dropState = $dropState")
                     val moving = movingComponent.value ?: return@DragDropState
-                    println("adding to tree")
-                    val isNesting = dropState.dropPosition is DropPosition.NESTED
-                    println("isNesting = $isNesting")
                     val updatedTree = when (dropState.dropPosition) {
                         is DropPosition.NESTED.First -> sandboxState.openedTree.component.plusChildInTree(moving, dropState.hoveringComponent as PrototypeComponent.Group, 0)
                         is DropPosition.NESTED.Last -> sandboxState.openedTree.component.plusChildInTree(moving, dropState.hoveringComponent as PrototypeComponent.Group, dropState.hoveringComponent.children.size)
@@ -100,11 +95,11 @@ fun Drawer(
         oldState.value = drawerState
         val dragDropScrolling = if (movingComponent.value != null) {
             val heightDp = with(density) { contentSize.height.toDp() }
-                when(dragPosition.value.y) {
-                    in 0.dp..112.dp -> DragDropScrolling.ScrollingUp
-                    in heightDp - 24.dp..heightDp -> DragDropScrolling.ScrollingDown
-                    else -> DragDropScrolling.None
-                }
+            when(dragDropState.dragPosition.value.y) {
+                in 0.dp..112.dp -> DragDropScrolling.ScrollingUp
+                in heightDp - 24.dp..heightDp -> DragDropScrolling.ScrollingDown
+                else -> DragDropScrolling.None
+            }
         } else DragDropScrolling.None
         ItemSwitcher(
             current = drawerState,
@@ -156,8 +151,7 @@ fun Drawer(
                         onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
                     }
                     is DrawerState.PickBaseComponent -> {
-
-                        ConfirmationDialog() { confirmationState ->
+                        ConfirmationDialog { confirmationState ->
                             ComponentList(project = sandboxState.project, title = "Pick Base Component", currentTreeID = sandboxState.openedTree.id, requiresLongClick = false) {
                                 val (newBaseComponent, losesChildren) = sandboxState.openedTree.component.replaceParent(it)
                                 confirmationState.confirm(title = "Confirm Change?", summary = "This will delete all children of the old component", needToConfirm = losesChildren) {
@@ -184,7 +178,7 @@ fun Drawer(
                 }
                 val currentMovingComponent = movingComponent.value
                 if (currentMovingComponent != null) {
-                    ComponentDragDropItem(component = currentMovingComponent, position = dragPosition.value)
+                    ComponentDragDropItem(component = currentMovingComponent, position = dragDropState.dragPosition.value)
                 }
             }
         }

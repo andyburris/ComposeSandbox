@@ -111,7 +111,7 @@ private fun DrawerTreeHeader(sandboxState: ViewState.Sandbox, modifier: Modifier
         titleSlot = {
             BasicTextField(
                 value = it,
-                textStyle = MaterialTheme.typography.h6,
+                textStyle = MaterialTheme.typography.h6.copy(color = MaterialTheme.colors.onBackground),
                 onValueChange = {
                     onTreeNameChanged.invoke(it)
                 }
@@ -124,7 +124,6 @@ private fun DrawerTreeHeader(sandboxState: ViewState.Sandbox, modifier: Modifier
                 Icon(
                     imageVector = it,
                     modifier = Modifier
-                        //.clickable(onClick = onToggleExpand, indication = rememberRipple(bounded = false, radius = 16.dp))
                         .graphicsLayer(rotationZ = iconRotation)
                 )
             }

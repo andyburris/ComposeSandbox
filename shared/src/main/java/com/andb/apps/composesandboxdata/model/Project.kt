@@ -40,3 +40,7 @@ fun Project.nextComponentName(): String {
 
 fun List<PrototypeTree>.screens() = this.filter { it.treeType == TreeType.Screen }
 fun List<PrototypeTree>.components() = this.filter { it.treeType == TreeType.Component }
+
+suspend fun Project.exportZip() {
+    
+}

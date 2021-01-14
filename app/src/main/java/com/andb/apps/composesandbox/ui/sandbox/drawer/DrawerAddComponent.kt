@@ -86,7 +86,7 @@ private fun AddComponentItem(component: PrototypeComponent, modifier: Modifier =
             .graphicsLayer(alpha = if (enabled) 1.0f else 0.5f)
             //.draggable(Orientation.Horizontal, onDragStarted = { onSelect.invoke(component) }) {},
             .shadow(2.dp, shape = RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colors.surface, shape = RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colors.background, shape = RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .clickable(onLongClick = { if (requiresLongClick) onSelect.invoke(component) }, onClick = { if (!requiresLongClick) onSelect.invoke(component) })
             .padding(12.dp),
