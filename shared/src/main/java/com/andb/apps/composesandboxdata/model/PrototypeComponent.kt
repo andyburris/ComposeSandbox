@@ -396,7 +396,7 @@ fun PrototypeComponent.replaceParent(replacementComponent: PrototypeComponent): 
         is PrototypeComponent.Slotted -> this.slots.flatMap { it.group.children }.isNotEmpty() && !(replacementComponent is PrototypeComponent.Group || replacementComponent is PrototypeComponent.Slotted)
         else -> false
     }
-    val oldChildrenSlots = when(this) {
+    val oldChildrenSlots: List<List<PrototypeComponent>> = when(this) {
         is PrototypeComponent.Group -> listOf(this.children)
         is PrototypeComponent.Slotted -> this.slots.map { it.group.children }
         else -> emptyList()
@@ -404,14 +404,10 @@ fun PrototypeComponent.replaceParent(replacementComponent: PrototypeComponent): 
     val newParent = when (replacementComponent) {
         is PrototypeComponent.Group -> replacementComponent.withChildren(oldChildrenSlots.flatten())
         is PrototypeComponent.Slotted -> {
-            val newSlots = replacementComponent.slots.mapIndexed { index, slot ->
-                val isLastNewSlot = index == replacementComponent.slots.size - 1
-                val oldSlotChildren: List<PrototypeComponent> = when (isLastNewSlot) {
-                    false -> oldChildrenSlots.getOrNull(index) ?: emptyList()
-                    true -> oldChildrenSlots.slice(index.coerceAtMost(oldChildrenSlots.size - 1) until oldChildrenSlots.size).flatten()
-                }
-                val newGroup = slot.group.withChildren(slot.group.children + oldSlotChildren)
-                if (index == 0) slot.copy(group = newGroup) else slot
+            val newSlotChildren = oldChildrenSlots.fitToSize(replacementComponent.slots.size)
+            val newSlots = newSlotChildren.mapIndexed { index, children ->
+                val slot = replacementComponent.slots[index]
+                slot.copy(group = slot.group.withChildren(children))
             }
             replacementComponent.withSlots(newSlots)
         }
@@ -419,4 +415,15 @@ fun PrototypeComponent.replaceParent(replacementComponent: PrototypeComponent): 
     }
     val newComponent = newParent.copy(id = this.id, modifiers = this.modifiers, properties = if (this::class == replacementComponent::class) this.properties else replacementComponent.properties)
     return Pair(newComponent, losesChildren)
+}
+
+fun <T> List<List<T>>.fitToSize(size: Int) : List<List<T>> {
+    if (this.size == size) return this
+    if (this.size < size) return this + (0 until size - this.size).map { emptyList() } //pad right with empty lists if list just expands
+
+    val flattenedLast = this.slice(size - 1 until this.size).flatten()
+    return (0 until size).map { index ->
+        val isLastNewSlot = index == size - 1
+        if (isLastNewSlot) flattenedLast else this[index]
+    }
 }
