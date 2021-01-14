@@ -11,10 +11,11 @@ android {
         minSdkVersion(Versions.minSDK)
         targetSdkVersion(Versions.targetSDK)
         versionCode = 1
-        versionName = "0.1.0"
+        versionName = "0.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         resValue("string", "app_name", "Compose Sandbox")
+        resValue("string", "provider", "com.andb.apps.composesandbox.fileprovider")
     }
 
     buildTypes {
@@ -25,6 +26,7 @@ android {
         getByName("debug") {
             applicationIdSuffix = ".debug"
             resValue("string", "app_name", "Compose Sandbox Beta")
+            resValue("string", "provider", "com.andb.apps.composesandbox.debug.fileprovider")
         }
     }
     compileOptions {

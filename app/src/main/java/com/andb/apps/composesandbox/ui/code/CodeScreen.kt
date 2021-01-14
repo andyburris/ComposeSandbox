@@ -25,13 +25,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandboxdata.model.CodeGenerator
-import com.andb.apps.composesandboxdata.model.Project
-import com.andb.apps.composesandboxdata.model.PrototypeTree
-import com.andb.apps.composesandboxdata.model.TreeType
+import androidx.core.content.FileProvider
 import com.andb.apps.composesandbox.state.Handler
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.util.endBorder
+import com.andb.apps.composesandboxdata.model.*
 
 private val codeStyle = TextStyle(fontFamily = FontFamily.Monospace)
 
@@ -84,9 +82,13 @@ fun CodeScreen(project: Project) {
                 icon = { Icon(imageVector = Icons.Default.Share) },
                 text = { Text(text = "Export Code") },
                 onClick = {
+                    val zipFile = project.exportZip(context)
                     val sendIntent: Intent = Intent().apply {
+                        val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", zipFile)
+                        println("exporting $uri")
                         action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_TEXT, with(generator) { project.trees.first().component.toCode() })
+                        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        putExtra(Intent.EXTRA_STREAM, uri)
                         type = "text/plain"
                     }
 
@@ -129,7 +131,7 @@ private fun CodeCard(generator: CodeGenerator, tree: PrototypeTree, opened: Bool
 private fun FileItem(tree: PrototypeTree, modifier: Modifier = Modifier, onToggle: () -> Unit) {
     Row(modifier.clickable(onClick = onToggle).padding(16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column {
-            Text(text = tree.name)
+            Text(text = tree.name, style = MaterialTheme.typography.subtitle1)
             Text(text = "${tree.name.capitalize().filter { it != ' ' }}.kt", style = codeStyle)
         }
         Icon(imageVector = Icons.Default.UnfoldLess)

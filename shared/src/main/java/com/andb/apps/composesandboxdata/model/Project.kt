@@ -1,7 +1,12 @@
 package com.andb.apps.composesandboxdata.model
 
+import android.content.Context
+import com.andb.apps.composesandboxdata.toPascalCase
 import kotlinx.serialization.Serializable
+import java.io.File
 import java.util.*
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 @Serializable
 data class Project(
@@ -41,6 +46,16 @@ fun Project.nextComponentName(): String {
 fun List<PrototypeTree>.screens() = this.filter { it.treeType == TreeType.Screen }
 fun List<PrototypeTree>.components() = this.filter { it.treeType == TreeType.Component }
 
-suspend fun Project.exportZip() {
-    
+fun Project.exportZip(context: Context): File {
+    val generator = CodeGenerator(this)
+    val directory = context.cacheDir
+    val zipFile = File.createTempFile("${this.name.toPascalCase()}-export", ".zip", directory)
+    val zipOutputStream = ZipOutputStream(zipFile.outputStream())
+    trees.forEach {
+        zipOutputStream.putNextEntry(ZipEntry(it.name.toPascalCase() + ".kt"))
+        zipOutputStream.write(with(generator) { it.toCode() }.encodeToByteArray())
+        zipOutputStream.closeEntry()
+    }
+    zipOutputStream.close()
+    return zipFile
 }
