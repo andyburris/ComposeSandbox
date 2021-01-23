@@ -18,6 +18,7 @@ sealed class PrototypeArrangement {
         @Serializable object SpaceBetween : Both()
         @Serializable object SpaceEvenly : Both()
         @Serializable object SpaceAround : Both()
+        @Serializable data class SpacedBy(val space: Int) : Both()
     }
 }
 
@@ -36,7 +37,7 @@ sealed class PrototypeAlignment {
 
 val horizontalArrangements = listOf(PrototypeArrangement.Horizontal.Start, PrototypeArrangement.Horizontal.Center, PrototypeArrangement.Horizontal.End)
 val verticalArrangements = listOf(PrototypeArrangement.Vertical.Top, PrototypeArrangement.Vertical.Center, PrototypeArrangement.Vertical.Bottom)
-val bothArrangements = listOf(PrototypeArrangement.Both.SpaceBetween, PrototypeArrangement.Both.SpaceEvenly, PrototypeArrangement.Both.SpaceAround)
+val bothArrangements = listOf(PrototypeArrangement.Both.SpaceBetween, PrototypeArrangement.Both.SpaceEvenly, PrototypeArrangement.Both.SpaceAround, PrototypeArrangement.Both.SpacedBy(16))
 val verticalAlignments = listOf(PrototypeAlignment.Vertical.Top, PrototypeAlignment.Vertical.CenterVertically, PrototypeAlignment.Vertical.Bottom)
 val horizontalAlignments = listOf(PrototypeAlignment.Horizontal.Start, PrototypeAlignment.Horizontal.CenterHorizontally, PrototypeAlignment.Horizontal.End)
 
@@ -51,6 +52,7 @@ fun PrototypeArrangement.toCode(): String = when(this) {
     PrototypeArrangement.Both.SpaceBetween -> "Arrangement.SpaceBetween"
     PrototypeArrangement.Both.SpaceEvenly -> "Arrangement.SpaceEvenly"
     PrototypeArrangement.Both.SpaceAround -> "Arrangement.SpaceAround"
+    is PrototypeArrangement.Both.SpacedBy -> "Arrangement.spacedBy($space.dp)"
 }
 
 

@@ -161,6 +161,7 @@ sealed class Properties {
             val verticalArrangement: PrototypeArrangement = PrototypeArrangement.Vertical.Top,
             val horizontalAlignment: PrototypeAlignment.Horizontal = PrototypeAlignment.Horizontal.Start,
         ) : Group()
+
         @Serializable
         object Box : Group()
     }

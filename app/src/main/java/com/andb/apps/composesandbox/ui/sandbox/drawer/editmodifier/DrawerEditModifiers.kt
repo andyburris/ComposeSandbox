@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.sandbox.drawer.modifiers
+package com.andb.apps.composesandbox.ui.sandbox.drawer.editmodifier
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,8 +11,8 @@ import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.Chip
 import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
-import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.ColorPicker
-import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.NumberPicker
+import com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties.ColorPicker
+import com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties.NumberPicker
 import com.andb.apps.composesandboxdata.model.*
 
 @Composable

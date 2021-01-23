@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.sandbox.drawer
+package com.andb.apps.composesandbox.ui.sandbox.drawer.addcomponent
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +18,8 @@ import com.andb.apps.composesandbox.data.model.icon
 import com.andb.apps.composesandbox.data.model.name
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
+import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
+import com.andb.apps.composesandbox.ui.sandbox.drawer.ScrollableDrawer
 import com.andb.apps.composesandbox.util.gridItems
 import com.andb.apps.composesandboxdata.model.*
 import java.util.*

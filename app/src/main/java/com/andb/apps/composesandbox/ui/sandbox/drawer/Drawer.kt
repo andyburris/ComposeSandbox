@@ -23,8 +23,11 @@ import com.andb.apps.composesandbox.state.DrawerState
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.state.ViewState
 import com.andb.apps.composesandbox.ui.common.*
-import com.andb.apps.composesandbox.ui.sandbox.drawer.modifiers.DrawerEditModifiers
-import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.DrawerEditProperties
+import com.andb.apps.composesandbox.ui.sandbox.drawer.addcomponent.ComponentList
+import com.andb.apps.composesandbox.ui.sandbox.drawer.addmodifier.AddModifierList
+import com.andb.apps.composesandbox.ui.sandbox.drawer.editmodifier.DrawerEditModifiers
+import com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties.DrawerEditProperties
+import com.andb.apps.composesandbox.ui.sandbox.drawer.theme.DrawerEditTheme
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.ComponentItem
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.DrawerTree
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.toDpPosition

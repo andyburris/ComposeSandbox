@@ -43,6 +43,11 @@ class CodeGenerationTest {
         assertEquals(with(generator) { emptyRowComponent.toCode().trimEndWhitespace() }, emptyRowComponentCode)
         assertEquals(with(generator) { rowComponentWithChildren.toCode().trimEndWhitespace() }, rowComponentWithChildrenCode)
     }
+
+    @Test
+    fun columnComponentTest() {
+        assertEquals(with(generator) { spacedByColumn.toCode().trimEndWhitespace() }, spacedByColumnCode)
+    }
 }
 
 /************** Text **************/
@@ -104,6 +109,20 @@ private val rowComponentWithChildrenCode = """
     }
 """.trimIndent().trimEndWhitespace()
 
+/************** Column **************/
+private val spacedByColumn = PrototypeComponent.Group.Column(properties = Properties.Group.Column(verticalArrangement = PrototypeArrangement.Both.SpacedBy(16)), children = listOf(textComponent))
+private val spacedByColumnCode = """
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.Start
+    ) {
+        Text(
+            text = "Test",
+            color = MaterialTheme.colors.onBackground
+        )
+    }
+""".trimIndent().trimEndWhitespace()
+
 @Composable
 private fun Test() {
     Text(
@@ -129,9 +148,13 @@ private fun Test() {
     }
 
     Column(
-
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.Start
     ) {
-
+        Text(
+            text = "Test",
+            color = MaterialTheme.colors.onBackground
+        )
     }
 }
 

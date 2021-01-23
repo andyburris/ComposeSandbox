@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.sandbox.drawer
+package com.andb.apps.composesandbox.ui.sandbox.drawer.addmodifier
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,7 +9,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.UserAction
-import com.andb.apps.composesandbox.ui.sandbox.drawer.properties.ModifierItem
+import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
+import com.andb.apps.composesandbox.ui.sandbox.drawer.ScrollableDrawer
+import com.andb.apps.composesandbox.ui.sandbox.drawer.addcomponent.AddComponentHeader
+import com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties.ModifierItem
 import com.andb.apps.composesandboxdata.model.PrototypeColor
 import com.andb.apps.composesandboxdata.model.PrototypeModifier
 

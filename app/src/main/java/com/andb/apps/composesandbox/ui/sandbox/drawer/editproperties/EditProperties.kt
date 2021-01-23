@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.sandbox.drawer.properties
+package com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties
 
 import androidx.compose.foundation.ScrollableColumn
 import androidx.compose.foundation.background

@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.sandbox.drawer.properties
+package com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,10 +43,24 @@ fun IconProperties(properties: Properties.Icon, onUpdate: (Properties.Icon) -> U
 @Composable
 fun ColumnProperties(properties: Properties.Group.Column, onUpdate: (Properties.Group.Column) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        OptionsPicker(label = "Vertical Arrangement", selected = properties.verticalArrangement, options = verticalArrangements + bothArrangements, stringify = { it.toReadableString() }) {
-            val newProperties = properties.copy(verticalArrangement = it)
-            onUpdate(newProperties)
-        }
+        PickerWithChildren(
+            childrenExpanded = properties.verticalArrangement is PrototypeArrangement.Both.SpacedBy,
+            parent = {
+                OptionsPicker(label = "Vertical Arrangement", selected = properties.verticalArrangement, options = verticalArrangements + bothArrangements, stringify = { it.toReadableString() }) {
+                    val newProperties = properties.copy(verticalArrangement = it)
+                    onUpdate(newProperties)
+                }
+            },
+            children = {
+                val arrangement = properties.verticalArrangement
+                if (arrangement is PrototypeArrangement.Both.SpacedBy) {
+                    NumberPicker(label = "Spacing", current = arrangement.space) {
+                        val newProperties = properties.copy(verticalArrangement = arrangement.copy(space = it))
+                        onUpdate(newProperties)
+                    }
+                }
+            }
+        )
         OptionsPicker(label = "Horizontal Alignment", selected = properties.horizontalAlignment, options = horizontalAlignments, stringify = { it.toReadableString() }) {
             val newProperties = properties.copy(horizontalAlignment = it)
             onUpdate(newProperties)
@@ -57,10 +71,24 @@ fun ColumnProperties(properties: Properties.Group.Column, onUpdate: (Properties.
 @Composable
 fun RowProperties(properties: Properties.Group.Row, onUpdate: (Properties.Group.Row) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        OptionsPicker(label = "Horizontal Arrangement", selected = properties.horizontalArrangement, options = horizontalArrangements + bothArrangements, stringify = { it.toReadableString() }) {
-            val newProperties = properties.copy(horizontalArrangement = it)
-            onUpdate(newProperties)
-        }
+        PickerWithChildren(
+            childrenExpanded = properties.horizontalArrangement is PrototypeArrangement.Both.SpacedBy,
+            parent = {
+                OptionsPicker(label = "Horizontal Arrangement", selected = properties.horizontalArrangement, options = horizontalArrangements + bothArrangements, stringify = { it.toReadableString() }) {
+                    val newProperties = properties.copy(horizontalArrangement = it)
+                    onUpdate(newProperties)
+                }
+            },
+            children = {
+                val arrangement = properties.horizontalArrangement
+                if (arrangement is PrototypeArrangement.Both.SpacedBy) {
+                    NumberPicker(label = "Spacing", current = arrangement.space) {
+                        val newProperties = properties.copy(horizontalArrangement = arrangement.copy(space = it))
+                        onUpdate(newProperties)
+                    }
+                }
+            }
+        )
         OptionsPicker(label = "Vertical Alignment", selected = properties.verticalAlignment, options = verticalAlignments, stringify = { it.toReadableString() }) {
             val newProperties = properties.copy(verticalAlignment = it)
             onUpdate(newProperties)

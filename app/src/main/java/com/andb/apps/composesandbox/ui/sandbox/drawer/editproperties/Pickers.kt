@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.sandbox.drawer.properties
+package com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -27,11 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.andb.apps.composesandbox.data.model.imageVector
 import com.andb.apps.composesandbox.data.model.projectColor
-import com.andb.apps.composesandboxdata.model.*
 import com.andb.apps.composesandbox.ui.common.ColorPickerCircle
 import com.andb.apps.composesandbox.ui.common.ColorPickerWithTheme
 import com.andb.apps.composesandbox.util.bottomBorder
 import com.andb.apps.composesandbox.util.isDark
+import com.andb.apps.composesandboxdata.model.*
 
 @Composable
 fun TextPicker(label: String, value: String, onValueChange: (String) -> Unit) {
@@ -191,10 +191,22 @@ fun <T : Properties.Slotted> SlotPicker(name: String, properties: T, onSelect: (
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SlotPicker(name: String, enabled: Boolean, onToggle: (Boolean) -> Unit, children: (@Composable ColumnScope.() -> Unit)? = null) {
+    PickerWithChildren(
+        childrenExpanded = enabled,
+        parent = {
+            SwitchPicker(label = name, current = enabled, onToggle = onToggle)
+        },
+        children = children
+    )
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun PickerWithChildren(childrenExpanded: Boolean, parent: @Composable () -> Unit, children: (@Composable ColumnScope.() -> Unit)? = null) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SwitchPicker(label = name, current = enabled, onToggle = onToggle)
+        parent()
         if (children != null) {
-            AnimatedVisibility(visible = enabled) {
+            AnimatedVisibility(visible = childrenExpanded) {
                 Column(Modifier.background(MaterialTheme.colors.secondary, RoundedCornerShape(8.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top), content = children)
             }
         }
