@@ -82,7 +82,6 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) ->
                 bodyContent = {
                     val offset = if (bottomSheetState.offset.value.isNaN()) 0f else bottomSheetState.offset.value
                     val scale = (offset / height).coerceIn(0f..1f)
-                    println("height = $height, offset = ${bottomSheetState.offset.value}, scale = $scale")
                     //Box(Modifier.background(Color.Red).size(128.dp))
                     Box(
                         modifier = Modifier

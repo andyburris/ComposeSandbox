@@ -1,7 +1,7 @@
 package com.andb.apps.composesandboxdata.model
 
 
-data class IconSection(val sectionName: String, val icons: List<PrototypeIcon>)
+data class IconSection(val name: String, val icons: List<PrototypeIcon>)
 
 val icons = listOf(
     IconSection("Action", actionIcons),

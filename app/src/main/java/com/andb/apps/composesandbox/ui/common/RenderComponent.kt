@@ -38,7 +38,6 @@ fun RenderComponentParent(theme: Theme, component: PrototypeComponent, selected:
 fun RenderComponent(component: PrototypeComponent){
     val selected = AmbientSelected.current == component.id
     val selectedModifier = if (selected) Modifier.border(1.dp, selectionColor) else Modifier
-    println("selected (${AmbientSelected.current}) = $selected for component = $component")
     val modifier = selectedModifier then component.modifiers.toModifier()
     when (component){
         is PrototypeComponent.Text -> Text(

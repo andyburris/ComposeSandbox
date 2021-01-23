@@ -6,8 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -22,16 +20,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.gesture.scrollorientationlocking.Orientation
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.andb.apps.composesandbox.data.model.imageVector
 import com.andb.apps.composesandbox.data.model.projectColor
 import com.andb.apps.composesandbox.ui.common.ColorPickerCircle
 import com.andb.apps.composesandbox.ui.common.ColorPickerWithTheme
 import com.andb.apps.composesandbox.util.bottomBorder
 import com.andb.apps.composesandbox.util.isDark
-import com.andb.apps.composesandboxdata.model.*
+import com.andb.apps.composesandboxdata.model.Properties
+import com.andb.apps.composesandboxdata.model.PrototypeColor
+import com.andb.apps.composesandboxdata.model.withSlotsEnabled
 
 @Composable
 fun TextPicker(label: String, value: String, onValueChange: (String) -> Unit) {
@@ -213,92 +211,3 @@ fun PickerWithChildren(childrenExpanded: Boolean, parent: @Composable () -> Unit
     }
 }
 
-@Composable
-fun IconPicker(icon: PrototypeIcon, onSelect: (PrototypeIcon) -> Unit) {
-    val picking = remember { mutableStateOf(false) }
-    GenericPropertyEditor(label = "Icon") {
-        Row(
-            modifier = Modifier
-                .clickable { picking.value = true }
-                .background(MaterialTheme.colors.secondary, CircleShape)
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-            Icon(imageVector = icon.imageVector)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = icon.name, color = MaterialTheme.colors.onSecondary)
-        }
-    }
-    if (picking.value) {
-        Dialog(onDismissRequest = { picking.value = false }) {
-            Column(Modifier.background(MaterialTheme.colors.background, RoundedCornerShape(16.dp))) {
-                Text(text = "Pick Icon", style = MaterialTheme.typography.h6, modifier = Modifier.padding(32.dp))
-                IconPickerDialogContent(selected = icon, Modifier.padding(horizontal = 32.dp)) {
-                    onSelect.invoke(it)
-                    picking.value = false
-                }
-                Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = { picking.value = false }) {
-                        Text(text = "Select".toUpperCase())
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun IconPickerDialogContent(selected: PrototypeIcon, modifier: Modifier, onSelect: (PrototypeIcon) -> Unit) {
-    val searchTerm = remember { mutableStateOf("") }
-
-    Column(modifier) {
-        OutlinedTextField(
-            label = { Text(text = "Search Icons") },
-            value = searchTerm.value,
-            onValueChange = {
-                searchTerm.value = it
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-        LazyColumn {
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-            items(icons) { iconSection ->
-                Text(
-                    text = iconSection.sectionName.toUpperCase(),
-                    style = MaterialTheme.typography.subtitle1,
-                    color = MaterialTheme.colors.primary,
-                    modifier = Modifier.padding(vertical = 16.dp)
-                )
-                val rowSize = 3
-                iconSection.icons.filter { searchTerm.value in it.name }.chunked(rowSize).forEach { icons ->
-                    Row(Modifier.padding(bottom = 8.dp)) {
-                        icons.forEach { icon ->
-                            IconPickerItem(icon = icon, selected = icon == selected) {
-                                onSelect.invoke(icon)
-                            }
-                        }
-                        repeat(rowSize - icons.size) {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun RowScope.IconPickerItem(icon: PrototypeIcon, modifier: Modifier = Modifier, selected: Boolean, onClick: () -> Unit) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-            .background(if (selected) MaterialTheme.colors.secondary else Color.Transparent, RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .weight(1f)
-            .padding(horizontal = 8.dp)
-    ) {
-        Icon(imageVector = icon.imageVector.copy(defaultHeight = 36.dp, defaultWidth = 36.dp))
-        Text(text = icon.name, style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-    }
-}

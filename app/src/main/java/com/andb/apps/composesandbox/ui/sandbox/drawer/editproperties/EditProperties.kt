@@ -38,7 +38,6 @@ fun DrawerEditProperties(component: PrototypeComponent, isBaseComponent: Boolean
             onExtractToComponent = { onExtractComponent.invoke(component) }
         )
         ScrollableColumn(scrollState = scrollState, modifier = Modifier.padding(horizontal = 32.dp), verticalArrangement = Arrangement.spacedBy(32.dp)) {
-            println("isBaseComponent = $isBaseComponent")
             if (isBaseComponent) {
                 BaseComponentSwitcher(component = component) {
                     actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.PickBaseComponent))
