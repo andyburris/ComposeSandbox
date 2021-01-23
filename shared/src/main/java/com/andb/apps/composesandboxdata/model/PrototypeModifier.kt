@@ -103,26 +103,3 @@ fun PrototypeModifier.Padding.toIndividual(): PrototypeModifier.Padding.Individu
     is PrototypeModifier.Padding.Individual -> this
 }
 
-fun List<PrototypeModifier>.toCode(): String {
-    if (isEmpty()) return ""
-
-    return buildString {
-        append("modifier = Modifier.")
-        append(this@toCode.joinToString(".") { it.toCode() })
-    }
-}
-
-fun PrototypeModifier.toCode() = when (this) {
-    is PrototypeModifier.Border -> "border(width = $strokeWidth.dp, color = ${color.toCode()}, shape = RoundedCornerShape($cornerRadius.dp))"
-    is PrototypeModifier.Background -> "background(color = ${color.toCode()}, shape = RoundedCornerShape($cornerRadius.dp))"
-    is PrototypeModifier.Padding.Individual -> "padding(start = $start.dp, end = $end.dp, top = $top.dp, bottom = $bottom.dp)"
-    is PrototypeModifier.Padding.Sides -> "padding(horizontal = $horizontal.dp, vertical = $vertical.dp)"
-    is PrototypeModifier.Padding.All -> "padding($padding.dp)"
-    is PrototypeModifier.Height -> "height(height = $height.dp)"
-    is PrototypeModifier.Width -> "width(width = $width.dp)"
-    is PrototypeModifier.Size.All -> "size(size = $size.dp)"
-    is PrototypeModifier.Size.Individual -> "size(width = $width.dp, height = $height.dp)"
-    is PrototypeModifier.FillMaxWidth -> "fillMaxWidth()"
-    is PrototypeModifier.FillMaxHeight -> "fillMaxHeight()"
-    is PrototypeModifier.FillMaxSize -> "fillMaxSize()"
-}

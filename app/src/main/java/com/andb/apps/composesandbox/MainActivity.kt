@@ -14,6 +14,7 @@ import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.state.ViewState
 import com.andb.apps.composesandbox.ui.addproject.AddProjectScreen
 import com.andb.apps.composesandbox.ui.code.CodeScreen
+import com.andb.apps.composesandbox.ui.common.NavigationBar
 import com.andb.apps.composesandbox.ui.common.StatusBar
 import com.andb.apps.composesandbox.ui.preview.PreviewScreen
 import com.andb.apps.composesandbox.ui.projects.ProjectsScreen
@@ -35,6 +36,7 @@ class MainActivity : AppCompatActivity() {
             ActionHandlerProvider(actionHandler = handler) {
                 AppTheme {
                     StatusBar(state = state)
+                    NavigationBar(state = state)
                     Surface(color = MaterialTheme.colors.background) {
                         when(state){
                             is ViewState.Projects -> ProjectsScreen(state.projects)
@@ -73,5 +75,18 @@ class MainActivity : AppCompatActivity() {
             ViewState.Test -> MaterialTheme.colors.secondary
         }
         StatusBar(color = color)
+    }
+
+    @Composable
+    private fun NavigationBar(state: ViewState) {
+        val color = when(state) {
+            is ViewState.Projects -> MaterialTheme.colors.secondary
+            ViewState.AddProject -> MaterialTheme.colors.secondary
+            is ViewState.Sandbox -> MaterialTheme.colors.secondary
+            is ViewState.Preview -> state.project.theme.primaryVariant.renderColor()
+            is ViewState.Code -> MaterialTheme.colors.secondary
+            ViewState.Test -> MaterialTheme.colors.secondary
+        }
+        NavigationBar(color = color)
     }
 }

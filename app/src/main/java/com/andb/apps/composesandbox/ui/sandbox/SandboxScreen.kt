@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.BuildConfig
 import com.andb.apps.composesandbox.state.*
+import com.andb.apps.composesandbox.state.DrawerState
 import com.andb.apps.composesandbox.ui.common.*
 import com.andb.apps.composesandbox.ui.sandbox.drawer.Drawer
 import com.andb.apps.composesandboxdata.model.*
@@ -92,7 +93,11 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) ->
                             .background(MaterialTheme.colors.background)
                             .fillMaxSize()
                     ) {
-                        RenderComponentParent(theme = sandboxState.project.theme, component = sandboxState.openedTree.component)
+                        RenderComponentParent(
+                            theme = sandboxState.project.theme,
+                            component = sandboxState.openedTree.component,
+                            selected = sandboxState.drawerStack.filterIsInstance<DrawerState.EditComponent>().firstOrNull()?.component?.id
+                        )
                     }
                 }
             )

@@ -1,28 +1,31 @@
 package com.andb.apps.composesandbox.ui.common
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.emptyContent
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andb.apps.composesandbox.data.model.*
-import com.andb.apps.composesandbox.data.model.toFabPosition
-import com.andb.apps.composesandboxdata.model.PrototypeComponent
-import com.andb.apps.composesandboxdata.model.Theme
-import com.andb.apps.composesandboxdata.model.TreeType
+import com.andb.apps.composesandboxdata.model.*
+
+private val AmbientSelected = staticAmbientOf<String?>()
+private val selectionColor = Color(0xFF56CCF2)
 
 @Composable
-fun RenderComponentParent(theme: Theme, component: PrototypeComponent) {
+fun RenderComponentParent(theme: Theme, component: PrototypeComponent, selected: String? = null) {
     MaterialTheme(colors = theme.toColors(), typography = Typography(), shapes = Shapes()) {
-        Box(modifier = Modifier.background(MaterialTheme.colors.background).fillMaxSize()) {
-            RenderComponent(component = component)
+        Providers(AmbientSelected provides selected) {
+            Box(modifier = Modifier.background(MaterialTheme.colors.background).fillMaxSize()) {
+                RenderComponent(component = component)
+            }
         }
     }
 }
@@ -33,20 +36,42 @@ fun RenderComponentParent(theme: Theme, component: PrototypeComponent) {
  */
 @Composable
 fun RenderComponent(component: PrototypeComponent){
+    val selected = AmbientSelected.current == component.id
+    val selectedModifier = if (selected) Modifier.border(1.dp, selectionColor) else Modifier
+    println("selected (${AmbientSelected.current}) = $selected for component = $component")
+    val modifier = selectedModifier then component.modifiers.toModifier()
     when (component){
-        is PrototypeComponent.Text -> Text(text = component.properties.text, fontWeight = component.properties.weight.toFontWeight(), fontSize = component.properties.size.sp,color = component.properties.color.renderColor(), modifier = component.modifiers.toModifier())
-        is PrototypeComponent.Icon -> Icon(imageVector = component.properties.icon.imageVector, tint = component.properties.tint.renderColor(), modifier = component.modifiers.toModifier())
-        is PrototypeComponent.Group.Column -> Column(modifier = component.modifiers.toModifier(), horizontalAlignment = component.properties.horizontalAlignment.toAlignment(), verticalArrangement = component.properties.verticalArrangement.toVerticalArrangement()) {
+        is PrototypeComponent.Text -> Text(
+            text = component.properties.text,
+            fontWeight = component.properties.weight.toFontWeight(),
+            fontSize = component.properties.size.sp,
+            color = component.properties.color.renderColor(),
+            modifier = modifier
+        )
+        is PrototypeComponent.Icon -> Icon(
+            imageVector = component.properties.icon.imageVector,
+            tint = component.properties.tint.renderColor(),
+            modifier = modifier
+        )
+        is PrototypeComponent.Group.Column -> Column(
+            modifier = modifier,
+            horizontalAlignment = component.properties.horizontalAlignment.toAlignment(),
+            verticalArrangement = component.properties.verticalArrangement.toVerticalArrangement()
+        ) {
             for (child in component.children) {
                 RenderComponent(component = child)
             }
         }
-        is PrototypeComponent.Group.Row -> Row(modifier = component.modifiers.toModifier(), verticalAlignment = component.properties.verticalAlignment.toAlignment(), horizontalArrangement = component.properties.horizontalArrangement.toHorizontalArrangement()) {
+        is PrototypeComponent.Group.Row -> Row(
+            modifier = modifier,
+            verticalAlignment = component.properties.verticalAlignment.toAlignment(),
+            horizontalArrangement = component.properties.horizontalArrangement.toHorizontalArrangement()
+        ) {
             for (child in component.children) {
                 RenderComponent(component = child)
             }
         }
-        is PrototypeComponent.Group.Box -> Box(modifier = component.modifiers.toModifier()) {
+        is PrototypeComponent.Group.Box -> Box(modifier = modifier) {
             for (child in component.children) {
                 RenderComponent(component = child)
             }
@@ -54,11 +79,11 @@ fun RenderComponent(component: PrototypeComponent){
         is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> ExtendedFloatingActionButton(
             icon = component.renderEnabledSlotOrNull(name = "Icon"),
             text = component.renderSlot(name = "Text"),
-            modifier = component.modifiers.toModifier(),
+            modifier = modifier,
             onClick = {}
         )
         is PrototypeComponent.Slotted.TopAppBar -> TopAppBar(
-            modifier = component.modifiers.toModifier(),
+            modifier = modifier,
             backgroundColor = component.properties.backgroundColor.renderColor(),
             contentColor = component.properties.contentColor.renderColor(),
             elevation = component.properties.elevation.dp,
@@ -67,14 +92,14 @@ fun RenderComponent(component: PrototypeComponent){
             actions = component.renderScopedSlot(name = "Actions")
         )
         is PrototypeComponent.Slotted.BottomAppBar -> BottomAppBar(
-            modifier = component.modifiers.toModifier(),
+            modifier = modifier,
             backgroundColor = component.properties.backgroundColor.renderColor(),
             contentColor = component.properties.contentColor.renderColor(),
             elevation = component.properties.elevation.dp,
             content = component.renderScopedSlot(name = "Content")
         )
         is PrototypeComponent.Slotted.Scaffold -> Scaffold(
-            modifier = component.modifiers.toModifier(),
+            modifier = modifier,
             topBar = component.renderSlot(name = "Top App Bar"),
             bottomBar = component.renderSlot(name = "Bottom App Bar"),
             drawerContent = component.renderEnabledScopedSlotOrNull(name = "Drawer"),
@@ -90,7 +115,8 @@ fun RenderComponent(component: PrototypeComponent){
         )
         is PrototypeComponent.Custom -> {
             val treeComponent = AmbientProject.current.trees.filter { it.treeType == TreeType.Component }.first { it.id == component.treeID }.component
-            RenderComponent(component = treeComponent.copy(modifiers = component.modifiers + treeComponent.modifiers)) //instance modifiers wrap the component's modifiers
+            val selectedModifier = if (selected) listOf(PrototypeModifier.Border(1, PrototypeColor.FixedColor(selectionColor.toArgb()), 0)) else emptyList()
+            RenderComponent(component = treeComponent.copy(modifiers = selectedModifier + component.modifiers + treeComponent.modifiers)) //instance modifiers wrap the component's modifiers
         }
     }
 }

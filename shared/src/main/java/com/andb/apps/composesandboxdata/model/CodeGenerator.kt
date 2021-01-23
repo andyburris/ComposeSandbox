@@ -25,7 +25,7 @@ class CodeGenerator(val project: Project) {
                 val children = this.childrenToCode()
                 when {
                     children.isNotEmpty() -> "{\n" + children.prependIndent("    ") + "\n}"
-                    else -> ""
+                    else -> "{}"
                 }
 
             }
@@ -36,7 +36,7 @@ class CodeGenerator(val project: Project) {
             body.isNotEmpty() -> " "
             else -> "() "
         }
-        return (functionName + parenthesis + body)
+        return (functionName + parenthesis + " " + body)
     }
 
 
@@ -96,5 +96,29 @@ class CodeGenerator(val project: Project) {
 
     private fun PrototypeComponent.Slotted.slotsToCode() = slots.filter { !it.optional || properties.slotsEnabled[it.name] == true }.joinToString(", \n") {
         it.name.toCamelCase() + " = {\n" + it.group.childrenToCode().prependIndent("    ") + "\n}"
+    }
+
+    fun List<PrototypeModifier>.toCode(): String {
+        if (isEmpty()) return ""
+
+        return buildString {
+            append("modifier = Modifier.")
+            append(this@toCode.joinToString(".") { it.toCode() })
+        }
+    }
+
+    fun PrototypeModifier.toCode() = when (this) {
+        is PrototypeModifier.Border -> "border(width = $strokeWidth.dp, color = ${color.toCode()}, shape = RoundedCornerShape($cornerRadius.dp))"
+        is PrototypeModifier.Background -> "background(color = ${color.toCode()}, shape = RoundedCornerShape($cornerRadius.dp))"
+        is PrototypeModifier.Padding.Individual -> "padding(start = $start.dp, end = $end.dp, top = $top.dp, bottom = $bottom.dp)"
+        is PrototypeModifier.Padding.Sides -> "padding(horizontal = $horizontal.dp, vertical = $vertical.dp)"
+        is PrototypeModifier.Padding.All -> "padding(all = $padding.dp)"
+        is PrototypeModifier.Height -> "height(height = $height.dp)"
+        is PrototypeModifier.Width -> "width(width = $width.dp)"
+        is PrototypeModifier.Size.All -> "size(size = $size.dp)"
+        is PrototypeModifier.Size.Individual -> "size(width = $width.dp, height = $height.dp)"
+        is PrototypeModifier.FillMaxWidth -> "fillMaxWidth()"
+        is PrototypeModifier.FillMaxHeight -> "fillMaxHeight()"
+        is PrototypeModifier.FillMaxSize -> "fillMaxSize()"
     }
 }
