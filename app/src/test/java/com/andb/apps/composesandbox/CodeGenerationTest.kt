@@ -6,12 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.lightColors
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,29 +27,35 @@ class CodeGenerationTest {
 
     @Test
     fun textComponentTest() {
-        assertEquals(with(generator) { textComponent.toCode().trimEndWhitespace() }, textComponentCode)
-        assertEquals(with(generator) { textComponentWithModifiers.toCode().trimEndWhitespace() }, textComponentWithModifiersCode)
+        assertEquals(textComponentCode, with(generator) { textComponent.toCode().trimEndWhitespace() })
+        assertEquals(textComponentWithModifiersCode, with(generator) { textComponentWithModifiers.toCode().trimEndWhitespace() })
     }
 
     @Test
     fun iconComponentTest() {
-        assertEquals(with(generator) { iconComponent.toCode().trimEndWhitespace() }, iconComponentCode)
-        assertEquals(with(generator) { iconComponentWithModifiers.toCode().trimEndWhitespace() }, iconComponentWithModifiersCode)
+        assertEquals(iconComponentCode, with(generator) { iconComponent.toCode().trimEndWhitespace() })
+        assertEquals(iconComponentWithModifiersCode, with(generator) { iconComponentWithModifiers.toCode().trimEndWhitespace() })
     }
 
     @Test
     fun rowComponentTest() {
-        assertEquals(with(generator) { emptyRowComponent.toCode().trimEndWhitespace() }, emptyRowComponentCode)
-        assertEquals(with(generator) { rowComponentWithChildren.toCode().trimEndWhitespace() }, rowComponentWithChildrenCode)
+        assertEquals(emptyRowComponentCode, with(generator) { emptyRowComponent.toCode().trimEndWhitespace() })
+        assertEquals(rowComponentWithChildrenCode, with(generator) { rowComponentWithChildren.toCode().trimEndWhitespace() })
     }
 
     @Test
     fun columnComponentTest() {
-        assertEquals(with(generator) { spacedByColumn.toCode().trimEndWhitespace() }, spacedByColumnCode)
+        assertEquals(spacedByColumnCode, with(generator) { spacedByColumn.toCode().trimEndWhitespace() })
+    }
+
+    @Test
+    fun slottedTest() {
+        assertEquals(emptySlottedCode, with(generator) { emptySlotted.toCode().trimEndWhitespace() })
+        assertEquals(filledSlottedCode, with(generator) { filledSlotted.toCode().trimEndWhitespace() })
     }
 }
 
-/************** Text **************/
+/**Text*/
 private val textComponent = PrototypeComponent.Text(properties = Properties.Text("Test"))
 private val textComponentCode = """
     Text(
@@ -69,7 +74,7 @@ private val textComponentWithModifiersCode = """
 """.trimIndent().trimEndWhitespace()
 
 
-/************** Icon **************/
+/**Icon*/
 private val iconComponent = PrototypeComponent.Icon(properties = Properties.Icon(PrototypeIcon.Add))
 private val iconComponentCode = """
     Icon(
@@ -87,7 +92,8 @@ private val iconComponentWithModifiersCode = """
     )
 """.trimIndent().trimEndWhitespace()
 
-/************** Row **************/
+
+/**Row*/
 private val emptyRowComponent = PrototypeComponent.Group.Row(properties = Properties.Group.Row())
 private val emptyRowComponentCode = """
     Row(
@@ -109,11 +115,12 @@ private val rowComponentWithChildrenCode = """
     }
 """.trimIndent().trimEndWhitespace()
 
-/************** Column **************/
-private val spacedByColumn = PrototypeComponent.Group.Column(properties = Properties.Group.Column(verticalArrangement = PrototypeArrangement.Both.SpacedBy(16)), children = listOf(textComponent))
+
+/** Column*/
+private val spacedByColumn = PrototypeComponent.Group.Column(properties = Properties.Group.Column(verticalArrangement = PrototypeArrangement.Vertical.SpacedBy(16, PrototypeAlignment.Vertical.Top)), children = listOf(textComponent))
 private val spacedByColumnCode = """
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(space = 16.dp, alignment = Alignment.Top),
         horizontalAlignment = Alignment.Start
     ) {
         Text(
@@ -122,6 +129,68 @@ private val spacedByColumnCode = """
         )
     }
 """.trimIndent().trimEndWhitespace()
+
+
+/**Slotted*/
+private val emptySlotted = PrototypeComponent.Slotted.Scaffold()
+private val emptySlottedCode = """
+    Scaffold(
+        backgroundColor = MaterialTheme.colors.background,
+        contentColor = MaterialTheme.colors.onBackground,
+        drawerBackgroundColor = MaterialTheme.colors.background,
+        drawerContentColor = MaterialTheme.colors.onBackground,
+        drawerElevation = 16.dp,
+        floatingActionButtonPosition = FabPosition.End,
+        isFloatingActionButtonDocked = false,
+        topBar = {},
+        floatingActionButton = {},
+        bodyContent = {}
+    )
+""".trimIndent()
+
+private val filledSlotted = PrototypeComponent.Slotted.TopAppBar().let {
+    it.withSlots(it.slots.mapIndexed { index, slot ->
+        val children = when (index) {
+            0 -> PrototypeComponent.Icon(properties = Properties.Icon(PrototypeIcon.Menu, tint = PrototypeColor.ThemeColor.OnPrimary), modifiers = listOf(PrototypeModifier.Padding.All(12)))
+            1 -> PrototypeComponent.Text(properties = Properties.Text("Title", color = PrototypeColor.ThemeColor.OnPrimary))
+            2 -> PrototypeComponent.Group.Row(children = listOf(PrototypeComponent.Icon(properties = Properties.Icon(PrototypeIcon.MoreVert, tint = PrototypeColor.ThemeColor.OnPrimary), modifiers = listOf(PrototypeModifier.Padding.All(12)))))
+            else -> throw Error("too many slots")
+        }
+        slot.copy(group = slot.group.withChildren(listOf(children)))
+    })
+}
+private val filledSlottedCode = """
+    TopAppBar(
+        backgroundColor = MaterialTheme.colors.primary,
+        elevation = 4.dp,
+        navigationIcon = {
+            Icon(
+                imageVector = Icons.Default.Menu,
+                tint = MaterialTheme.colors.onPrimary,
+                modifier = Modifier.padding(all = 12.dp)
+            )
+        },
+        title = {
+            Text(
+                text = "Title",
+                color = MaterialTheme.colors.onPrimary
+            )
+        },
+        actions = {
+            Row(
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.Top
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    tint = MaterialTheme.colors.onPrimary,
+                    modifier = Modifier.padding(all = 12.dp)
+                )
+            }
+        }
+    )
+""".trimIndent()
+
 
 @Composable
 private fun Test() {
@@ -148,7 +217,7 @@ private fun Test() {
     }
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(space = 16.dp, alignment = Alignment.Top),
         horizontalAlignment = Alignment.Start
     ) {
         Text(
@@ -156,6 +225,49 @@ private fun Test() {
             color = MaterialTheme.colors.onBackground
         )
     }
+
+    Scaffold(
+        backgroundColor = MaterialTheme.colors.background,
+        contentColor = MaterialTheme.colors.onBackground,
+        drawerBackgroundColor = MaterialTheme.colors.background,
+        drawerContentColor = MaterialTheme.colors.onBackground,
+        drawerElevation = 16.dp,
+        floatingActionButtonPosition = FabPosition.End,
+        isFloatingActionButtonDocked = false,
+        topBar = {},
+        floatingActionButton = {},
+        bodyContent = {}
+    )
+
+    TopAppBar(
+        backgroundColor = MaterialTheme.colors.primary,
+        elevation = 4.dp,
+        navigationIcon = {
+            Icon(
+                imageVector = Icons.Default.Menu,
+                tint = MaterialTheme.colors.onPrimary,
+                modifier = Modifier.padding(all = 12.dp)
+            )
+        },
+        title = {
+            Text(
+                text = "Title",
+                color = MaterialTheme.colors.onPrimary
+            )
+        },
+        actions = {
+            Row(
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.Top
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    tint = MaterialTheme.colors.onPrimary,
+                    modifier = Modifier.padding(all = 12.dp)
+                )
+            }
+        }
+    )
 }
 
 private fun String.trimEndWhitespace(): String {

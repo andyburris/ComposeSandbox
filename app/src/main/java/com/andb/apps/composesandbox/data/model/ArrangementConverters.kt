@@ -18,7 +18,7 @@ fun PrototypeArrangement.toReadableString() = when (this) {
     PrototypeArrangement.Both.SpaceBetween -> "Space Between"
     PrototypeArrangement.Both.SpaceAround -> "Space Around"
     PrototypeArrangement.Both.SpaceEvenly -> "Space Evenly"
-    is PrototypeArrangement.Both.SpacedBy -> "Spaced By"
+    is PrototypeArrangement.Horizontal.SpacedBy, is PrototypeArrangement.Vertical.SpacedBy -> "Spaced By"
 }
 
 
@@ -29,7 +29,7 @@ fun PrototypeArrangement.toHorizontalArrangement(): Arrangement.Horizontal = whe
     PrototypeArrangement.Both.SpaceBetween -> Arrangement.SpaceBetween
     PrototypeArrangement.Both.SpaceAround -> Arrangement.SpaceAround
     PrototypeArrangement.Both.SpaceEvenly -> Arrangement.SpaceEvenly
-    is PrototypeArrangement.Both.SpacedBy -> Arrangement.spacedBy(space.dp)
+    is PrototypeArrangement.Horizontal.SpacedBy -> Arrangement.spacedBy(space.dp, alignment.toAlignment())
     else -> throw Error("Not a horizontal arrangement!")
 }
 
@@ -40,7 +40,7 @@ fun PrototypeArrangement.toVerticalArrangement(): Arrangement.Vertical = when(th
     PrototypeArrangement.Both.SpaceBetween -> Arrangement.SpaceBetween
     PrototypeArrangement.Both.SpaceAround -> Arrangement.SpaceAround
     PrototypeArrangement.Both.SpaceEvenly -> Arrangement.SpaceEvenly
-    is PrototypeArrangement.Both.SpacedBy -> Arrangement.spacedBy(space.dp)
+    is PrototypeArrangement.Vertical.SpacedBy -> Arrangement.spacedBy(space.dp, alignment.toAlignment())
     else -> throw Error("Not a vertical arrangement!")
 }
 

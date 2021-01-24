@@ -93,7 +93,7 @@ sealed class PrototypeComponent {
         @Serializable
         data class Scaffold(
             override val properties: Properties.Slotted.Scaffold = Properties.Slotted.Scaffold(),
-            override val slots: List<Slot> = listOf(Slot("Top App Bar"), Slot("Bottom App Bar"), Slot("Floating Action Button"), Slot("Drawer"), Slot("Body Content", optional = false)),
+            override val slots: List<Slot> = listOf(Slot("Top Bar"), Slot("Bottom Bar"), Slot("Floating Action Button"), Slot("Drawer"), Slot("Body Content", optional = false)),
             override val id: String = UUID.randomUUID().toString(), override val modifiers: List<PrototypeModifier> = emptyList(),
         ) : Slotted()
     }
@@ -198,7 +198,7 @@ sealed class Properties {
 
         @Serializable
         data class Scaffold(
-            override val slotsEnabled: Map<String, Boolean> = mapOf("Top App Bar" to true, "Bottom App Bar" to false, "Floating Action Button" to true, "Drawer" to false),
+            override val slotsEnabled: Map<String, Boolean> = mapOf("Top Bar" to true, "Bottom Bar" to false, "Floating Action Button" to true, "Drawer" to false),
             val backgroundColor: PrototypeColor = PrototypeColor.ThemeColor.Background,
             val contentColor: PrototypeColor = PrototypeColor.ThemeColor.OnBackground,
             val drawerBackgroundColor: PrototypeColor = PrototypeColor.ThemeColor.Background,

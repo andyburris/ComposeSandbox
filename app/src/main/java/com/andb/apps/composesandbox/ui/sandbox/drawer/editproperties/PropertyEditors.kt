@@ -44,7 +44,7 @@ fun IconProperties(properties: Properties.Icon, onUpdate: (Properties.Icon) -> U
 fun ColumnProperties(properties: Properties.Group.Column, onUpdate: (Properties.Group.Column) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         PickerWithChildren(
-            childrenExpanded = properties.verticalArrangement is PrototypeArrangement.Both.SpacedBy,
+            childrenExpanded = properties.verticalArrangement is PrototypeArrangement.Vertical.SpacedBy,
             parent = {
                 OptionsPicker(label = "Vertical Arrangement", selected = properties.verticalArrangement, options = verticalArrangements + bothArrangements, stringify = { it.toReadableString() }) {
                     val newProperties = properties.copy(verticalArrangement = it)
@@ -53,9 +53,13 @@ fun ColumnProperties(properties: Properties.Group.Column, onUpdate: (Properties.
             },
             children = {
                 val arrangement = properties.verticalArrangement
-                if (arrangement is PrototypeArrangement.Both.SpacedBy) {
+                if (arrangement is PrototypeArrangement.Vertical.SpacedBy) {
                     NumberPicker(label = "Spacing", current = arrangement.space) {
                         val newProperties = properties.copy(verticalArrangement = arrangement.copy(space = it))
+                        onUpdate(newProperties)
+                    }
+                    OptionsPicker(label = "Alignment", selected = arrangement.alignment, options = verticalAlignments, stringify = { it.toReadableString() }) {
+                        val newProperties = properties.copy(verticalArrangement = arrangement.copy(alignment = it))
                         onUpdate(newProperties)
                     }
                 }
@@ -72,7 +76,7 @@ fun ColumnProperties(properties: Properties.Group.Column, onUpdate: (Properties.
 fun RowProperties(properties: Properties.Group.Row, onUpdate: (Properties.Group.Row) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         PickerWithChildren(
-            childrenExpanded = properties.horizontalArrangement is PrototypeArrangement.Both.SpacedBy,
+            childrenExpanded = properties.horizontalArrangement is PrototypeArrangement.Horizontal.SpacedBy,
             parent = {
                 OptionsPicker(label = "Horizontal Arrangement", selected = properties.horizontalArrangement, options = horizontalArrangements + bothArrangements, stringify = { it.toReadableString() }) {
                     val newProperties = properties.copy(horizontalArrangement = it)
@@ -81,9 +85,13 @@ fun RowProperties(properties: Properties.Group.Row, onUpdate: (Properties.Group.
             },
             children = {
                 val arrangement = properties.horizontalArrangement
-                if (arrangement is PrototypeArrangement.Both.SpacedBy) {
+                if (arrangement is PrototypeArrangement.Horizontal.SpacedBy) {
                     NumberPicker(label = "Spacing", current = arrangement.space) {
                         val newProperties = properties.copy(horizontalArrangement = arrangement.copy(space = it))
+                        onUpdate(newProperties)
+                    }
+                    OptionsPicker(label = "Alignment", selected = arrangement.alignment, options = horizontalAlignments, stringify = { it.toReadableString() }) {
+                        val newProperties = properties.copy(horizontalArrangement = arrangement.copy(alignment = it))
                         onUpdate(newProperties)
                     }
                 }
@@ -160,13 +168,13 @@ fun ScaffoldProperties(properties: Properties.Slotted.Scaffold, onUpdate: (Prope
             }
         }
         SlotPicker(
-            name = "Top App Bar",
-            enabled = properties.slotsEnabled.getValue("Top App Bar"),
+            name = "Top Bar",
+            enabled = properties.slotsEnabled.getValue("Top Bar"),
             onToggle = { onUpdate.invoke(properties.copy(slotsEnabled = properties.slotsEnabled.plus("Top App Bar" to it)))}
         )
         SlotPicker(
-            name = "Bottom App Bar",
-            enabled = properties.slotsEnabled.getValue("Bottom App Bar"),
+            name = "Bottom Bar",
+            enabled = properties.slotsEnabled.getValue("Bottom Bar"),
             onToggle = { onUpdate.invoke(properties.copy(slotsEnabled = properties.slotsEnabled.plus("Bottom App Bar" to it)))}
         )
         SlotPicker(

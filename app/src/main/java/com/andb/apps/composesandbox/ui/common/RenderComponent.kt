@@ -99,8 +99,8 @@ fun RenderComponent(component: PrototypeComponent){
         )
         is PrototypeComponent.Slotted.Scaffold -> Scaffold(
             modifier = modifier,
-            topBar = component.renderSlot(name = "Top App Bar"),
-            bottomBar = component.renderSlot(name = "Bottom App Bar"),
+            topBar = component.renderSlot(name = "Top Bar"),
+            bottomBar = component.renderSlot(name = "Bottom Bar"),
             drawerContent = component.renderEnabledScopedSlotOrNull(name = "Drawer"),
             drawerBackgroundColor = component.properties.drawerBackgroundColor.renderColor(),
             drawerContentColor = component.properties.drawerContentColor.renderColor(),
