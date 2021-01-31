@@ -9,189 +9,205 @@ import com.andb.apps.composesandbox.data.model.toReadableString
 import com.andb.apps.composesandboxdata.model.*
 
 @Composable
-fun TextProperties(properties: Properties.Text, onUpdate: (Properties.Text) -> Unit) {
+fun TextProperties(component: PrototypeComponent.Text, onUpdate: (PrototypeComponent.Text) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        TextPicker(label = "Text", value = properties.text) {
-            onUpdate(properties.copy(text = it))
+        TextPicker(label = "Text", value = component.text) {
+            onUpdate(component.copy(text = it))
         }
-        NumberPicker(label = "Text Size", current = properties.size) {
-            onUpdate.invoke(properties.copy(size = it))
+        NumberPicker(label = "Text Size", current = component.size) {
+            onUpdate.invoke(component.copy(size = it))
         }
-        OptionsPicker(label = "Font Weight", selected = properties.weight, options = Properties.Text.Weight.values().toList()) {
-            onUpdate.invoke(properties.copy(weight = it))
+        OptionsPicker(label = "Font Weight", selected = component.weight, options = PrototypeComponent.Text.Weight.values().toList()) {
+            onUpdate.invoke(component.copy(weight = it))
         }
-        ColorPicker(label = "Text Color", current = properties.color) {
-            onUpdate.invoke(properties.copy(color = it))
+        ColorPicker(label = "Text Color", current = component.color) {
+            onUpdate.invoke(component.copy(color = it))
         }
     }
 }
 
 @OptIn(ExperimentalLayout::class)
 @Composable
-fun IconProperties(properties: Properties.Icon, onUpdate: (Properties.Icon) -> Unit) {
+fun IconProperties(component: PrototypeComponent.Icon, onUpdate: (PrototypeComponent.Icon) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        IconPicker(icon = properties.icon){
-            onUpdate.invoke(properties.copy(icon = it))
+        IconPicker(icon = component.icon){
+            onUpdate.invoke(component.copy(icon = it))
         }
-        ColorPicker(label = "Icon Tint", current = properties.tint) {
-            onUpdate.invoke(properties.copy(tint = it))
+        ColorPicker(label = "Icon Tint", current = component.tint) {
+            onUpdate.invoke(component.copy(tint = it))
         }
     }
 }
 
 
 @Composable
-fun ColumnProperties(properties: Properties.Group.Column, onUpdate: (Properties.Group.Column) -> Unit) {
+fun ColumnProperties(component: PrototypeComponent.Group.Column, onUpdate: (PrototypeComponent.Group.Column) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         PickerWithChildren(
-            childrenExpanded = properties.verticalArrangement is PrototypeArrangement.Vertical.SpacedBy,
+            childrenExpanded = component.verticalArrangement is PrototypeArrangement.Vertical.SpacedBy,
             parent = {
-                OptionsPicker(label = "Vertical Arrangement", selected = properties.verticalArrangement, options = verticalArrangements + bothArrangements, stringify = { it.toReadableString() }) {
-                    val newProperties = properties.copy(verticalArrangement = it)
+                OptionsPicker(label = "Vertical Arrangement", selected = component.verticalArrangement, options = verticalArrangements + bothArrangements, stringify = { it.toReadableString() }) {
+                    val newProperties = component.copy(verticalArrangement = it)
                     onUpdate(newProperties)
                 }
             },
             children = {
-                val arrangement = properties.verticalArrangement
+                val arrangement = component.verticalArrangement
                 if (arrangement is PrototypeArrangement.Vertical.SpacedBy) {
                     NumberPicker(label = "Spacing", current = arrangement.space) {
-                        val newProperties = properties.copy(verticalArrangement = arrangement.copy(space = it))
+                        val newProperties = component.copy(verticalArrangement = arrangement.copy(space = it))
                         onUpdate(newProperties)
                     }
                     OptionsPicker(label = "Alignment", selected = arrangement.alignment, options = verticalAlignments, stringify = { it.toReadableString() }) {
-                        val newProperties = properties.copy(verticalArrangement = arrangement.copy(alignment = it))
+                        val newProperties = component.copy(verticalArrangement = arrangement.copy(alignment = it))
                         onUpdate(newProperties)
                     }
                 }
             }
         )
-        OptionsPicker(label = "Horizontal Alignment", selected = properties.horizontalAlignment, options = horizontalAlignments, stringify = { it.toReadableString() }) {
-            val newProperties = properties.copy(horizontalAlignment = it)
+        OptionsPicker(label = "Horizontal Alignment", selected = component.horizontalAlignment, options = horizontalAlignments, stringify = { it.toReadableString() }) {
+            val newProperties = component.copy(horizontalAlignment = it)
             onUpdate(newProperties)
         }
     }
 }
 
 @Composable
-fun RowProperties(properties: Properties.Group.Row, onUpdate: (Properties.Group.Row) -> Unit) {
+fun RowProperties(component: PrototypeComponent.Group.Row, onUpdate: (PrototypeComponent.Group.Row) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         PickerWithChildren(
-            childrenExpanded = properties.horizontalArrangement is PrototypeArrangement.Horizontal.SpacedBy,
+            childrenExpanded = component.horizontalArrangement is PrototypeArrangement.Horizontal.SpacedBy,
             parent = {
-                OptionsPicker(label = "Horizontal Arrangement", selected = properties.horizontalArrangement, options = horizontalArrangements + bothArrangements, stringify = { it.toReadableString() }) {
-                    val newProperties = properties.copy(horizontalArrangement = it)
+                OptionsPicker(label = "Horizontal Arrangement", selected = component.horizontalArrangement, options = horizontalArrangements + bothArrangements, stringify = { it.toReadableString() }) {
+                    val newProperties = component.copy(horizontalArrangement = it)
                     onUpdate(newProperties)
                 }
             },
             children = {
-                val arrangement = properties.horizontalArrangement
+                val arrangement = component.horizontalArrangement
                 if (arrangement is PrototypeArrangement.Horizontal.SpacedBy) {
                     NumberPicker(label = "Spacing", current = arrangement.space) {
-                        val newProperties = properties.copy(horizontalArrangement = arrangement.copy(space = it))
+                        val newProperties = component.copy(horizontalArrangement = arrangement.copy(space = it))
                         onUpdate(newProperties)
                     }
                     OptionsPicker(label = "Alignment", selected = arrangement.alignment, options = horizontalAlignments, stringify = { it.toReadableString() }) {
-                        val newProperties = properties.copy(horizontalArrangement = arrangement.copy(alignment = it))
+                        val newProperties = component.copy(horizontalArrangement = arrangement.copy(alignment = it))
                         onUpdate(newProperties)
                     }
                 }
             }
         )
-        OptionsPicker(label = "Vertical Alignment", selected = properties.verticalAlignment, options = verticalAlignments, stringify = { it.toReadableString() }) {
-            val newProperties = properties.copy(verticalAlignment = it)
+        OptionsPicker(label = "Vertical Alignment", selected = component.verticalAlignment, options = verticalAlignments, stringify = { it.toReadableString() }) {
+            val newProperties = component.copy(verticalAlignment = it)
             onUpdate(newProperties)
         }
     }
 }
 
 @Composable
-fun TopAppBarProperties(properties: Properties.Slotted.TopAppBar, onUpdate: (Properties.Slotted.TopAppBar) -> Unit) {
+fun TopAppBarProperties(component: PrototypeComponent.Slotted.TopAppBar, onUpdate: (PrototypeComponent.Slotted.TopAppBar) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        ColorPicker(label = "Background Color", current = properties.backgroundColor) {
-            onUpdate.invoke(properties.copy(backgroundColor = it))
+        ColorPicker(label = "Background Color", current = component.backgroundColor) {
+            onUpdate.invoke(component.copy(backgroundColor = it))
         }
-        NumberPicker(label = "Elevation", current = properties.elevation) {
-            onUpdate.invoke(properties.copy(elevation = it))
-        }
-        SlotPicker(name = "Navigation Icon", properties = properties, onSelect = onUpdate)
-    }
-}
-
-@Composable
-fun BottomAppBarProperties(properties: Properties.Slotted.BottomAppBar, onUpdate: (Properties.Slotted.BottomAppBar) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        ColorPicker(label = "Background Color", current = properties.backgroundColor) {
-            onUpdate.invoke(properties.copy(backgroundColor = it))
-        }
-        NumberPicker(label = "Elevation", current = properties.elevation) {
-            onUpdate.invoke(properties.copy(elevation = it))
-        }
-    }
-}
-
-@Composable
-fun ExtendedFloatingActionButtonProperties(properties: Properties.Slotted.ExtendedFloatingActionButton, onUpdate: (Properties.Slotted.ExtendedFloatingActionButton) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        ColorPicker(label = "Background Color", current = properties.backgroundColor) {
-            onUpdate.invoke(properties.copy(backgroundColor = it))
-        }
-        NumberPicker(label = "Default Elevation", current = properties.defaultElevation) {
-            onUpdate.invoke(properties.copy(defaultElevation = it))
-        }
-        NumberPicker(label = "Pressed Elevation", current = properties.pressedElevation) {
-            onUpdate.invoke(properties.copy(pressedElevation = it))
+        NumberPicker(label = "Elevation", current = component.elevation) {
+            onUpdate.invoke(component.copy(elevation = it))
         }
         SlotPicker(
-            name = "Icon",
-            enabled = properties.slotsEnabled["Icon"] == true,
-            onToggle = { onUpdate.invoke(properties.copy(slotsEnabled = properties.slotsEnabled + ("Icon" to it))) }
+            slot = component.slots.navigationIcon,
+            onUpdate = {
+                val newSlots = component.slots.copy(navigationIcon = it)
+                onUpdate.invoke(component.copy(slots = newSlots))
+            }
         )
     }
 }
 
 @Composable
-fun ScaffoldProperties(properties: Properties.Slotted.Scaffold, onUpdate: (Properties.Slotted.Scaffold) -> Unit) {
+fun BottomAppBarProperties(component: PrototypeComponent.Slotted.BottomAppBar, onUpdate: (PrototypeComponent.Slotted.BottomAppBar) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        ColorPicker(label = "Background Color", current = properties.backgroundColor) {
-            onUpdate.invoke(properties.copy(backgroundColor = it))
+        ColorPicker(label = "Background Color", current = component.backgroundColor) {
+            onUpdate.invoke(component.copy(backgroundColor = it))
+        }
+        NumberPicker(label = "Elevation", current = component.elevation) {
+            onUpdate.invoke(component.copy(elevation = it))
+        }
+    }
+}
+
+@Composable
+fun ExtendedFloatingActionButtonProperties(component: PrototypeComponent.Slotted.ExtendedFloatingActionButton, onUpdate: (PrototypeComponent.Slotted.ExtendedFloatingActionButton) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        ColorPicker(label = "Background Color", current = component.backgroundColor) {
+            onUpdate.invoke(component.copy(backgroundColor = it))
+        }
+        NumberPicker(label = "Default Elevation", current = component.defaultElevation) {
+            onUpdate.invoke(component.copy(defaultElevation = it))
+        }
+        NumberPicker(label = "Pressed Elevation", current = component.pressedElevation) {
+            onUpdate.invoke(component.copy(pressedElevation = it))
         }
         SlotPicker(
-            name = "Drawer",
-            enabled = properties.slotsEnabled.getValue("Drawer"),
-            onToggle = { onUpdate.invoke(properties.copy(slotsEnabled = properties.slotsEnabled.plus("Drawer" to it))) }
+            slot = component.slots.icon,
+            onUpdate = {
+                val newSlots = component.slots.copy(icon = it)
+                onUpdate.invoke(component.copy(slots = newSlots))
+            }
+        )
+    }
+}
+
+@Composable
+fun ScaffoldProperties(component: PrototypeComponent.Slotted.Scaffold, onUpdate: (PrototypeComponent.Slotted.Scaffold) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        ColorPicker(label = "Background Color", current = component.backgroundColor) {
+            onUpdate.invoke(component.copy(backgroundColor = it))
+        }
+        SlotPicker(
+            slot = component.slots.drawer,
+            onUpdate = {
+                val newSlots = component.slots.copy(drawer = it)
+                onUpdate.invoke(component.copy(slots = newSlots))
+            }
         ) {
-            NumberPicker(label = "Drawer Elevation", current = properties.drawerElevation) {
-                onUpdate.invoke(properties.copy(drawerElevation = it))
+            NumberPicker(label = "Drawer Elevation", current = component.drawerElevation) {
+                onUpdate.invoke(component.copy(drawerElevation = it))
             }
-            ColorPicker(label = "Drawer Background Color", current = properties.drawerBackgroundColor) {
-                onUpdate.invoke(properties.copy(drawerBackgroundColor = it))
+            ColorPicker(label = "Drawer Background Color", current = component.drawerBackgroundColor) {
+                onUpdate.invoke(component.copy(drawerBackgroundColor = it))
             }
         }
         SlotPicker(
-            name = "Top Bar",
-            enabled = properties.slotsEnabled.getValue("Top Bar"),
-            onToggle = { onUpdate.invoke(properties.copy(slotsEnabled = properties.slotsEnabled.plus("Top App Bar" to it)))}
+            slot = component.slots.topBar,
+            onUpdate = {
+                val newSlots = component.slots.copy(topBar = it)
+                onUpdate.invoke(component.copy(slots = newSlots))
+            }
         )
         SlotPicker(
-            name = "Bottom Bar",
-            enabled = properties.slotsEnabled.getValue("Bottom Bar"),
-            onToggle = { onUpdate.invoke(properties.copy(slotsEnabled = properties.slotsEnabled.plus("Bottom App Bar" to it)))}
+            slot = component.slots.bottomBar,
+            onUpdate = {
+                val newSlots = component.slots.copy(bottomBar = it)
+                onUpdate.invoke(component.copy(slots = newSlots))
+            }
         )
         SlotPicker(
-            name = "Floating Action Button",
-            enabled = properties.slotsEnabled.getValue("Floating Action Button"),
-            onToggle = { onUpdate.invoke(properties.copy(slotsEnabled = properties.slotsEnabled.plus("Floating Action Button" to it)))}
+            slot = component.slots.floatingActionButton,
+            onUpdate = {
+                val newSlots = component.slots.copy(floatingActionButton = it)
+                onUpdate.invoke(component.copy(slots = newSlots))
+            }
         ) {
             OptionsPicker(
                 label = "FAB Position",
-                selected = properties.floatingActionButtonPosition,
-                options = Properties.Slotted.Scaffold.FabPosition.values().toList(),
-                onValueChange = { onUpdate.invoke(properties.copy(floatingActionButtonPosition = it)) }
+                selected = component.floatingActionButtonPosition,
+                options = PrototypeComponent.Slotted.Scaffold.FabPosition.values().toList(),
+                onValueChange = { onUpdate.invoke(component.copy(floatingActionButtonPosition = it)) }
             )
             SwitchPicker(
                 label = "Dock FAB",
-                current = properties.isFloatingActionButtonDocked,
-                onToggle = { onUpdate.invoke(properties.copy(isFloatingActionButtonDocked = it)) }
+                current = component.isFloatingActionButtonDocked,
+                onToggle = { onUpdate.invoke(component.copy(isFloatingActionButtonDocked = it)) }
             )
         }
     }

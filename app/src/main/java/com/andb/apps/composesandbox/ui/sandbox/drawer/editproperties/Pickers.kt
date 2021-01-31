@@ -27,9 +27,8 @@ import com.andb.apps.composesandbox.ui.common.ColorPickerCircle
 import com.andb.apps.composesandbox.ui.common.ColorPickerWithTheme
 import com.andb.apps.composesandbox.util.bottomBorder
 import com.andb.apps.composesandbox.util.isDark
-import com.andb.apps.composesandboxdata.model.Properties
 import com.andb.apps.composesandboxdata.model.PrototypeColor
-import com.andb.apps.composesandboxdata.model.withSlotsEnabled
+import com.andb.apps.composesandboxdata.model.Slot
 
 @Composable
 fun TextPicker(label: String, value: String, onValueChange: (String) -> Unit) {
@@ -175,14 +174,13 @@ fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Mod
 }
 
 @Composable
-fun <T : Properties.Slotted> SlotPicker(name: String, properties: T, onSelect: (T) -> Unit) {
-    SlotPicker(
-        name = name,
-        enabled = properties.slotsEnabled["Navigation Icon"] == true,
-        onToggle = { enabled ->
-            val newProperties = properties.withSlotsEnabled(properties.slotsEnabled + (name to enabled))
-            onSelect.invoke(newProperties)
+fun SlotPicker(slot: Slot, onUpdate: (Slot) -> Unit, children: (@Composable ColumnScope.() -> Unit)? = null) {
+    PickerWithChildren(
+        childrenExpanded = slot.enabled,
+        parent = {
+            SwitchPicker(label = slot.name, current = slot.enabled) { onUpdate.invoke(slot.copy(enabled = it)) }
         },
+        children = children
     )
 }
 

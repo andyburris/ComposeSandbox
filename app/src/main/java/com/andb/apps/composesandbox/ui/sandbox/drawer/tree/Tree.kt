@@ -76,7 +76,7 @@ private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifie
             }
         }
         if (component is PrototypeComponent.Slotted) {
-            GenericTree(items = component.slots.filter { with(component) { it.enabled } }) { slot ->
+            GenericTree(items = component.slots.enabledSlots()) { slot ->
                 SlotItem(slot = slot, indent = indent + 1, onMoveComponent = onMoveComponent)
             }
         }

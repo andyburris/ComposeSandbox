@@ -13,7 +13,7 @@ class CodeGenerator(val project: Project) {
 
     fun PrototypeComponent.toCode(): String {
         val functionName = name(project).toPascalCase()
-        val properties = properties.toCode()
+        val properties = propertiesToCode()
         val modifiers = modifiers.toCode()
         val slots = when (this) {
             is PrototypeComponent.Slotted -> this.slotsToCode()
@@ -40,38 +40,38 @@ class CodeGenerator(val project: Project) {
     }
 
 
-    fun Properties.toCode(): String = when (this) {
-        is Properties.Text -> """
+    fun PrototypeComponent.propertiesToCode(): String = when (this) {
+        is PrototypeComponent.Text -> """
         |text = "$text", 
         |color = ${color.toCode()}
     """.trimMargin()
-        is Properties.Icon -> """
+        is PrototypeComponent.Icon -> """
         |imageVector = Icons.Default.${icon.name}, 
         |tint = ${tint.toCode()}
     """.trimMargin()
-        is Properties.Group.Row -> """
+        is PrototypeComponent.Group.Row -> """
         |horizontalArrangement = ${horizontalArrangement.toCodeString()}, 
         |verticalAlignment = ${verticalAlignment.toCodeString()}
     """.trimMargin()
-        is Properties.Group.Column -> """
+        is PrototypeComponent.Group.Column -> """
         |verticalArrangement = ${verticalArrangement.toCodeString()},
         |horizontalAlignment = ${horizontalAlignment.toCodeString()}
     """.trimMargin()
-        is Properties.Group.Box -> ""
-        is Properties.Slotted.ExtendedFloatingActionButton -> """
+        is PrototypeComponent.Group.Box -> ""
+        is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> """
         |backgroundColor = ${backgroundColor.toCode()}, 
         |defaultElevation = ${defaultElevation}.dp, 
         |pressedElevation = $pressedElevation.dp
     """.trimMargin()
-        is Properties.Slotted.TopAppBar -> """
+        is PrototypeComponent.Slotted.TopAppBar -> """
         |backgroundColor = ${backgroundColor.toCode()}, 
         |elevation = $elevation.dp
     """.trimMargin()
-        is Properties.Slotted.BottomAppBar -> """
+        is PrototypeComponent.Slotted.BottomAppBar -> """
         |backgroundColor = ${backgroundColor.toCode()}, 
         |elevation = $elevation.dp
     """.trimMargin()
-        is Properties.Slotted.Scaffold -> """
+        is PrototypeComponent.Slotted.Scaffold -> """
         |backgroundColor = ${backgroundColor.toCode()}, 
         |contentColor = ${contentColor.toCode()}, 
         |drawerBackgroundColor = ${drawerBackgroundColor.toCode()}, 
@@ -80,7 +80,7 @@ class CodeGenerator(val project: Project) {
         |floatingActionButtonPosition = ${floatingActionButtonPosition.toCode()}, 
         |isFloatingActionButtonDocked = $isFloatingActionButtonDocked
     """.trimMargin()
-        Properties.Blank -> ""
+        is PrototypeComponent.Custom -> ""
     }
 
     private fun Any?.toCodeString(): String = when (this) {
@@ -94,7 +94,7 @@ class CodeGenerator(val project: Project) {
 
     private fun PrototypeComponent.Group.childrenToCode() = children.joinToString("\n") { it.toCode() }
 
-    private fun PrototypeComponent.Slotted.slotsToCode() = slots.filter { !it.optional || properties.slotsEnabled[it.name] == true }.joinToString(", \n") {
+    private fun PrototypeComponent.Slotted.slotsToCode() = slots.enabledSlots().joinToString(", \n") {
         val function = if (it.group.children.isEmpty()) "{}" else "{\n" + it.group.childrenToCode().prependIndent("    ") + "\n}"
         it.name.toCamelCase() + " = " + function
     }

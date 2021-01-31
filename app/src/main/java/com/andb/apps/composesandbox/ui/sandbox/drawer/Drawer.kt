@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.globalPosition
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.AmbientDensity
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -191,7 +192,7 @@ fun Drawer(
 enum class DragDropScrolling { ScrollingUp, None, ScrollingDown }
 
 @Composable
-private fun ComponentDragDropItem(component: PrototypeComponent, position: Position) {
+private fun ComponentDragDropItem(component: PrototypeComponent, position: DpOffset) {
     ComponentItem(
         component = component,
         modifier = Modifier

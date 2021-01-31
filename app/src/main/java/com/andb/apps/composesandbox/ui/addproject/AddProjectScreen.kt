@@ -16,7 +16,6 @@ import com.andb.apps.composesandbox.data.model.toTheme
 import com.andb.apps.composesandbox.ui.projects.ProjectItem
 import com.andb.apps.composesandbox.util.gridItems
 import com.andb.apps.composesandboxdata.model.*
-import com.andb.apps.composesandboxdata.model.Properties
 import java.util.*
 
 private val templates = listOf(
@@ -36,14 +35,12 @@ private val templates = listOf(
             PrototypeTree(
                 name = "Screen 1",
                 component = PrototypeComponent.Group.Column(
-                    properties = Properties.Group.Column(
-                        horizontalAlignment = PrototypeAlignment.Horizontal.CenterHorizontally,
-                        verticalArrangement = PrototypeArrangement.Vertical.Center,
-                    ),
+                    horizontalAlignment = PrototypeAlignment.Horizontal.CenterHorizontally,
+                    verticalArrangement = PrototypeArrangement.Vertical.Center,
                     modifiers = listOf(PrototypeModifier.FillMaxSize()),
                     children = listOf(
                         PrototypeComponent.Text(
-                            properties = Properties.Text("Hello World")
+                            text = "Hello World"
                         )
                     )
                 ),

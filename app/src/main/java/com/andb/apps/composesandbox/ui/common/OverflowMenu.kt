@@ -36,8 +36,8 @@ fun OverflowMenu(icon: ImageVector = Icons.Default.MoreVert, content: @Composabl
 fun MenuItem(icon: ImageVector, title: String, modifier: Modifier = Modifier, enabled: Boolean = true, onClick: () -> Unit) {
     DropdownMenuItem(onClick = { if (enabled) onClick.invoke() }, modifier = modifier.graphicsLayer(alpha = if (enabled) 1f else 0.25f)) {
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = icon)
-            Text(text = title, style = MaterialTheme.typography.subtitle2)
+            Icon(imageVector = icon, tint = MaterialTheme.colors.onSecondary)
+            Text(text = title, style = MaterialTheme.typography.body1)
         }
     }
 }

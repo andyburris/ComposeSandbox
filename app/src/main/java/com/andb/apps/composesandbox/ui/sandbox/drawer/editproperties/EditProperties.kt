@@ -44,31 +44,15 @@ fun DrawerEditProperties(component: PrototypeComponent, isBaseComponent: Boolean
                 }
             }
             when (component) {
-                is PrototypeComponent.Text -> TextProperties(component.properties) {
-                    onUpdate(component.copy(properties = it))
-                }
-                is PrototypeComponent.Icon -> IconProperties(component.properties) {
-                    onUpdate(component.copy(properties = it))
-                }
-                is PrototypeComponent.Group.Column -> ColumnProperties(component.properties) {
-                    onUpdate(component.copy(properties = it))
-                }
-                is PrototypeComponent.Group.Row -> RowProperties(component.properties) {
-                    onUpdate(component.copy(properties = it))
-                }
+                is PrototypeComponent.Text -> TextProperties(component) { onUpdate(it) }
+                is PrototypeComponent.Icon -> IconProperties(component) { onUpdate(it) }
+                is PrototypeComponent.Group.Column -> ColumnProperties(component) { onUpdate(it) }
+                is PrototypeComponent.Group.Row -> RowProperties(component) { onUpdate(it) }
                 is PrototypeComponent.Group.Box -> {}
-                is PrototypeComponent.Slotted.TopAppBar -> TopAppBarProperties(properties = component.properties) {
-                    onUpdate(component.copy(properties = it))
-                }
-                is PrototypeComponent.Slotted.BottomAppBar -> BottomAppBarProperties(properties = component.properties) {
-                    onUpdate(component.copy(properties = it))
-                }
-                is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> ExtendedFloatingActionButtonProperties(properties = component.properties) {
-                    onUpdate(component.copy(properties = it))
-                }
-                is PrototypeComponent.Slotted.Scaffold -> ScaffoldProperties(properties = component.properties) {
-                    onUpdate(component.copy(properties = it))
-                }
+                is PrototypeComponent.Slotted.TopAppBar -> TopAppBarProperties(component) { onUpdate(it) }
+                is PrototypeComponent.Slotted.BottomAppBar -> BottomAppBarProperties(component) { onUpdate(it) }
+                is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> ExtendedFloatingActionButtonProperties(component) { onUpdate(it) }
+                is PrototypeComponent.Slotted.Scaffold -> ScaffoldProperties(component) { onUpdate(it) }
                 is PrototypeComponent.Custom -> {}
             }
             ModifiersEditor(

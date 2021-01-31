@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Providers
+import androidx.compose.runtime.emptyContent
+import androidx.compose.runtime.staticAmbientOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -41,21 +44,21 @@ fun RenderComponent(component: PrototypeComponent){
     val modifier = selectedModifier then component.modifiers.toModifier()
     when (component){
         is PrototypeComponent.Text -> Text(
-            text = component.properties.text,
-            fontWeight = component.properties.weight.toFontWeight(),
-            fontSize = component.properties.size.sp,
-            color = component.properties.color.renderColor(),
+            text = component.text,
+            fontWeight = component.weight.toFontWeight(),
+            fontSize = component.size.sp,
+            color = component.color.renderColor(),
             modifier = modifier
         )
         is PrototypeComponent.Icon -> Icon(
-            imageVector = component.properties.icon.imageVector,
-            tint = component.properties.tint.renderColor(),
+            imageVector = component.icon.imageVector,
+            tint = component.tint.renderColor(),
             modifier = modifier
         )
         is PrototypeComponent.Group.Column -> Column(
             modifier = modifier,
-            horizontalAlignment = component.properties.horizontalAlignment.toAlignment(),
-            verticalArrangement = component.properties.verticalArrangement.toVerticalArrangement()
+            horizontalAlignment = component.horizontalAlignment.toAlignment(),
+            verticalArrangement = component.verticalArrangement.toVerticalArrangement()
         ) {
             for (child in component.children) {
                 RenderComponent(component = child)
@@ -63,8 +66,8 @@ fun RenderComponent(component: PrototypeComponent){
         }
         is PrototypeComponent.Group.Row -> Row(
             modifier = modifier,
-            verticalAlignment = component.properties.verticalAlignment.toAlignment(),
-            horizontalArrangement = component.properties.horizontalArrangement.toHorizontalArrangement()
+            verticalAlignment = component.verticalAlignment.toAlignment(),
+            horizontalArrangement = component.horizontalArrangement.toHorizontalArrangement()
         ) {
             for (child in component.children) {
                 RenderComponent(component = child)
@@ -76,41 +79,44 @@ fun RenderComponent(component: PrototypeComponent){
             }
         }
         is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> ExtendedFloatingActionButton(
-            icon = component.renderEnabledSlotOrNull(name = "Icon"),
-            text = component.renderSlot(name = "Text"),
+            backgroundColor = component.backgroundColor.renderColor(),
+            contentColor = component.contentColor.renderColor(),
+            elevation = FloatingActionButtonDefaults.elevation(component.defaultElevation.dp, component.pressedElevation.dp),
+            icon = renderEnabledSlotOrNull (component.slots.icon),
+            text = renderSlot(component.slots.text),
             modifier = modifier,
             onClick = {}
         )
         is PrototypeComponent.Slotted.TopAppBar -> TopAppBar(
             modifier = modifier,
-            backgroundColor = component.properties.backgroundColor.renderColor(),
-            contentColor = component.properties.contentColor.renderColor(),
-            elevation = component.properties.elevation.dp,
-            navigationIcon = component.renderEnabledSlotOrNull(name = "Navigation Icon"),
-            title = component.renderSlot(name = "Title"),
-            actions = component.renderScopedSlot(name = "Actions")
+            backgroundColor = component.backgroundColor.renderColor(),
+            contentColor = component.contentColor.renderColor(),
+            elevation = component.elevation.dp,
+            navigationIcon = renderEnabledSlotOrNull(component.slots.navigationIcon),
+            title = renderSlot(component.slots.title),
+            actions = renderScopedSlot(component.slots.actions)
         )
         is PrototypeComponent.Slotted.BottomAppBar -> BottomAppBar(
             modifier = modifier,
-            backgroundColor = component.properties.backgroundColor.renderColor(),
-            contentColor = component.properties.contentColor.renderColor(),
-            elevation = component.properties.elevation.dp,
-            content = component.renderScopedSlot(name = "Content")
+            backgroundColor = component.backgroundColor.renderColor(),
+            contentColor = component.contentColor.renderColor(),
+            elevation = component.elevation.dp,
+            content = renderScopedSlot(component.slots.content)
         )
         is PrototypeComponent.Slotted.Scaffold -> Scaffold(
             modifier = modifier,
-            topBar = component.renderSlot(name = "Top Bar"),
-            bottomBar = component.renderSlot(name = "Bottom Bar"),
-            drawerContent = component.renderEnabledScopedSlotOrNull(name = "Drawer"),
-            drawerBackgroundColor = component.properties.drawerBackgroundColor.renderColor(),
-            drawerContentColor = component.properties.drawerContentColor.renderColor(),
-            drawerElevation = component.properties.drawerElevation.dp,
-            floatingActionButton = component.renderSlot(name = "Floating Action Button"),
-            floatingActionButtonPosition = component.properties.floatingActionButtonPosition.toFabPosition(),
-            isFloatingActionButtonDocked = component.properties.isFloatingActionButtonDocked,
-            bodyContent = component.renderScopedSlot(name = "Body Content"),
-            backgroundColor = component.properties.backgroundColor.renderColor(),
-            contentColor = component.properties.contentColor.renderColor(),
+            topBar = renderSlot(component.slots.topBar),
+            bottomBar = renderSlot(component.slots.bottomBar),
+            drawerContent = renderEnabledScopedSlotOrNull(component.slots.drawer),
+            drawerBackgroundColor = component.drawerBackgroundColor.renderColor(),
+            drawerContentColor = component.drawerContentColor.renderColor(),
+            drawerElevation = component.drawerElevation.dp,
+            floatingActionButton = renderSlot(component.slots.floatingActionButton),
+            floatingActionButtonPosition = component.floatingActionButtonPosition.toFabPosition(),
+            isFloatingActionButtonDocked = component.isFloatingActionButtonDocked,
+            bodyContent = renderScopedSlot(component.slots.bodyContent),
+            backgroundColor = component.backgroundColor.renderColor(),
+            contentColor = component.contentColor.renderColor(),
         )
         is PrototypeComponent.Custom -> {
             val treeComponent = AmbientProject.current.trees.filter { it.treeType == TreeType.Component }.first { it.id == component.treeID }.component
@@ -121,8 +127,7 @@ fun RenderComponent(component: PrototypeComponent){
 }
 
 @Composable
-private fun PrototypeComponent.Slotted.renderSlot(name: String): @Composable () -> Unit {
-    val slot = remember(this) { this.slots.first { it.name == name } }
+private fun renderSlot(slot: Slot): @Composable () -> Unit {
     if (slot.enabled) {
         return { slot.group.children.forEach { RenderComponent(component = it) } }
     } else {
@@ -131,8 +136,7 @@ private fun PrototypeComponent.Slotted.renderSlot(name: String): @Composable () 
 }
 
 @Composable
-private fun <T> PrototypeComponent.Slotted.renderScopedSlot(name: String): @Composable T.() -> Unit {
-    val slot = remember(this) { this.slots.first { it.name == name } }
+private fun <T> renderScopedSlot(slot: Slot): @Composable T.() -> Unit {
     if (slot.enabled) {
         return { slot.group.children.forEach { RenderComponent(component = it) } }
     } else {
@@ -141,8 +145,7 @@ private fun <T> PrototypeComponent.Slotted.renderScopedSlot(name: String): @Comp
 }
 
 @Composable
-private fun PrototypeComponent.Slotted.renderEnabledSlotOrNull(name: String): (@Composable () -> Unit)? {
-    val slot = remember(this) { this.slots.first { it.name == name } }
+private fun renderEnabledSlotOrNull(slot: Slot): (@Composable () -> Unit)? {
     if (slot.enabled) {
         return { slot.group.children.forEach { RenderComponent(component = it) } }
     } else {
@@ -151,8 +154,7 @@ private fun PrototypeComponent.Slotted.renderEnabledSlotOrNull(name: String): (@
 }
 
 @Composable
-private fun <T> PrototypeComponent.Slotted.renderEnabledScopedSlotOrNull(name: String): (@Composable T.() -> Unit)? {
-    val slot = remember(this) { this.slots.first { it.name == name } }
+private fun <T> renderEnabledScopedSlotOrNull(slot: Slot): (@Composable T.() -> Unit)? {
     if (slot.enabled) {
         return { slot.group.children.forEach { RenderComponent(component = it) } }
     } else {

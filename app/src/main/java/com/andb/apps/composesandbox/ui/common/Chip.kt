@@ -23,7 +23,7 @@ fun Chip(
     selected: Boolean = false,
     backgroundColor: Color = if (selected) MaterialTheme.colors.onSecondary else Color.Transparent,
     borderColor: Color = if (selected) Color.Transparent else MaterialTheme.colors.onSecondary,
-    textColor: Color = if (selected) MaterialTheme.colors.onSecondary else Color.Unspecified
+    textColor: Color = if (selected) MaterialTheme.colors.onPrimary else MaterialTheme.colors.onSecondary
 ) {
     Row(
         modifier = modifier

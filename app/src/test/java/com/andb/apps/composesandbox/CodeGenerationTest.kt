@@ -56,7 +56,7 @@ class CodeGenerationTest {
 }
 
 /**Text*/
-private val textComponent = PrototypeComponent.Text(properties = Properties.Text("Test"))
+private val textComponent = PrototypeComponent.Text("Test")
 private val textComponentCode = """
     Text(
         text = "Test",
@@ -64,7 +64,7 @@ private val textComponentCode = """
     )
 """.trimIndent().trimEndWhitespace()
 
-private val textComponentWithModifiers = PrototypeComponent.Text(properties = Properties.Text("Test"), modifiers = listOf(PrototypeModifier.Border(4, PrototypeColor.ThemeColor.Primary, 0), PrototypeModifier.Padding.All(16)))
+private val textComponentWithModifiers = PrototypeComponent.Text("Test", modifiers = listOf(PrototypeModifier.Border(4, PrototypeColor.ThemeColor.Primary, 0), PrototypeModifier.Padding.All(16)))
 private val textComponentWithModifiersCode = """
     Text(
         text = "Test",
@@ -75,7 +75,7 @@ private val textComponentWithModifiersCode = """
 
 
 /**Icon*/
-private val iconComponent = PrototypeComponent.Icon(properties = Properties.Icon(PrototypeIcon.Add))
+private val iconComponent = PrototypeComponent.Icon(PrototypeIcon.Add)
 private val iconComponentCode = """
     Icon(
         imageVector = Icons.Default.Add,
@@ -83,7 +83,7 @@ private val iconComponentCode = """
     )
 """.trimIndent().trimEndWhitespace()
 
-private val iconComponentWithModifiers = PrototypeComponent.Icon(properties = Properties.Icon(PrototypeIcon.Add), modifiers = listOf(PrototypeModifier.Padding.Sides(horizontal = 16, vertical = 8)))
+private val iconComponentWithModifiers = PrototypeComponent.Icon(PrototypeIcon.Add, modifiers = listOf(PrototypeModifier.Padding.Sides(horizontal = 16, vertical = 8)))
 private val iconComponentWithModifiersCode = """
     Icon(
         imageVector = Icons.Default.Add,
@@ -94,7 +94,7 @@ private val iconComponentWithModifiersCode = """
 
 
 /**Row*/
-private val emptyRowComponent = PrototypeComponent.Group.Row(properties = Properties.Group.Row())
+private val emptyRowComponent = PrototypeComponent.Group.Row()
 private val emptyRowComponentCode = """
     Row(
         horizontalArrangement = Arrangement.Start,
@@ -102,7 +102,7 @@ private val emptyRowComponentCode = """
     ) {}
 """.trimIndent().trimEndWhitespace()
 
-private val rowComponentWithChildren = PrototypeComponent.Group.Row(properties = Properties.Group.Row(), children = listOf(textComponent))
+private val rowComponentWithChildren = PrototypeComponent.Group.Row(children = listOf(textComponent))
 private val rowComponentWithChildrenCode = """
     Row(
         horizontalArrangement = Arrangement.Start,
@@ -117,7 +117,7 @@ private val rowComponentWithChildrenCode = """
 
 
 /** Column*/
-private val spacedByColumn = PrototypeComponent.Group.Column(properties = Properties.Group.Column(verticalArrangement = PrototypeArrangement.Vertical.SpacedBy(16, PrototypeAlignment.Vertical.Top)), children = listOf(textComponent))
+private val spacedByColumn = PrototypeComponent.Group.Column(verticalArrangement = PrototypeArrangement.Vertical.SpacedBy(16, PrototypeAlignment.Vertical.Top), children = listOf(textComponent))
 private val spacedByColumnCode = """
     Column(
         verticalArrangement = Arrangement.spacedBy(space = 16.dp, alignment = Alignment.Top),
@@ -151,9 +151,9 @@ private val emptySlottedCode = """
 private val filledSlotted = PrototypeComponent.Slotted.TopAppBar().let {
     it.withSlots(it.slots.mapIndexed { index, slot ->
         val children = when (index) {
-            0 -> PrototypeComponent.Icon(properties = Properties.Icon(PrototypeIcon.Menu, tint = PrototypeColor.ThemeColor.OnPrimary), modifiers = listOf(PrototypeModifier.Padding.All(12)))
-            1 -> PrototypeComponent.Text(properties = Properties.Text("Title", color = PrototypeColor.ThemeColor.OnPrimary))
-            2 -> PrototypeComponent.Group.Row(children = listOf(PrototypeComponent.Icon(properties = Properties.Icon(PrototypeIcon.MoreVert, tint = PrototypeColor.ThemeColor.OnPrimary), modifiers = listOf(PrototypeModifier.Padding.All(12)))))
+            0 -> PrototypeComponent.Icon(PrototypeIcon.Menu, tint = PrototypeColor.ThemeColor.OnPrimary, modifiers = listOf(PrototypeModifier.Padding.All(12)))
+            1 -> PrototypeComponent.Text("Title", color = PrototypeColor.ThemeColor.OnPrimary)
+            2 -> PrototypeComponent.Group.Row(children = listOf(PrototypeComponent.Icon(PrototypeIcon.MoreVert, tint = PrototypeColor.ThemeColor.OnPrimary, modifiers = listOf(PrototypeModifier.Padding.All(12)))))
             else -> throw Error("too many slots")
         }
         slot.copy(group = slot.group.withChildren(listOf(children)))

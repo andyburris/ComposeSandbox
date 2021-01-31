@@ -8,15 +8,15 @@ import androidx.compose.ui.gesture.DragObserver
 import androidx.compose.ui.gesture.dragGestureFilter
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.AmbientDensity
-import androidx.compose.ui.unit.Position
+import androidx.compose.ui.unit.DpOffset
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.toDpPosition
 
 fun Modifier.draggable2D(
-    currentPosition: Position,
-    onDrop: (Position) -> Unit,
+    currentPosition: DpOffset,
+    onDrop: (DpOffset) -> Unit,
     canDrag: ((Direction) -> Boolean)? = null,
     startDragImmediately: Boolean = false,
-    onPositionUpdate: (Position) -> Unit
+    onPositionUpdate: (DpOffset) -> Unit
 ) : Modifier = composed {
     val density = AmbientDensity.current
     Modifier.dragGestureFilter(

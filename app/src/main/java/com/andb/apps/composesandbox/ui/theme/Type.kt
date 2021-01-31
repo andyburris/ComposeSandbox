@@ -21,6 +21,11 @@ val typography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp
     ),
+    body1 = TextStyle(
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        letterSpacing = 0.25.sp
+    ),
     body2 = TextStyle(
         fontSize = 12.sp
     )

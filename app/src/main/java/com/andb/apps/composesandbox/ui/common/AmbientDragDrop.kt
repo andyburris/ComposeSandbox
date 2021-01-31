@@ -5,12 +5,13 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Providers
 import androidx.compose.runtime.staticAmbientOf
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.Position
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandboxdata.model.PrototypeComponent
 
 
-data class DragDropState(val dragPosition: MutableState<Position>, val globalOffset: MutableState<Position>, val treeItems: MutableList<TreeHoverItem>, val onDrop: (DropState)->Unit) {
+data class DragDropState(val dragPosition: MutableState<DpOffset>, val globalOffset: MutableState<DpOffset>, val treeItems: MutableList<TreeHoverItem>, val onDrop: (DropState)->Unit) {
     fun updateTreeItem(item: TreeHoverItem) {
         treeItems.removeAll { it.component.id == item.component.id }
         treeItems.add(item)
@@ -52,7 +53,7 @@ data class DragDropState(val dragPosition: MutableState<Position>, val globalOff
             }
             is DropPosition.NESTED -> when (hoveringItem.component) {
                 is PrototypeComponent.Slotted -> Pair(treeItemsWithGlobalOffset.first {
-                    val firstTree = hoveringItem.component.slots.first{ hoveringItem.component.properties.slotsEnabled[it.name] != false }.group
+                    val firstTree = hoveringItem.component.slots.enabledSlots().first().group
                     it.component == firstTree
                 }, hoverDropPosition)
                 is PrototypeComponent.Group -> Pair(hoveringItem, hoverDropPosition)
@@ -94,9 +95,9 @@ sealed class DropPosition {
     object BELOW : DropPosition()
 }
 data class IndicatorState(val position: Dp, val indent: Int)
-data class TreeHoverItem(val component: PrototypeComponent, val position: Position, val height: Dp, val indent: Int, val canDropAround: Boolean) {
-    fun isHovering(hoverPosition: Position): Boolean = hoverPosition.y in (position.y)..(position.y + height)
-    fun getDropPosition(hoverPosition: Position) = when {
+data class TreeHoverItem(val component: PrototypeComponent, val position: DpOffset, val height: Dp, val indent: Int, val canDropAround: Boolean) {
+    fun isHovering(hoverPosition: DpOffset): Boolean = hoverPosition.y in (position.y)..(position.y + height)
+    fun getDropPosition(hoverPosition: DpOffset) = when {
         hoverPosition.y in (position.y)..(position.y + height/2) -> DropPosition.ABOVE
         hoverPosition.y in (position.y + height/2)..(position.y + height) -> when (component) {
             is PrototypeComponent.Group, is PrototypeComponent.Slotted -> DropPosition.NESTED.First
@@ -111,7 +112,7 @@ data class TreeHoverItem(val component: PrototypeComponent, val position: Positi
         // if droppingItem is a Group, dropIndicator should be at the bottom of its last child
         is PrototypeComponent.Group -> treeItems.find { it.component == component.children.lastOrNull() }?.heightWithChildren(treeItems) ?: position.y + height
         // if droppingItem is a Slotted, dropIndicator should be at the bottom of its last slot's last child
-        is PrototypeComponent.Slotted -> treeItems.find { it.component == (component.slots.lastOrNull()?.group as PrototypeComponent.Group).children.lastOrNull() }?.heightWithChildren(treeItems) ?: position.y + height
+        is PrototypeComponent.Slotted -> treeItems.find { it.component == (component.slots.enabledSlots().lastOrNull()?.group as PrototypeComponent.Group).children.lastOrNull() }?.heightWithChildren(treeItems) ?: position.y + height
         else -> position.y + height
     }
 }
