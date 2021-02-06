@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -22,7 +23,7 @@ fun ProjectsScreen(projects: List<Project>) {
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 text = { Text("Add Project".toUpperCase()) },
-                icon = { Icon(imageVector = Icons.Default.Add) },
+                icon = { Icon(imageVector = Icons.Default.Add, contentDescription = null) },
                 backgroundColor = MaterialTheme.colors.primary,
                 onClick = {
                     handler.invoke(UserAction.OpenScreen(Screen.AddProject))

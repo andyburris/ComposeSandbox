@@ -52,6 +52,7 @@ fun RenderComponent(component: PrototypeComponent){
         )
         is PrototypeComponent.Icon -> Icon(
             imageVector = component.icon.imageVector,
+            contentDescription = null,
             tint = component.tint.renderColor(),
             modifier = modifier
         )

@@ -68,7 +68,7 @@ private fun TreeItem(tree: PrototypeTree, selected: Boolean, onSelect: () -> Uni
                 TreeType.Screen -> Icons.Default.PhoneAndroid
                 TreeType.Component -> Icons.Default.Toll
             }
-            Icon(imageVector = icon, tint = MaterialTheme.colors.onPrimary)
+            Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colors.onPrimary)
             Text(text = tree.name, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(start = 16.dp))
         }
     }
@@ -78,6 +78,6 @@ private fun TreeItem(tree: PrototypeTree, selected: Boolean, onSelect: () -> Uni
 private fun CategoryHeader(category: String, modifier: Modifier = Modifier, onAdd: () -> Unit) {
     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
         Text(text = category.toUpperCase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.onPrimary)
-        Icon(imageVector = Icons.Default.Add, tint = MaterialTheme.colors.onPrimary, modifier = Modifier.clickable(onClick = onAdd))
+        Icon(imageVector = Icons.Default.Add, contentDescription = "Add", tint = MaterialTheme.colors.onPrimary, modifier = Modifier.clickable(onClick = onAdd))
     }
 }

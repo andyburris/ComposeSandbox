@@ -73,7 +73,7 @@ private fun BaseComponentSwitcher(component: PrototypeComponent, onClick: () -> 
         Text(text = "BASE COMPONENT", style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.primary)
         Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable(onClick = onClick).fillMaxWidth()) {
             ComponentItem(component = component)
-            Icon(imageVector = Icons.Default.KeyboardArrowRight)
+            Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "Switch Base Component")
         }
     }
 }
@@ -84,7 +84,7 @@ private fun DrawerEditPropertiesHeader(component: PrototypeComponent, isBaseComp
     val actionHandler = ActionHandlerAmbient.current
     DrawerHeader(title = component.name, screenName = (if (isBaseComponent) "Edit Base Component" else "Edit Component").toUpperCase(), modifier = modifier, onIconClick = { actionHandler.invoke(UserAction.Back) }) {
         IconButton(onClick = onExtractToComponent) {
-            Icon(imageVector = Icons.Default.ControlPointDuplicate)
+            Icon(imageVector = Icons.Default.ControlPointDuplicate, contentDescription = "Extract to Custom Component")
         }
     }
 }

@@ -94,7 +94,7 @@ private fun AddComponentItem(component: PrototypeComponent, modifier: Modifier =
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Icon(imageVector = component.icon, tint = MaterialTheme.colors.onSecondary)
+        Icon(imageVector = component.icon, contentDescription = null, tint = MaterialTheme.colors.onSecondary)
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(text = component.name, style = MaterialTheme.typography.subtitle1)
             Text(text = component.documentation, style = MaterialTheme.typography.body2, color = MaterialTheme.colors.onSecondary)

@@ -8,13 +8,11 @@ import androidx.compose.foundation.ScrollableRow
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.UnfoldLess
-import androidx.compose.material.icons.filled.WrapText
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,13 +40,13 @@ fun CodeScreen(project: Project) {
             TopAppBar(
                 navigationIcon = {
                     IconButton(onClick = { actionHandler.invoke(UserAction.Back) }) {
-                        Icon(imageVector = Icons.Default.ArrowBack)
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
                 title = { Text("Code Preview") },
                 actions = {
                     IconButton(onClick = {}) {
-                        Icon(imageVector = Icons.Default.WrapText)
+                        Icon(imageVector = Icons.Default.WrapText, contentDescription = "Wrap Code")
                     }
                 },
                 backgroundColor = MaterialTheme.colors.primary
@@ -79,7 +77,7 @@ fun CodeScreen(project: Project) {
         floatingActionButton = {
             val context = AmbientContext.current
             ExtendedFloatingActionButton(
-                icon = { Icon(imageVector = Icons.Default.Share) },
+                icon = { Icon(imageVector = Icons.Default.Share, contentDescription = null) },
                 text = { Text(text = "Export Code") },
                 onClick = {
                     val zipFile = project.exportZip(context)
@@ -108,7 +106,7 @@ private fun CodeCard(generator: CodeGenerator, tree: PrototypeTree, opened: Bool
     val elevation = animate(if (opened) 4.dp else 0.dp)
     Card(modifier.padding(padding), elevation = elevation, shape = RoundedCornerShape(padding)) {
         Column {
-            FileItem(tree = tree, onToggle = onToggle)
+            FileItem(tree = tree, onToggle = onToggle, expanded = opened)
             AnimatedVisibility(visible = opened) {
                 Row(Modifier.padding(start = 16.dp, bottom = 16.dp)) {
                     val code = with(generator) { tree.toCode() }
@@ -128,12 +126,15 @@ private fun CodeCard(generator: CodeGenerator, tree: PrototypeTree, opened: Bool
 }
 
 @Composable
-private fun FileItem(tree: PrototypeTree, modifier: Modifier = Modifier, onToggle: () -> Unit) {
+private fun FileItem(tree: PrototypeTree, modifier: Modifier = Modifier, expanded: Boolean, onToggle: () -> Unit) {
     Row(modifier.clickable(onClick = onToggle).padding(16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column {
             Text(text = tree.name, style = MaterialTheme.typography.subtitle1)
             Text(text = "${tree.name.capitalize().filter { it != ' ' }}.kt", style = codeStyle)
         }
-        Icon(imageVector = Icons.Default.UnfoldLess)
+        when (expanded) {
+            true -> Icon(imageVector = Icons.Default.UnfoldLess, contentDescription = "Collapse")
+            false -> Icon(imageVector = Icons.Default.UnfoldMore, contentDescription = "Expand")
+        }
     }
 }

@@ -2,7 +2,8 @@ package com.andb.apps.composesandbox.ui.common
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animate
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,13 +32,13 @@ import com.andb.apps.composesandbox.data.model.name
 import com.andb.apps.composesandbox.data.model.projectColor
 import com.andb.apps.composesandbox.data.model.toColor
 import com.andb.apps.composesandbox.data.model.toPrototypeColor
+import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.GenericTree
+import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.TreeConfig
+import com.andb.apps.composesandbox.util.isDark
 import com.andb.apps.composesandboxdata.model.PrototypeColor
 import com.andb.apps.composesandboxdata.model.Theme
 import com.andb.apps.composesandboxdata.model.getColor
 import com.andb.apps.composesandboxdata.model.updateColor
-import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.GenericTree
-import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.TreeConfig
-import com.andb.apps.composesandbox.util.isDark
 import androidx.compose.foundation.layout.Box as LayoutBox
 
 @Composable
@@ -128,8 +130,13 @@ private fun ColorThemeTree(parent: PrototypeColor.ThemeColor, picked: PrototypeC
     val expanded = remember { mutableStateOf(false) }
     Column(modifier) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { expanded.value = !expanded.value }) {
-            val rotation = animate(target = if (expanded.value) 0f else -90f)
-            Icon(imageVector = Icons.Default.ExpandMore, tint = MaterialTheme.colors.onSecondary, modifier = Modifier.padding(end = 16.dp).graphicsLayer(rotationZ = rotation))
+            val rotation = animateFloatAsState(targetValue = if (expanded.value) 0f else -90f).value
+            Icon(
+                imageVector = Icons.Default.ExpandMore,
+                contentDescription = if (expanded.value) "Collapse Section" else "Expand Section",
+                tint = MaterialTheme.colors.onSecondary,
+                modifier = Modifier.padding(end = 16.dp).graphicsLayer(rotationZ = rotation)
+            )
             ThemeColorItem(color = parent, picked = picked == parent) {
                 onClick.invoke(parent)
             }
@@ -153,10 +160,11 @@ private fun ThemeColorItem(color: PrototypeColor.ThemeColor, picked: Boolean, mo
             content = {
                 ColorPickerCircle(color = color.projectColor(), onClick = onClick)
                 if (picked) {
-                    Icon(
-                        imageVector = Icons.Default.Check.copy(defaultWidth = 20.dp, defaultHeight = 20.dp),
-                        modifier = Modifier.align(Alignment.Center),
-                        tint = if (color.projectColor().isDark()) Color.White else Color.Black
+                    Image(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Selected",
+                        modifier = Modifier.align(Alignment.Center).size(20.dp),
+                        colorFilter = ColorFilter.tint(if (color.projectColor().isDark()) Color.White else Color.Black)
                     )
                 }
             }

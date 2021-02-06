@@ -33,7 +33,7 @@ fun Chip(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (icon != null) {
-            Icon(imageVector = icon, modifier = Modifier.padding(end = 12.dp))
+            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.padding(end = 12.dp))
         }
         Text(text = label, color = textColor)
     }

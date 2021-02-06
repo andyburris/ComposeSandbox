@@ -1,11 +1,13 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -20,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.WithConstraints
 import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -45,7 +48,7 @@ fun IconPicker(icon: PrototypeIcon, onSelect: (PrototypeIcon) -> Unit) {
                 .background(MaterialTheme.colors.secondary, CircleShape)
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
-            Icon(imageVector = icon.imageVector)
+            Icon(imageVector = icon.imageVector, contentDescription = icon.name)
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = icon.name, color = MaterialTheme.colors.onSecondary)
         }
@@ -70,8 +73,8 @@ fun IconPickerHeader(isGrid: Boolean, onToggle: () -> Unit) {
     Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(32.dp).fillMaxWidth()) {
         Text(text = "Pick Icon", style = MaterialTheme.typography.h6)
         when (isGrid) {
-            true -> Icon(imageVector = Icons.Default.List, tint = MaterialTheme.colors.onSecondary, modifier = Modifier.clickable(onClick = onToggle))
-            false -> Icon(imageVector = Icons.Default.GridOn, tint = MaterialTheme.colors.onSecondary, modifier = Modifier.clickable(onClick = onToggle))
+            true -> Icon(imageVector = Icons.Default.List, contentDescription = "Switch to List View", tint = MaterialTheme.colors.onSecondary, modifier = Modifier.clickable(onClick = onToggle))
+            false -> Icon(imageVector = Icons.Default.GridOn, contentDescription = "Switch to Grid View", tint = MaterialTheme.colors.onSecondary, modifier = Modifier.clickable(onClick = onToggle))
         }
     }
 }
@@ -107,8 +110,8 @@ private fun IconPickerFilter(allIcons: List<SectionedIcon>, onUpdateFilteredIcon
                     update()
                 }
                 when (onlyFavorites.value) {
-                    true -> Icon(imageVector = Icons.Default.Star, tint = MaterialTheme.colors.primary, modifier = modifier)
-                    false -> Icon(imageVector = Icons.Default.StarOutline, tint = MaterialTheme.colors.onSecondary, modifier = modifier)
+                    true -> Icon(imageVector = Icons.Default.Star, contentDescription = "Remove from Favorites", tint = MaterialTheme.colors.primary, modifier = modifier)
+                    false -> Icon(imageVector = Icons.Default.StarOutline, contentDescription = "Add to Favorites", tint = MaterialTheme.colors.onSecondary, modifier = modifier)
                 }
             }
             item {
@@ -203,12 +206,12 @@ fun IconPickerListItem(icon: PrototypeIcon, selected: Boolean, isFavorite: Boole
             .fillMaxWidth()
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = icon.imageVector, tint = if (selected) MaterialTheme.colors.onBackground else MaterialTheme.colors.onSecondary)
+            Icon(imageVector = icon.imageVector, contentDescription = icon.name,tint = if (selected) MaterialTheme.colors.onBackground else MaterialTheme.colors.onSecondary)
             Text(text = icon.name)
         }
         when (isFavorite) {
-            true -> Icon(imageVector = Icons.Default.Star, tint = MaterialTheme.colors.primary, modifier = Modifier.clickable(onClick = onFavorite))
-            false -> Icon(imageVector = Icons.Default.StarOutline, tint = MaterialTheme.colors.onSecondary, modifier = Modifier.clickable(onClick = onFavorite))
+            true -> Icon(imageVector = Icons.Default.Star, contentDescription = "Remove from Favorites", tint = MaterialTheme.colors.primary, modifier = Modifier.clickable(onClick = onFavorite))
+            false -> Icon(imageVector = Icons.Default.StarOutline, contentDescription = "Add to Favorites", tint = MaterialTheme.colors.onSecondary, modifier = Modifier.clickable(onClick = onFavorite))
         }
     }
 }
@@ -224,10 +227,11 @@ private fun RowScope.IconPickerGridItem(icon: PrototypeIcon, selected: Boolean, 
             .padding(8.dp)
             .height(32.dp)
     ) {
-        Icon(
-            imageVector = icon.imageVector.copy(defaultHeight = 32.dp, defaultWidth = 32.dp),
-            tint = if (selected) MaterialTheme.colors.onBackground else MaterialTheme.colors.onSecondary,
-            modifier = Modifier.align(Alignment.Center)
+        Image(
+            imageVector = icon.imageVector,
+            contentDescription = icon.name,
+            colorFilter = ColorFilter.tint(if (selected) MaterialTheme.colors.onBackground else MaterialTheme.colors.onSecondary),
+            modifier = Modifier.align(Alignment.Center).size(32.dp)
         )
     }
 }
@@ -235,7 +239,7 @@ private fun RowScope.IconPickerGridItem(icon: PrototypeIcon, selected: Boolean, 
 @Composable
 private fun NoResults(modifier: Modifier = Modifier) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(imageVector = Icons.Default.Search, Modifier.background(MaterialTheme.colors.secondary, CircleShape).padding(16.dp))
+        Icon(imageVector = Icons.Default.Search, contentDescription = null, modifier = Modifier.background(MaterialTheme.colors.secondary, CircleShape).padding(16.dp))
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = "No Results", style = MaterialTheme.typography.h6)
             Text(text = "Try a different search term or different categories", color = MaterialTheme.colors.onSecondary, textAlign = TextAlign.Center)

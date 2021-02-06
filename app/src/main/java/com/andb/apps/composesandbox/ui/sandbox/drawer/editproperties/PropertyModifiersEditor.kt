@@ -28,6 +28,7 @@ fun ModifiersEditor(modifiers: List<PrototypeModifier>, modifier: Modifier = Mod
             Row {
                 Icon(
                     imageVector = Icons.Default.Info,
+                    contentDescription = "Show Modifiers Information Dialog",
                     tint = MaterialTheme.colors.onSecondary,
                     modifier = Modifier
                         .padding(end = 16.dp)
@@ -35,6 +36,7 @@ fun ModifiersEditor(modifiers: List<PrototypeModifier>, modifier: Modifier = Mod
                 )
                 Icon(
                     imageVector = Icons.Default.Add,
+                    contentDescription = "Add Modifier",
                     tint = MaterialTheme.colors.onSecondary,
                     modifier = Modifier.clickable(onClick = onAdd)
                 )
@@ -91,7 +93,7 @@ fun ModifierItem(prototypeModifier: PrototypeModifier, modifier: Modifier = Modi
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = prototypeModifier.icon)
+            Icon(imageVector = prototypeModifier.icon, contentDescription = null)
             Text(text = prototypeModifier.name, modifier = Modifier.padding(start = 16.dp))
         }
         Text(text = prototypeModifier.summary)

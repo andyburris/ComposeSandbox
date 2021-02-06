@@ -165,7 +165,7 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
 @Composable
 fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier, name: String = component.name, colors: Pair<Color, Color> = Pair(MaterialTheme.colors.onSecondary, MaterialTheme.colors.onBackground)) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Icon(imageVector = component.icon, tint = colors.first)
+        Icon(imageVector = component.icon, contentDescription = null, tint = colors.first)
         Text(text = name, modifier = Modifier.padding(start = 16.dp), color = colors.second)
     }
 }

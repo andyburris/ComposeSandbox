@@ -11,8 +11,7 @@ import com.andb.apps.composesandbox.R
 import com.andb.apps.composesandbox.ui.common.AmbientProject
 import com.andb.apps.composesandboxdata.model.PrototypeComponent
 
-@Composable
-val PrototypeComponent.name get() = this.name(AmbientProject.current)
+val PrototypeComponent.name @Composable get() = this.name(AmbientProject.current)
 
 @Composable
 val PrototypeComponent.icon get() = when (this) {

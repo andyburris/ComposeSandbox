@@ -2,6 +2,7 @@ package com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.draggable
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.gesture.scrollorientationlocking.Orientation
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.andb.apps.composesandbox.data.model.projectColor
@@ -44,7 +46,7 @@ fun <T> OptionsPicker(label: String, selected: T, options: List<T>, stringify: (
             toggle = {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { opened.value = true }) {
                     Text(text = stringify(selected))
-                    Icon(imageVector = Icons.Default.ArrowDropDown)
+                    Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "Open Dropdown")
                 }
             },
             expanded = opened.value,
@@ -96,16 +98,18 @@ fun NumberPicker(label: String, current: Int, minValue: Int = 0, maxValue: Int =
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.Remove.copy(defaultHeight = 16.dp, defaultWidth = 16.dp),
-                tint = MaterialTheme.colors.onSecondary,
-                modifier = Modifier.clickable { onValueChange.invoke((current - 1).coerceIn(minValue..maxValue)) }.padding(8.dp)
+            Image(
+                imageVector = Icons.Default.Remove,
+                contentDescription = "Decrement",
+                colorFilter = ColorFilter.tint(MaterialTheme.colors.onSecondary),
+                modifier = Modifier.clickable { onValueChange.invoke((current - 1).coerceIn(minValue..maxValue)) }.padding(8.dp).size(16.dp)
             )
             Text(text = current.toString())
-            Icon(
-                imageVector = Icons.Default.Add.copy(defaultHeight = 16.dp, defaultWidth = 16.dp),
-                tint = MaterialTheme.colors.onSecondary,
-                modifier = Modifier.clickable { onValueChange.invoke((current + 1).coerceIn(minValue..maxValue)) }.padding(8.dp)
+            Image(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Increment",
+                colorFilter = ColorFilter.tint(MaterialTheme.colors.onSecondary),
+                modifier = Modifier.clickable { onValueChange.invoke((current + 1).coerceIn(minValue..maxValue)) }.padding(8.dp).size(16.dp)
             )
         }
     }
@@ -139,10 +143,11 @@ fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Mod
                 pickingColor.value = true
             }
             if (current is PrototypeColor.ThemeColor) {
-                Icon(
-                    imageVector = Icons.Default.Link.copy(defaultWidth = 20.dp, defaultHeight = 20.dp),
-                    modifier = Modifier.align(Alignment.Center),
-                    tint = if (current.projectColor().isDark()) Color.White else Color.Black)
+                Image(
+                    imageVector = Icons.Default.Link,
+                    contentDescription = "Linked to Theme",
+                    modifier = Modifier.align(Alignment.Center).size(20.dp),
+                    colorFilter = ColorFilter.tint(if (current.projectColor().isDark()) Color.White else Color.Black))
             }
         }
     }

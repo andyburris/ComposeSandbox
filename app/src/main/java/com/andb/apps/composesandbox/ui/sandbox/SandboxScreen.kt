@@ -113,23 +113,37 @@ private fun SandboxAppBar(sandboxState: ViewState.Sandbox, project: Project, ico
                 checked = iconState == BackdropValue.Revealed,
                 onCheckedChange = { onToggle.invoke() }
             ) {
-                Icon(imageVector = if (iconState == BackdropValue.Concealed) Icons.Default.Menu else Icons.Default.Clear)
+                when (iconState) {
+                    BackdropValue.Concealed -> Icon(imageVector = Icons.Default.Menu, contentDescription = "Open Backdrop")
+                    else -> Icon(imageVector = Icons.Default.Clear, contentDescription = "Close Backdrop")
+                }
             }
         },
         title = {
-            BasicTextField(
-                value = project.name,
-                textStyle = AmbientTextStyle.current.copy(color = AmbientContentColor.current),
-                cursorColor = AmbientContentColor.current,
-                onValueChange = {
-                    actionHandler.invoke(UserAction.UpdateProject(project.copy(name = it)))
-                }
-            )
-            //Text(text = project.name)
+            Box {
+                BasicTextField(
+                    value = project.name,
+                    textStyle = AmbientTextStyle.current.copy(color = AmbientContentColor.current),
+                    cursorColor = AmbientContentColor.current,
+                    onValueChange = {
+                        actionHandler.invoke(UserAction.UpdateProject(project.copy(name = it)))
+                    },
+                    decorationBox = { innerTextField ->
+                        innerTextField()
+                        if (project.name.isEmpty()) {
+                            Text(
+                                text = "Project Name",
+                                style = MaterialTheme.typography.h6,
+                                color = MaterialTheme.colors.onPrimary.copy(alpha = .12f)
+                            )
+                        }
+                    }
+                )
+            }
         },
         actions = {
-            IconButton(onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditTheme)) }) { Icon(imageVector = Icons.Default.Palette) }
-            IconButton(onClick = { actionHandler.invoke(UserAction.OpenScreen(Screen.Preview(project.id, sandboxState.openedTree.id))) }) { Icon(imageVector = Icons.Default.PlayCircleFilled) }
+            IconButton(onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditTheme)) }) { Icon(imageVector = Icons.Default.Palette, contentDescription = "Open Theme Editor") }
+            IconButton(onClick = { actionHandler.invoke(UserAction.OpenScreen(Screen.Preview(project.id, sandboxState.openedTree.id))) }) { Icon(imageVector = Icons.Default.PlayCircleFilled, contentDescription = "Play Prototype") }
             OverflowMenu {
                 MenuItem(icon = Icons.Default.Share, title = "Export Code") {
                     val action = UserAction.OpenScreen(Screen.Code(project.id))

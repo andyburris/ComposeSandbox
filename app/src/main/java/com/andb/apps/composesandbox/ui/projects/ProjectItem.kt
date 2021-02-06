@@ -15,17 +15,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.LinearGradient
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.WithConstraints
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.AmbientConfiguration
 import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandboxdata.model.Project
 import com.andb.apps.composesandbox.ui.common.ProjectProvider
 import com.andb.apps.composesandbox.ui.common.RenderComponentParent
+import com.andb.apps.composesandboxdata.model.Project
 
 @Composable
 fun ProjectItem(project: Project, modifier: Modifier = Modifier, selected: Boolean = false) {
@@ -37,7 +37,7 @@ fun ProjectItem(project: Project, modifier: Modifier = Modifier, selected: Boole
                 .aspectRatio(AmbientConfiguration.current.screenWidthDp.toFloat() / AmbientConfiguration.current.screenHeightDp)
                 .fillMaxWidth()
         ) {
-            WithConstraints {
+            BoxWithConstraints {
                 val width = AmbientConfiguration.current.screenWidthDp
                 val height = AmbientConfiguration.current.screenHeightDp
                 val scaleX = with(AmbientDensity.current) { constraints.maxWidth.toDp().value } / width.toFloat()
@@ -54,16 +54,15 @@ fun ProjectItem(project: Project, modifier: Modifier = Modifier, selected: Boole
                 Box(
                     modifier = Modifier
                         .background(
-                            brush = LinearGradient(
-                                listOf(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
                                     MaterialTheme.colors.primary.copy(alpha = .5f),
                                     MaterialTheme.colors.primary
                                 ),
-                                startX = 0f,
-                                startY = 0f,
-                                endX = size.value.width.toFloat(),
-                                endY = size.value.height.toFloat()
-                            ),
+                                start = Offset(0f,
+                                    0f), end = Offset(size.value.width.toFloat(),
+                                    size.value.height.toFloat()
+                                )),
                             shape = RoundedCornerShape(8.dp)
                         )
                         .onSizeChanged {
@@ -73,6 +72,7 @@ fun ProjectItem(project: Project, modifier: Modifier = Modifier, selected: Boole
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
+                        contentDescription = "Selected",
                         modifier = Modifier.padding(16.dp).align(Alignment.BottomEnd),
                         tint = MaterialTheme.colors.onPrimary
                     )
