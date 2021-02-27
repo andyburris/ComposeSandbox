@@ -17,7 +17,7 @@ sealed class Screen {
 sealed class ViewState {
     data class Projects (val projects: List<Project>) : ViewState()
     object AddProject : ViewState()
-    data class Sandbox(val project: Project, val openedTree: PrototypeTree, val drawerStack: List<DrawerState>) : ViewState() {
+    data class Sandbox(val project: Project, val openedTree: PrototypeTree, val canUndo: Boolean, val drawerStack: List<DrawerState>) : ViewState() {
         val editingComponent: PrototypeComponent get() {
             if (drawerStack.none { it is DrawerState.EditComponent }) throw Error("Can't access editingComponent until drawerStack contains a DrawerState.EditComponent, currently is $drawerStack")
             return drawerStack.filterIsInstance<DrawerState.EditComponent>().first().component

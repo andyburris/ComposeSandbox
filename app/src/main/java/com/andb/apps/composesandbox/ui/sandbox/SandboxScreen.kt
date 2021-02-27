@@ -24,11 +24,11 @@ import com.andb.apps.composesandbox.state.*
 import com.andb.apps.composesandbox.state.DrawerState
 import com.andb.apps.composesandbox.ui.common.*
 import com.andb.apps.composesandbox.ui.sandbox.drawer.Drawer
-import com.andb.apps.composesandboxdata.model.*
+import com.andb.apps.composesandboxdata.model.Project
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) -> Unit) {
+fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (UserAction.UpdateProject) -> Unit) {
     val actionHandler = Handler
     ProjectProvider(project = sandboxState.project) {
         val backdropState = rememberBackdropScaffoldState(initialValue = BackdropValue.Concealed)
@@ -44,7 +44,7 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) ->
             },
             backLayerContent = {
                 SandboxBackdrop(sandboxState) {
-                    onUpdateProject.invoke(it)
+                    onUpdateProject.invoke(UserAction.UpdateProject(it))
                 }
             }
         ) {
@@ -61,22 +61,9 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) ->
                         sandboxState = sandboxState,
                         sheetState = bottomSheetState,
                         modifier = Modifier.height(with(AmbientDensity.current) { (height / 2).toDp() } + 88.dp),
-                        onScreenUpdate = { onUpdateProject.invoke(sandboxState.project.updatedTree(it)) },
-                        onThemeUpdate = { onUpdateProject.invoke(sandboxState.project.copy(theme = it)) },
-                        onExtractComponent = { oldComponent ->
-                            val customTree = PrototypeTree(name = sandboxState.project.nextComponentName(), treeType = TreeType.Component, component = oldComponent)
-                            val customComponent = PrototypeComponent.Custom(treeID = customTree.id)
-                            val editedTrees = sandboxState.project.trees.map { it.copy(component = it.component.replaceWithCustom(oldComponent.id, customComponent)) }
-                            onUpdateProject.invoke(sandboxState.project.copy(trees = editedTrees + customTree))
-                        },
+                        onProjectUpdate = onUpdateProject,
                         onDragUpdate = { canDragSheet.value = !it },
-                        onDeleteTree = {
-                            val newTrees = sandboxState.project.trees.filter { it.id != sandboxState.openedTree.id }.map {
-                                it.copy(component = it.component.replaceCustomWith(sandboxState.openedTree.id, sandboxState.openedTree.component))
-                            }
-                            actionHandler.invoke(UserAction.UpdateSandbox((sandboxState.toScreen() as Screen.Sandbox).copy(openedTreeID = newTrees.first().id)))
-                            onUpdateProject.invoke(sandboxState.project.copy(trees = newTrees))
-                        }
+                        onUndo = { actionHandler.invoke(UserAction.Undo) }
                     )
                 },
                 bodyContent = {

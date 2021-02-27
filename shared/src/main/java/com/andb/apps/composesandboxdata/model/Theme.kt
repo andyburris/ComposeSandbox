@@ -2,20 +2,24 @@ package com.andb.apps.composesandboxdata.model
 
 import kotlinx.serialization.Serializable
 
+private fun Long.toFixedColor() = PrototypeColor.FixedColor(this.toInt())
+private val White = 0xFFFFFFFF.toFixedColor()
+private val Black = 0xFF000000.toFixedColor()
+
 @Serializable
 data class Theme(
-    val primary: PrototypeColor.FixedColor,
-    val primaryVariant: PrototypeColor.FixedColor,
-    val onPrimary: PrototypeColor.FixedColor,
-    val secondary: PrototypeColor.FixedColor,
-    val secondaryVariant: PrototypeColor.FixedColor,
-    val onSecondary: PrototypeColor.FixedColor,
-    val background: PrototypeColor.FixedColor,
-    val onBackground: PrototypeColor.FixedColor,
-    val surface: PrototypeColor.FixedColor,
-    val onSurface: PrototypeColor.FixedColor,
-    val error: PrototypeColor.FixedColor,
-    val onError: PrototypeColor.FixedColor,
+    val primary: PrototypeColor.FixedColor = 0xFF6200EE.toFixedColor(),
+    val primaryVariant: PrototypeColor.FixedColor = 0xFF3700B3.toFixedColor(),
+    val onPrimary: PrototypeColor.FixedColor = White,
+    val secondary: PrototypeColor.FixedColor = 0xFF03DAC6.toFixedColor(),
+    val secondaryVariant: PrototypeColor.FixedColor = 0xFF018786.toFixedColor(),
+    val onSecondary: PrototypeColor.FixedColor = Black,
+    val background: PrototypeColor.FixedColor = White,
+    val onBackground: PrototypeColor.FixedColor = Black,
+    val surface: PrototypeColor.FixedColor = White,
+    val onSurface: PrototypeColor.FixedColor = Black,
+    val error: PrototypeColor.FixedColor = 0xFFB00020.toFixedColor(),
+    val onError: PrototypeColor.FixedColor = White,
 )
 
 fun Theme.getColor(prototypeColor: PrototypeColor.ThemeColor) = when (prototypeColor) {

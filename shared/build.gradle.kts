@@ -36,8 +36,10 @@ android {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlin}")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
     implementation(Dependencies.SQLDelight.android)
     implementation(Dependencies.SQLDelight.coroutines)
     implementation(Dependencies.Koin.android)
     implementation(Dependencies.coroutines)
+    testImplementation("junit:junit:4.13")
 }

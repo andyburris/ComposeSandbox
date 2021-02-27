@@ -37,7 +37,7 @@ fun <T> StackSwitcher(
 
         keys.mapTo(state.items) { key ->
             StackAnimationItem(key.value, key.index) { children ->
-                val animation = animatedVisibility(
+                val animationProgress = animatedVisibility(
                     animation = animationSpec,
                     visible = key == current,
                     onAnimationFinish = {
@@ -50,12 +50,12 @@ fun <T> StackSwitcher(
                 )
                 val currentIndex = current.index
                 val transitionState = when {
-                    animation.value == 1f -> StackItemTransitionState.Visible
+                    animationProgress == 1f -> StackItemTransitionState.Visible
                     key.index > currentIndex -> StackItemTransitionState.Removing
                     key.index < currentIndex -> StackItemTransitionState.Hiding
                     else /*key.index == currentIndex*/ -> if (state.items.any { it.index > key.index }) StackItemTransitionState.Revealing else StackItemTransitionState.Adding
                 }
-                children(transitionState, animation.value)
+                children(transitionState, animationProgress)
             }
         }
     } else if (current != state.current) {
@@ -98,7 +98,7 @@ private fun animatedVisibility(
     animation: AnimationSpec<Float>,
     visible: Boolean,
     onAnimationFinish: () -> Unit = {}
-): AnimatedFloat {
+): Float {
     val animatedFloat = animatedFloat(if (!visible) 1f else 0f)
     DisposableEffect(visible) {
         animatedFloat.animateTo(
@@ -114,5 +114,5 @@ private fun animatedVisibility(
             animatedFloat.stop()
         }
     }
-    return animatedFloat
+    return animatedFloat.value
 }

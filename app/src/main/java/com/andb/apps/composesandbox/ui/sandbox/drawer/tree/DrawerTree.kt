@@ -52,6 +52,7 @@ fun DrawerTree(
     onMoveComponent: (PrototypeComponent) -> Unit,
     onTreeNameChanged: (PrototypeTree) -> Unit,
     onDeleteTree: (PrototypeTree) -> Unit,
+    onUndo: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
     val density = AmbientDensity.current
@@ -80,7 +81,8 @@ fun DrawerTree(
                 },
                 onDeleteTree = {
                     onDeleteTree.invoke(sandboxState.openedTree)
-                }
+                },
+                onUndo = onUndo
             )
             ScrollableColumn(scrollState = scrollState, contentPadding = PaddingValues(bottom = 32.dp)) {
                 Tree(
@@ -102,31 +104,29 @@ fun DrawerTree(
 
 @OptIn(ExperimentalMaterialApi::class, InternalTextApi::class)
 @Composable
-private fun DrawerTreeHeader(sandboxState: ViewState.Sandbox, modifier: Modifier = Modifier, isExpanded: Boolean, onTreeNameChanged: (String) -> Unit, onDeleteTree: () -> Unit, onToggleExpand: () -> Unit) {
+private fun DrawerTreeHeader(sandboxState: ViewState.Sandbox, modifier: Modifier = Modifier, isExpanded: Boolean, onTreeNameChanged: (String) -> Unit, onDeleteTree: () -> Unit, onToggleExpand: () -> Unit, onUndo: () -> Unit) {
     val actionHandler = ActionHandlerAmbient.current
     val iconRotation = animateFloatAsState(targetValue = if (isExpanded) 180f else 0f).value
     DrawerHeader(
         title = sandboxState.openedTree.name,
         titleSlot = {
-            Box {
-                BasicTextField(
-                    value = it,
-                    textStyle = MaterialTheme.typography.h6.copy(color = MaterialTheme.colors.onBackground),
-                    onValueChange = {
-                        onTreeNameChanged.invoke(it)
-                    },
-                    decorationBox = { innerTextField ->
-                        innerTextField()
-                        if (it.isEmpty()) {
-                            Text(
-                                text = if (sandboxState.openedTree.treeType == TreeType.Screen) "Screen Name" else "Component Name",
-                                style = MaterialTheme.typography.h6,
-                                color = MaterialTheme.colors.secondaryVariant
-                            )
-                        }
+            BasicTextField(
+                value = it,
+                textStyle = MaterialTheme.typography.h6.copy(color = MaterialTheme.colors.onBackground),
+                onValueChange = {
+                    onTreeNameChanged.invoke(it)
+                },
+                decorationBox = { innerTextField ->
+                    innerTextField()
+                    if (it.isEmpty()) {
+                        Text(
+                            text = if (sandboxState.openedTree.treeType == TreeType.Screen) "Screen Name" else "Component Name",
+                            style = MaterialTheme.typography.h6,
+                            color = MaterialTheme.colors.secondaryVariant
+                        )
                     }
-                )
-            }
+                }
+            )
         },
         modifier = modifier,
         icon = Icons.Default.KeyboardArrowUp,
@@ -142,18 +142,37 @@ private fun DrawerTreeHeader(sandboxState: ViewState.Sandbox, modifier: Modifier
         },
         onIconClick = onToggleExpand
     ) {
+        IconButton(onClick = onUndo, enabled = sandboxState.canUndo) {
+            Icon(imageVector = Icons.Default.Undo, contentDescription = "Undo", tint = if (sandboxState.canUndo) MaterialTheme.colors.onSecondary else MaterialTheme.colors.secondaryVariant)
+        }
         IconButton(onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.AddComponent)) }) {
             Icon(imageVector = Icons.Default.Add, contentDescription = "Add Component")
         }
         OverflowMenu {
-            MenuItem(
-                icon = Icons.Default.Delete,
-                title = if (sandboxState.openedTree.treeType == TreeType.Screen) "Delete Screen" else "Delete Component",
-                enabled = sandboxState.openedTree.treeType == TreeType.Component || sandboxState.project.trees.screens().size >= 2,
-                onClick = {
-                    onDeleteTree.invoke()
+            ConfirmationDialog {
+                when(sandboxState.openedTree.treeType) {
+                    TreeType.Screen -> MenuItem(
+                        icon = Icons.Default.Delete,
+                        title = "Delete Screen",
+                        enabled = sandboxState.project.trees.screens().size >= 2,
+                        onClick = {
+                            it.confirm("Delete Screen?", "This will remove any actions that open this screen") {
+                                onDeleteTree.invoke()
+                            }
+                        }
+                    )
+                    TreeType.Component -> MenuItem(
+                        icon = Icons.Default.Delete,
+                        title = "Delete Component",
+                        enabled = true,
+                        onClick = {
+                            it.confirm("Delete Component?", "Any links to this component in your other components or screens will be unlinked (but the content will stay the same)") {
+                                onDeleteTree.invoke()
+                            }
+                        }
+                    )
                 }
-            )
+            }
         }
     }
 }

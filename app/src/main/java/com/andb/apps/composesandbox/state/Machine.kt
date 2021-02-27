@@ -13,7 +13,7 @@ class Machine(coroutineScope: CoroutineScope) {
     private val allProjects: Flow<List<Project>> = DatabaseHelper.allProjects
     private val screens = MutableStateFlow(listOf<Screen>(Screen.Projects))
 
-    val stack: StateFlow<List<ViewState>> = combine(allProjects, screens) { projects, screens ->
+    val stack: StateFlow<List<ViewState>> = combine(allProjects, screens, DatabaseHelper.history) { projects, screens, history ->
         screens.map { screen ->
             when (screen) {
                 Screen.Projects -> ViewState.Projects(projects)
@@ -33,7 +33,7 @@ class Machine(coroutineScope: CoroutineScope) {
                         }
                     }
                     val validStack = drawerStack.takeWhile { it != null }.filterNotNull()
-                    ViewState.Sandbox(project, openedTree, validStack)
+                    ViewState.Sandbox(project, openedTree, history.isNotEmpty(), validStack)
                 }
                 is Screen.Preview -> {
                     val project = projects.first { it.id == screen.projectID }
@@ -51,16 +51,17 @@ class Machine(coroutineScope: CoroutineScope) {
     fun handleAction(action: Action) {
         when (action) {
             UserAction.Back -> handleBack()
+            UserAction.Undo -> DatabaseHelper.undo()
             is UserAction.OpenScreen -> screens.value += action.screen
             is UserAction.UpdateSandbox -> screens.updateSandbox { action.screen }
             is UserAction.OpenDrawerScreen -> screens.updateSandbox {
                 it.copy(drawerScreens = it.drawerScreens + action.drawerScreen)
             }
             is UserAction.AddProject -> {
-                DatabaseHelper.upsertProject(action.project)
+                DatabaseHelper.upsertProject(action.project, true)
                 screens.value = listOf(Screen.Projects, Screen.Sandbox(action.project.id, action.project.trees.first().id))
             }
-            is UserAction.UpdateProject -> DatabaseHelper.upsertProject(action.project)
+            is UserAction.UpdateProject -> DatabaseHelper.upsertProject(action.project, action.addToHistory)
             is UserAction.DeleteProject -> {
                 screens.value = listOf(Screen.Projects)
                 DatabaseHelper.deleteProject(action.project)

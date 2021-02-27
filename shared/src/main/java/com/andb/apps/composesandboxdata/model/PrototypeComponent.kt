@@ -412,6 +412,12 @@ fun PrototypeComponent.replaceParent(replacementComponent: PrototypeComponent): 
     return Pair(newComponent, losesChildren)
 }
 
+fun PrototypeComponent.flattenIDs(): List<String> = when(this) {
+    is PrototypeComponent.Group -> this.children.flatMap { it.flattenIDs() }
+    is PrototypeComponent.Slotted -> this.slots.allSlots().flatMap { it.group.flattenIDs() }
+    else -> listOf(this.id)
+}
+
 fun <T> List<List<T>>.fitToSize(size: Int) : List<List<T>> {
     if (this.size == size) return this
     if (this.size < size) return this + (0 until size - this.size).map { emptyList() } //pad right with empty lists if list just expands
