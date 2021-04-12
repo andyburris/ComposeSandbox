@@ -1,10 +1,10 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties
 
-import androidx.compose.foundation.ScrollableColumn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ControlPointDuplicate
@@ -16,8 +16,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.name
 import com.andb.apps.composesandbox.state.ActionHandler
-import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerScreen
+import com.andb.apps.composesandbox.state.LocalActionHandler
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
 import com.andb.apps.composesandbox.ui.sandbox.drawer.toShadow
@@ -33,11 +33,11 @@ fun DrawerEditProperties(component: PrototypeComponent, isBaseComponent: Boolean
             isBaseComponent = isBaseComponent,
             modifier = Modifier
                 .shadow(scrollState.toShadow())
-                .background(AmbientElevationOverlay.current?.apply(color = MaterialTheme.colors.surface, elevation = AmbientAbsoluteElevation.current + scrollState.toShadow())
+                .background(LocalElevationOverlay.current?.apply(color = MaterialTheme.colors.surface, elevation = LocalAbsoluteElevation.current + scrollState.toShadow())
                     ?: MaterialTheme.colors.surface),
             onExtractToComponent = { onExtractComponent.invoke(component) }
         )
-        ScrollableColumn(scrollState = scrollState, modifier = Modifier.padding(horizontal = 32.dp), verticalArrangement = Arrangement.spacedBy(32.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 32.dp).verticalScroll(state = scrollState), verticalArrangement = Arrangement.spacedBy(32.dp)) {
             if (isBaseComponent) {
                 BaseComponentSwitcher(component = component) {
                     actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.PickBaseComponent))
@@ -81,7 +81,7 @@ private fun BaseComponentSwitcher(component: PrototypeComponent, onClick: () -> 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun DrawerEditPropertiesHeader(component: PrototypeComponent, isBaseComponent: Boolean, modifier: Modifier = Modifier, onExtractToComponent: () -> Unit){
-    val actionHandler = ActionHandlerAmbient.current
+    val actionHandler = LocalActionHandler.current
     DrawerHeader(title = component.name, screenName = (if (isBaseComponent) "Edit Base Component" else "Edit Component").toUpperCase(), modifier = modifier, onIconClick = { actionHandler.invoke(UserAction.Back) }) {
         IconButton(onClick = onExtractToComponent) {
             Icon(imageVector = Icons.Default.ControlPointDuplicate, contentDescription = "Extract to Custom Component")

@@ -2,7 +2,6 @@ package com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.toReadableString
@@ -26,7 +25,6 @@ fun TextProperties(component: PrototypeComponent.Text, onUpdate: (PrototypeCompo
     }
 }
 
-@OptIn(ExperimentalLayout::class)
 @Composable
 fun IconProperties(component: PrototypeComponent.Icon, onUpdate: (PrototypeComponent.Icon) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

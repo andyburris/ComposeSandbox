@@ -1,55 +1,64 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.tree
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DragIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.gesture.longPressGestureFilter
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.globalPosition
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.AmbientDensity
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.icon
 import com.andb.apps.composesandbox.data.model.name
-import com.andb.apps.composesandbox.state.ActionHandlerAmbient
 import com.andb.apps.composesandbox.state.DrawerScreen
+import com.andb.apps.composesandbox.state.LocalActionHandler
 import com.andb.apps.composesandbox.state.UserAction
-import com.andb.apps.composesandbox.ui.common.AmbientDragDrop
-import com.andb.apps.composesandbox.ui.common.TreeHoverItem
+import com.andb.apps.composesandbox.ui.common.*
+import com.andb.apps.composesandbox.util.divider
+import com.andb.apps.composesandbox.util.onBackgroundSecondary
 import com.andb.apps.composesandboxdata.model.PrototypeComponent
 import com.andb.apps.composesandboxdata.model.Slot
+import com.andb.apps.composesandboxdata.model.stringify
 
 
 @Composable
-fun Tree(parent: PrototypeComponent, modifier: Modifier = Modifier, onMoveComponent: (PrototypeComponent) -> Unit) {
+fun Tree(parent: PrototypeComponent, modifier: Modifier = Modifier, onMoveComponent: (PrototypeComponent, pointerOffset: DpOffset) -> Unit) {
     TreeItem(component = parent, modifier, onMoveComponent = onMoveComponent)
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifier, indent: Int = 0, onMoveComponent: (PrototypeComponent) -> Unit) {
-    val actionHandler = ActionHandlerAmbient.current
-    val density = AmbientDensity.current
-    val dragDropState = AmbientDragDrop.current
+private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifier, indent: Int = 0, onMoveComponent: (PrototypeComponent, pointerOffset: DpOffset) -> Unit) {
+    val actionHandler = LocalActionHandler.current
+    val density = LocalDensity.current
+    val dragDropState = LocalDragDrop.current
     Column(
         modifier = modifier
     ) {
+        val dropState = dragDropState.getDropStateForComponent(component)
+        if (dropState?.dropPosition == DropPosition.Above) DropIndicator(indent = indent)
         Row(
             modifier = Modifier.onGloballyPositioned {
                 val hoverItem = TreeHoverItem(
                     component,
-                    it.globalPosition.toDpPosition(density),
+                    it.positionInWindow().toDpPosition(density),
                     with(density) { it.size.height.toDp() },
                     indent,
                     indent != 0
@@ -60,16 +69,19 @@ private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifie
             ComponentItem(
                 component = component,
                 modifier = Modifier
-                    .clickable(
-                        onClick = { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditComponent(component.id))) }
-                    )
-                    .longPressGestureFilter {
-                        onMoveComponent.invoke(component)
+                    .clickable {
+                        actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditComponent(component.id)))
                     }
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
+                    .padding(vertical = 8.dp),
+                draggable = true,
+                onDrag = {
+                    println("onDrag, moving ${component.stringify()}")
+                    onMoveComponent.invoke(component, it)
+                }
             )
         }
+        if (dropState?.dropPosition == DropPosition.Nested.First) DropIndicator(indent = indent + 1)
         if (component is PrototypeComponent.Group) {
             GenericTree(items = component.children) { child ->
                 TreeItem(child, indent = indent + 1, onMoveComponent = onMoveComponent)
@@ -80,41 +92,77 @@ private fun TreeItem(component: PrototypeComponent, modifier: Modifier = Modifie
                 SlotItem(slot = slot, indent = indent + 1, onMoveComponent = onMoveComponent)
             }
         }
+        if (dropState?.dropPosition == DropPosition.Nested.Last) DropIndicator(indent = indent + 1)
+        if (dropState?.dropPosition == DropPosition.Below) DropIndicator(indent = indent)
     }
 }
 
 @Composable
-private fun SlotItem(slot: Slot, modifier: Modifier = Modifier, indent: Int, onMoveComponent: (PrototypeComponent) -> Unit) {
-    val density = AmbientDensity.current
-    val dragDropState = AmbientDragDrop.current
+private fun DropIndicator(indent: Int) {
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .requiredHeight(0.dp)) {
+        Box(Modifier.requiredWidth(0.dp)) {
+            Row(Modifier
+                .requiredWidth(42.dp * indent)
+                .offset(x = (-42).dp * indent / 2)) {
+                repeat(indent) {
+                    Box(
+                        Modifier
+                            .requiredSize(40.dp, 2.dp)
+                            .padding(end = 2.dp)
+                            .background(MaterialTheme.colors.primary.copy(alpha = .5f)),
+                    )
+                }
+            }
+        }
+        Box(
+            Modifier
+                .requiredHeight(2.dp)
+                .weight(1f)
+                .background(MaterialTheme.colors.primary.copy(alpha = 0.1f)),
+        )
+    }
+}
+
+@Composable
+private fun SlotItem(slot: Slot, modifier: Modifier = Modifier, indent: Int, onMoveComponent: (PrototypeComponent, pointerOffset: DpOffset) -> Unit) {
+    val density = LocalDensity.current
+    val dragDropState = LocalDragDrop.current
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
-        ProvideTextStyle(value = TextStyle.Default.copy(fontStyle = FontStyle.Italic)) {
-            Row (
-                modifier = Modifier.onGloballyPositioned {
-                    val hoverItem = TreeHoverItem(
-                        slot.group,
-                        it.globalPosition.toDpPosition(density),
-                        with(density) { it.size.height.toDp() },
-                        indent,
-                        false
-                    )
-                    dragDropState.updateTreeItem(hoverItem)
-                }
+        val dropState = dragDropState.getDropStateForComponent(slot.group)
+        if (dropState?.dropPosition == DropPosition.Above) DropIndicator(indent = indent)
+        MaterialTheme(colors = MaterialTheme.colors.copy(onBackground = MaterialTheme.colors.onBackgroundSecondary)) {
+            ProvideTextStyle(value = TextStyle.Default.copy(fontStyle = FontStyle.Italic)) {
+                Row(
+                    modifier = Modifier.onGloballyPositioned {
+                        val hoverItem = TreeHoverItem(
+                            slot.group,
+                            it.positionInWindow().toDpPosition(density),
+                            with(density) { it.size.height.toDp() },
+                            indent,
+                            false
+                        )
+                        dragDropState.updateTreeItem(hoverItem)
+                    }
 
-            ){
-                ComponentItem(
-                    component = slot.group,
-                    modifier = Modifier.padding(vertical = 8.dp),
-                    name = slot.name + " Slot",
-                    colors = Pair(MaterialTheme.colors.onSecondary, MaterialTheme.colors.onSecondary)
-                )
+                ) {
+                    ComponentItem(
+                        component = slot.group,
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        name = slot.name + " Slot",
+                    )
+                }
             }
         }
+        if (dropState?.dropPosition == DropPosition.Nested.First) DropIndicator(indent = indent + 1)
         GenericTree(items = slot.group.children) { child ->
             TreeItem(child, indent = indent + 1, onMoveComponent = onMoveComponent)
         }
+        if (dropState?.dropPosition == DropPosition.Nested.Last) DropIndicator(indent = indent + 1)
+        if (dropState?.dropPosition == DropPosition.Below) DropIndicator(indent = indent)
     }
 }
 
@@ -154,7 +202,7 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
             Box(
                 modifier = Modifier
                     .padding(start = treeConfig.horizontalPaddingStart - 1.dp, top = treeConfig.verticalPaddingTop)
-                    .size(1.dp, (with(AmbientDensity.current) { height.toDp() } - (with(AmbientDensity.current) { lastItemHeight.toDp() } - treeConfig.verticalPositionOnItem) + 1.dp).coerceAtLeast(0.dp) - treeConfig.verticalPaddingTop)
+                    .size(1.dp, (with(LocalDensity.current) { height.toDp() } - (with(LocalDensity.current) { lastItemHeight.toDp() } - treeConfig.verticalPositionOnItem) + 1.dp).coerceAtLeast(0.dp) - treeConfig.verticalPaddingTop)
                     .background(MaterialTheme.colors.onBackground.copy(alpha = .25f))
             )
         }
@@ -163,9 +211,27 @@ fun <T> GenericTree(items: List<T>, modifier: Modifier = Modifier, treeConfig: T
 
 
 @Composable
-fun ComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier, name: String = component.name, colors: Pair<Color, Color> = Pair(MaterialTheme.colors.onSecondary, MaterialTheme.colors.onBackground)) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Icon(imageVector = component.icon, contentDescription = null, tint = colors.first)
-        Text(text = name, modifier = Modifier.padding(start = 16.dp), color = colors.second)
+fun ComponentItem(
+    component: PrototypeComponent,
+    modifier: Modifier = Modifier,
+    name: String = component.name,
+    draggable: Boolean = false,
+    onDrag: ((pointerOffset: DpOffset) -> Unit)? = null
+) {
+    Row(modifier = modifier, horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(imageVector = component.icon, contentDescription = null, tint = MaterialTheme.colors.onBackgroundSecondary)
+            Text(text = name, modifier = Modifier.padding(start = 16.dp), color = MaterialTheme.colors.onBackground)
+        }
+        if (draggable) {
+            val density = LocalDensity.current
+            Icon(imageVector = Icons.Default.DragIndicator, tint = MaterialTheme.colors.divider, contentDescription = "Move Component", modifier = Modifier.pointerInput(Unit) {
+                detectTapGestures(onPress = { onDrag?.invoke(it.toDpPosition(density)) })
+            })
+        }
     }
+}
+
+private fun DragDropState.getDropStateForComponent(component: PrototypeComponent) = (getDropState() as? HoverState.OverTreeItem)?.let {
+    return@let if (draggingComponent.value != null && it.hoveringComponent == component) it else null
 }

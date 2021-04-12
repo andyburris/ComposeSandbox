@@ -144,7 +144,7 @@ private val emptySlottedCode = """
         isFloatingActionButtonDocked = false,
         topBar = {},
         floatingActionButton = {},
-        bodyContent = {}
+        content = {}
     )
 """.trimIndent()
 
@@ -202,6 +202,7 @@ private fun Test() {
 
     Icon(
         imageVector = Icons.Default.Add,
+        contentDescription = "",
         tint = MaterialTheme.colors.onBackground,
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
     )
@@ -236,7 +237,7 @@ private fun Test() {
         isFloatingActionButtonDocked = false,
         topBar = {},
         floatingActionButton = {},
-        bodyContent = {}
+        content = {}
     )
 
     TopAppBar(
@@ -245,6 +246,7 @@ private fun Test() {
         navigationIcon = {
             Icon(
                 imageVector = Icons.Default.Menu,
+                contentDescription = "",
                 tint = MaterialTheme.colors.onPrimary,
                 modifier = Modifier.padding(all = 12.dp)
             )
@@ -262,6 +264,7 @@ private fun Test() {
             ) {
                 Icon(
                     imageVector = Icons.Default.MoreVert,
+                    contentDescription = "",
                     tint = MaterialTheme.colors.onPrimary,
                     modifier = Modifier.padding(all = 12.dp)
                 )

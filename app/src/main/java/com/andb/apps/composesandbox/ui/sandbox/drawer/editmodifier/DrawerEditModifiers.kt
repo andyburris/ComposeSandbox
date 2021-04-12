@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.state.ActionHandlerAmbient
+import com.andb.apps.composesandbox.state.LocalActionHandler
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.Chip
 import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
@@ -17,7 +17,7 @@ import com.andb.apps.composesandboxdata.model.*
 
 @Composable
 fun DrawerEditModifiers(prototypeModifier: PrototypeModifier, onEdit: (PrototypeModifier) -> Unit) {
-    val actionHandler = ActionHandlerAmbient.current
+    val actionHandler = LocalActionHandler.current
     Column() {
         DrawerHeader(title = prototypeModifier.name, screenName = "Edit Modifier".toUpperCase(), onIconClick = { actionHandler.invoke(UserAction.Back) })
         Column(Modifier.padding(horizontal = 32.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {

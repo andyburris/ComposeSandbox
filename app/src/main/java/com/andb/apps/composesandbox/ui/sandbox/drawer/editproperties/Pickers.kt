@@ -5,7 +5,9 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -19,9 +21,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.gesture.scrollorientationlocking.Orientation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.andb.apps.composesandbox.data.model.projectColor
@@ -42,19 +44,19 @@ fun TextPicker(label: String, value: String, onValueChange: (String) -> Unit) {
 fun <T> OptionsPicker(label: String, selected: T, options: List<T>, stringify: (T) -> String = { it.toString() }, onValueChange: (T) -> Unit) {
     val opened = remember { mutableStateOf(false) }
     GenericPropertyEditor(label) {
-        DropdownMenu(
-            toggle = {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { opened.value = true }) {
-                    Text(text = stringify(selected))
-                    Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "Open Dropdown")
-                }
-            },
-            expanded = opened.value,
-            onDismissRequest = { opened.value = false }
-        ) {
-            for (option in options) {
-                DropdownMenuItem(onClick = { onValueChange.invoke(option); }) {
-                    Text(text = stringify(option))
+        Box {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { opened.value = true }) {
+                Text(text = stringify(selected))
+                Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "Open Dropdown")
+            }
+            DropdownMenu(
+                expanded = opened.value,
+                onDismissRequest = { opened.value = false }
+            ) {
+                for (option in options) {
+                    DropdownMenuItem(onClick = { onValueChange.invoke(option); }) {
+                        Text(text = stringify(option))
+                    }
                 }
             }
         }
@@ -63,37 +65,40 @@ fun <T> OptionsPicker(label: String, selected: T, options: List<T>, stringify: (
 
 @Composable
 fun NumberPicker(label: String, current: Int, minValue: Int = 0, maxValue: Int = Int.MAX_VALUE, onValueChange: (Int) -> Unit) {
+    val density = LocalDensity.current
     GenericPropertyEditor(label = label) {
         val dragged = remember { mutableStateOf(Pair(current, 0f)) }
+        val verticalDragState = rememberDraggableState { delta ->
+            dragged.value = dragged.value.copy(second = dragged.value.second - delta) // minus since dragging down is a positive delta, but should make numbers go down
+            val numbersDragged = with(density) { dragged.value.second.toDp().value }
+            onValueChange.invoke((dragged.value.first + numbersDragged).toInt().coerceIn(minValue..maxValue))
+        }
+        val horizontalDragState = rememberDraggableState { delta ->
+            dragged.value = dragged.value.copy(second = dragged.value.second + delta) // minus since dragging down is a positive delta, but should make numbers go down
+            val numbersDragged = with(density) { dragged.value.second.toDp().value }
+            onValueChange.invoke((dragged.value.first + numbersDragged).toInt().coerceIn(minValue..maxValue))
+        }
         Row(
             modifier = Modifier
-                .preferredWidth(96.dp)
+                .width(96.dp)
                 .bottomBorder(1.dp, MaterialTheme.colors.onSecondary)
                 .background(
                     MaterialTheme.colors.secondary,
-                    shape = RoundedCornerShape(topLeft = 8.dp, topRight = 8.dp)
+                    shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
                 )
                 .draggable(
                     orientation = Orientation.Vertical,
                     onDragStopped = {
                         dragged.value = Pair(current, 0f)
                     },
-                    onDrag = { delta ->
-                        dragged.value = dragged.value.copy(second = dragged.value.second - delta) // minus since dragging down is a positive delta, but should make numbers go down
-                        val numbersDragged = dragged.value.second.toDp().value
-                        onValueChange.invoke((dragged.value.first + numbersDragged).toInt().coerceIn(minValue..maxValue))
-                    }
+                    state = verticalDragState
                 )
                 .draggable(
                     orientation = Orientation.Horizontal,
                     onDragStopped = {
                         dragged.value = Pair(current, 0f)
                     },
-                    onDrag = { delta ->
-                        dragged.value = dragged.value.copy(second = dragged.value.second + delta) // minus since dragging down is a positive delta, but should make numbers go down
-                        val numbersDragged = dragged.value.second.toDp().value
-                        onValueChange.invoke((dragged.value.first + numbersDragged).toInt().coerceIn(minValue..maxValue))
-                    }
+                    state = horizontalDragState
                 ),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically

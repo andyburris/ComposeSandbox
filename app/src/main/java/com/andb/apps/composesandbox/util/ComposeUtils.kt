@@ -3,6 +3,7 @@ package com.andb.apps.composesandbox.util
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Colors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,3 +80,8 @@ fun <T> LazyListScope.gridItems(
         }
     }
 }
+
+
+val Colors.onBackgroundSecondary get() = this.onSecondary
+val Colors.divider get() = this.secondaryVariant
+val Colors.overlay get() = this.secondary

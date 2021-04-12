@@ -1,7 +1,9 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -20,6 +22,7 @@ import com.andb.apps.composesandboxdata.model.name
 import com.andb.apps.composesandboxdata.model.summary
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ModifiersEditor(modifiers: List<PrototypeModifier>, modifier: Modifier = Modifier, onAdd: () -> Unit, onOpenModifier: (PrototypeModifier) -> Unit, onUpdate: (List<PrototypeModifier>) -> Unit) {
     val dialogShowing = remember { mutableStateOf(false) }
@@ -51,7 +54,7 @@ fun ModifiersEditor(modifiers: List<PrototypeModifier>, modifier: Modifier = Mod
             modifiers.forEach {
                 ModifierItem(
                     prototypeModifier = it,
-                    modifier = Modifier.clickable(onLongClick = { onUpdate(modifiers - it) }) {
+                    modifier = Modifier.combinedClickable(onLongClick = { onUpdate(modifiers - it) }) {
                         onOpenModifier.invoke(it)
                     }
                 )

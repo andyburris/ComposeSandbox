@@ -180,7 +180,7 @@ sealed class Slots {
             is TopAppBar -> TopAppBar(transform(navigationIcon), transform(title), transform(actions))
             is BottomAppBar -> BottomAppBar(transform(content))
             is ExtendedFloatingActionButton -> ExtendedFloatingActionButton(transform(icon), transform(text))
-            is Scaffold -> Scaffold(transform(topBar), transform(bottomBar), transform(floatingActionButton), transform(drawer), transform(bodyContent))
+            is Scaffold -> Scaffold(transform(topBar), transform(bottomBar), transform(floatingActionButton), transform(drawer), transform(content))
         }
     }
     fun mapIndexed(transform: (Int, Slot) -> Slot): Slots {
@@ -218,9 +218,9 @@ sealed class Slots {
         val bottomBar: Slot = Slot("Bottom Bar", enabled = false),
         val floatingActionButton: Slot = Slot("Floating Action Button", enabled = true),
         val drawer: Slot = Slot("Drawer", enabled = false),
-        val bodyContent: Slot = Slot("Body Content", optional = false, enabled = true)
+        val content: Slot = Slot("Content", optional = false, enabled = true)
     ) : Slots() {
-        override fun allSlots() = listOf(topBar, bottomBar, floatingActionButton, drawer, bodyContent)
+        override fun allSlots() = listOf(topBar, bottomBar, floatingActionButton, drawer, content)
     }
 }
 
@@ -252,7 +252,7 @@ fun PrototypeComponent.Slotted.withSlots(slots: Slots): PrototypeComponent.Slott
  * @param indexInParent the position in the parent group that [adding] should be inserted at
  */
 fun PrototypeComponent.plusChildInTree(adding: PrototypeComponent, parent: PrototypeComponent.Group, indexInParent: Int): PrototypeComponent {
-    println("adding child to tree - adding = $adding, parent = $parent, indexInParent = $indexInParent, this = $this")
+    println("adding child to tree - adding = ${adding.stringify()}, parent = ${parent.stringify()}, indexInParent = $indexInParent, this = ${this.stringify()}")
     return when {
         this == parent -> {
             if (this !is PrototypeComponent.Group) throw Error("Can only add a child to a component that is a PrototypeComponent.Group")
@@ -422,3 +422,19 @@ fun <T> List<List<T>>.fitToSize(size: Int) : List<List<T>> {
         if (isLastNewSlot) flattenedLast else this[index]
     }
 }
+
+fun PrototypeComponent.stringify(): String = when(this) {
+    is PrototypeComponent.Custom -> "Custom(treeID = ${this.treeID})"
+    is PrototypeComponent.Group.Box -> "Box(${children.stringifyChildren()})"
+    is PrototypeComponent.Group.Column -> "Column(${children.stringifyChildren()})"
+    is PrototypeComponent.Group.Row -> "Row(${children.stringifyChildren()})"
+    is PrototypeComponent.Icon -> "Icon(${icon.name})"
+    is PrototypeComponent.Slotted.BottomAppBar -> "BottomAppBar(content = ${slots.allSlots().stringifySlots()})"
+    is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> "ExtendedFloatingActionButton(${slots.allSlots().stringifySlots()})"
+    is PrototypeComponent.Slotted.Scaffold -> "Scaffold(${slots.allSlots().stringifySlots()})"
+    is PrototypeComponent.Slotted.TopAppBar -> "TopAppBar(${slots.allSlots().stringifySlots()})"
+    is PrototypeComponent.Text -> "Text(\"${this.text}\")"
+}
+
+fun List<Slot>.stringifySlots() = this.filter { it.enabled }.joinToString() { "${it.name} = ${it.group.stringify()}" }
+fun List<PrototypeComponent>.stringifyChildren() = this.joinToString { it.stringify() }

@@ -43,7 +43,6 @@ android {
     }
     composeOptions {
         kotlinCompilerExtensionVersion = Versions.compose
-        kotlinCompilerVersion = "1.4.21-2"
     }
     packagingOptions {
         exclude("META-INF/ui-tooling_release.kotlin_module")
@@ -53,9 +52,9 @@ android {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlin}")
     implementation("androidx.core:core-ktx:1.3.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0")
-    implementation("androidx.appcompat:appcompat:1.2.0")
-    implementation("com.google.android.material:material:1.2.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
+    implementation("androidx.appcompat:appcompat:1.3.0-rc01")
+    implementation("com.google.android.material:material:1.3.0")
     implementation(Dependencies.Compose.layout)
     implementation(Dependencies.Compose.material)
     implementation(Dependencies.Compose.icons)
@@ -64,6 +63,8 @@ dependencies {
     implementation(Dependencies.Koin.android)
     implementation(Dependencies.Koin.viewModel)
     implementation(Dependencies.colorPicker)
+    implementation(Dependencies.Activity.core)
+    implementation(Dependencies.Activity.compose)
     implementation(Dependencies.coroutines)
     testImplementation("junit:junit:4.13")
     androidTestImplementation("androidx.test.ext:junit:1.1.2")

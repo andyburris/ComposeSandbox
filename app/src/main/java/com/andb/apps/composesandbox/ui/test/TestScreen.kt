@@ -8,7 +8,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.savedinstancestate.savedInstanceState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
@@ -21,7 +21,7 @@ fun TestScreen() {
             Text(text = "Toggle Visibility")
         }
         if(visible.value) {
-            val progress = savedInstanceState { 0f }
+            val progress = rememberSaveable { mutableStateOf(0f) }
             Slider(value = progress.value, onValueChange = { progress.value = it })
         }
     }

@@ -8,9 +8,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Providers
-import androidx.compose.runtime.emptyContent
-import androidx.compose.runtime.staticAmbientOf
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -19,13 +18,13 @@ import androidx.compose.ui.unit.sp
 import com.andb.apps.composesandbox.data.model.*
 import com.andb.apps.composesandboxdata.model.*
 
-private val AmbientSelected = staticAmbientOf<String?>()
+private val LocalSelected = staticCompositionLocalOf<String?> { null }
 private val selectionColor = Color(0xFF56CCF2)
 
 @Composable
 fun RenderComponentParent(theme: Theme, component: PrototypeComponent, selected: String? = null) {
     MaterialTheme(colors = theme.toColors(), typography = Typography(), shapes = Shapes()) {
-        Providers(AmbientSelected provides selected) {
+        CompositionLocalProvider(LocalSelected provides selected) {
             Box(modifier = Modifier.background(MaterialTheme.colors.background).fillMaxSize()) {
                 RenderComponent(component = component)
             }
@@ -39,7 +38,7 @@ fun RenderComponentParent(theme: Theme, component: PrototypeComponent, selected:
  */
 @Composable
 fun RenderComponent(component: PrototypeComponent){
-    val selected = AmbientSelected.current == component.id
+    val selected = LocalSelected.current == component.id
     val selectedModifier = if (selected) Modifier.border(1.dp, selectionColor) else Modifier
     val modifier = selectedModifier then component.modifiers.toModifier()
     when (component){
@@ -115,12 +114,12 @@ fun RenderComponent(component: PrototypeComponent){
             floatingActionButton = renderSlot(component.slots.floatingActionButton),
             floatingActionButtonPosition = component.floatingActionButtonPosition.toFabPosition(),
             isFloatingActionButtonDocked = component.isFloatingActionButtonDocked,
-            bodyContent = renderScopedSlot(component.slots.bodyContent),
+            content = renderScopedSlot(component.slots.content),
             backgroundColor = component.backgroundColor.renderColor(),
             contentColor = component.contentColor.renderColor(),
         )
         is PrototypeComponent.Custom -> {
-            val treeComponent = AmbientProject.current.trees.filter { it.treeType == TreeType.Component }.first { it.id == component.treeID }.component
+            val treeComponent = LocalProject.current.trees.filter { it.treeType == TreeType.Component }.first { it.id == component.treeID }.component
             val selectedModifier = if (selected) listOf(PrototypeModifier.Border(1, PrototypeColor.FixedColor(selectionColor.toArgb()), 0)) else emptyList()
             RenderComponent(component = treeComponent.copy(modifiers = selectedModifier + component.modifiers + treeComponent.modifiers)) //instance modifiers wrap the component's modifiers
         }
@@ -132,7 +131,7 @@ private fun renderSlot(slot: Slot): @Composable () -> Unit {
     if (slot.enabled) {
         return { slot.group.children.forEach { RenderComponent(component = it) } }
     } else {
-        return emptyContent()
+        return {}
     }
 }
 
@@ -141,7 +140,7 @@ private fun <T> renderScopedSlot(slot: Slot): @Composable T.() -> Unit {
     if (slot.enabled) {
         return { slot.group.children.forEach { RenderComponent(component = it) } }
     } else {
-        return { emptyContent() }
+        return {}
     }
 }
 

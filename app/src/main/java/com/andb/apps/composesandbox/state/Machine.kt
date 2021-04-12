@@ -23,17 +23,17 @@ class Machine(coroutineScope: CoroutineScope) {
                     val openedTree = project.trees.first { it.id == screen.openedTreeID }
                     val drawerStack = screen.drawerScreens.map { drawerScreen ->
                         when (drawerScreen) {
-                            DrawerScreen.Tree -> DrawerState.Tree
-                            DrawerScreen.AddComponent -> DrawerState.AddComponent
-                            is DrawerScreen.EditComponent -> openedTree.component.findByIDInTree(drawerScreen.componentID)?.let { DrawerState.EditComponent(it) }
-                            is DrawerScreen.PickBaseComponent -> DrawerState.PickBaseComponent(openedTree.component)
-                            DrawerScreen.AddModifier -> DrawerState.AddModifier
-                            is DrawerScreen.EditModifier -> openedTree.component.findModifierByIDInTree(drawerScreen.modifierID)?.let { DrawerState.EditModifier(it) }
-                            DrawerScreen.EditTheme -> DrawerState.EditTheme
+                            DrawerScreen.Tree -> DrawerViewState.Tree
+                            DrawerScreen.AddComponent -> DrawerViewState.AddComponent
+                            is DrawerScreen.EditComponent -> openedTree.component.findByIDInTree(drawerScreen.componentID)?.let { DrawerViewState.EditComponent(it) }
+                            is DrawerScreen.PickBaseComponent -> DrawerViewState.PickBaseComponent(openedTree.component)
+                            DrawerScreen.AddModifier -> DrawerViewState.AddModifier
+                            is DrawerScreen.EditModifier -> openedTree.component.findModifierByIDInTree(drawerScreen.modifierID)?.let { DrawerViewState.EditModifier(it) }
+                            DrawerScreen.EditTheme -> DrawerViewState.EditTheme
                         }
                     }
                     val validStack = drawerStack.takeWhile { it != null }.filterNotNull()
-                    ViewState.Sandbox(project, openedTree, validStack)
+                    ViewState.Sandbox(project, screen.openedTreeID, validStack)
                 }
                 is Screen.Preview -> {
                     val project = projects.first { it.id == screen.projectID }

@@ -1,42 +1,32 @@
 package com.andb.apps.composesandbox.ui.util
 
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.gesture.Direction
-import androidx.compose.ui.gesture.DragObserver
-import androidx.compose.ui.gesture.dragGestureFilter
-import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.platform.AmbientDensity
+import androidx.compose.ui.input.pointer.consumePositionChange
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.toDpPosition
 
 fun Modifier.draggable2D(
-    currentPosition: DpOffset,
-    onDrop: (DpOffset) -> Unit,
-    canDrag: ((Direction) -> Boolean)? = null,
-    startDragImmediately: Boolean = false,
-    onPositionUpdate: (DpOffset) -> Unit
-) : Modifier = composed {
-    val density = AmbientDensity.current
-    Modifier.dragGestureFilter(
-        dragObserver = object : DragObserver {
-            override fun onDrag(dragDistance: Offset): Offset {
-                onPositionUpdate.invoke(currentPosition + dragDistance.toDpPosition(density))
-                println("dragging, value = ${currentPosition + dragDistance.toDpPosition(density)}")
-                return dragDistance
-            }
-
-            override fun onStop(velocity: Offset) { onDrop.invoke(currentPosition) }
-
-            override fun onCancel() { onDrop.invoke(currentPosition) }
-        },
-        canDrag = canDrag,
-        startDragImmediately = startDragImmediately
-    )
-    .pointerInteropFilter { event ->
-        println("pointerEvent = $event")
-        onPositionUpdate.invoke(Offset(event.x, event.y).toDpPosition(density))
-        false
+    onDrop: () -> Unit,
+    canDrag: Boolean = true,
+    onDragStart: (DpOffset) -> Unit,
+    onPositionUpdate: (delta: DpOffset) -> Unit
+): Modifier = composed {
+    val density = LocalDensity.current
+    return@composed Modifier.pointerInput(canDrag) {
+        detectDragGestures(
+            onDragStart = { onDragStart.invoke(it.toDpPosition(density)) },
+            onDragEnd = { onDrop.invoke() },
+            onDragCancel = { onDrop.invoke() }
+        ) { change, dragAmount ->
+            if (canDrag) { change.consumePositionChange() }
+            onPositionUpdate.invoke(dragAmount.toDpPosition(density))
+        }
+/*            detectTapGestures(onPress = {
+                onPositionUpdate.invoke(Offset(it.x, it.y).toDpPosition(density))
+            })*/
     }
 }

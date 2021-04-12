@@ -17,14 +17,15 @@ sealed class Screen {
 sealed class ViewState {
     data class Projects (val projects: List<Project>) : ViewState()
     object AddProject : ViewState()
-    data class Sandbox(val project: Project, val openedTree: PrototypeTree, val drawerStack: List<DrawerState>) : ViewState() {
+    data class Sandbox(val project: Project, val openedTreeID: String, val drawerStack: List<DrawerViewState>) : ViewState() {
+        val openedTree get() = project.trees.first { it.id == openedTreeID }
         val editingComponent: PrototypeComponent get() {
-            if (drawerStack.none { it is DrawerState.EditComponent }) throw Error("Can't access editingComponent until drawerStack contains a DrawerState.EditComponent, currently is $drawerStack")
-            return drawerStack.filterIsInstance<DrawerState.EditComponent>().first().component
+            if (drawerStack.none { it is DrawerViewState.EditComponent }) throw Error("Can't access editingComponent until drawerStack contains a DrawerState.EditComponent, currently is $drawerStack")
+            return drawerStack.filterIsInstance<DrawerViewState.EditComponent>().first().component
         }
         val editingModifier: PrototypeModifier get() {
-            if (drawerStack.none { it is DrawerState.EditModifier }) throw Error("Can't access editingModifier until drawerStack contains a DrawerState.EditModifier, currently is $drawerStack")
-            return drawerStack.filterIsInstance<DrawerState.EditModifier>().first().modifier
+            if (drawerStack.none { it is DrawerViewState.EditModifier }) throw Error("Can't access editingModifier until drawerStack contains a DrawerState.EditModifier, currently is $drawerStack")
+            return drawerStack.filterIsInstance<DrawerViewState.EditModifier>().first().modifier
         }
     }
     data class Preview(val project: Project, val currentTree: PrototypeTree) : ViewState()
@@ -52,23 +53,23 @@ sealed class DrawerScreen {
 }
 
 
-sealed class DrawerState {
-    object Tree : DrawerState()
-    object AddComponent : DrawerState()
-    data class EditComponent (val component: PrototypeComponent) : DrawerState()
-    data class PickBaseComponent(val currentBaseComponent: PrototypeComponent) : DrawerState()
-    object AddModifier : DrawerState()
-    data class EditModifier(val modifier: PrototypeModifier) : DrawerState()
-    object EditTheme : DrawerState()
+sealed class DrawerViewState {
+    object Tree : DrawerViewState()
+    object AddComponent : DrawerViewState()
+    data class EditComponent (val component: PrototypeComponent) : DrawerViewState()
+    data class PickBaseComponent(val currentBaseComponent: PrototypeComponent) : DrawerViewState()
+    object AddModifier : DrawerViewState()
+    data class EditModifier(val modifier: PrototypeModifier) : DrawerViewState()
+    object EditTheme : DrawerViewState()
 }
 
 
-fun DrawerState.toDrawerScreen() = when (this) {
-    DrawerState.Tree -> DrawerScreen.Tree
-    DrawerState.AddComponent -> DrawerScreen.AddComponent
-    is DrawerState.EditComponent -> DrawerScreen.EditComponent(component.id)
-    is DrawerState.PickBaseComponent -> DrawerScreen.PickBaseComponent
-    DrawerState.AddModifier -> DrawerScreen.AddModifier
-    is DrawerState.EditModifier -> DrawerScreen.EditModifier(modifier.id)
-    DrawerState.EditTheme -> DrawerScreen.EditTheme
+fun DrawerViewState.toDrawerScreen() = when (this) {
+    DrawerViewState.Tree -> DrawerScreen.Tree
+    DrawerViewState.AddComponent -> DrawerScreen.AddComponent
+    is DrawerViewState.EditComponent -> DrawerScreen.EditComponent(component.id)
+    is DrawerViewState.PickBaseComponent -> DrawerScreen.PickBaseComponent
+    DrawerViewState.AddModifier -> DrawerScreen.AddModifier
+    is DrawerViewState.EditModifier -> DrawerScreen.EditModifier(modifier.id)
+    DrawerViewState.EditTheme -> DrawerScreen.EditTheme
 }
