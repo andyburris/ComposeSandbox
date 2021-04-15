@@ -13,7 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.runtime.Composable
@@ -45,9 +45,24 @@ fun <T> OptionsPicker(label: String, selected: T, options: List<T>, stringify: (
     val opened = remember { mutableStateOf(false) }
     GenericPropertyEditor(label) {
         Box {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { opened.value = true }) {
+            Row(
+                modifier = Modifier
+                    .bottomBorder(1.dp, MaterialTheme.colors.onSecondary)
+                    .background(MaterialTheme.colors.secondary, shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                    .clickable { opened.value = true }
+                    .height(32.dp)
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(text = stringify(selected))
-                Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "Open Dropdown")
+                //Icon(imageVector = Icons.Default.ExpandMore, contentDescription = "Open Dropdown")
+                Image(
+                    imageVector = Icons.Default.ExpandMore,
+                    contentDescription = "Open Dropdown",
+                    colorFilter = ColorFilter.tint(MaterialTheme.colors.onSecondary),
+                    modifier = Modifier.size(20.dp)
+                )
             }
             DropdownMenu(
                 expanded = opened.value,

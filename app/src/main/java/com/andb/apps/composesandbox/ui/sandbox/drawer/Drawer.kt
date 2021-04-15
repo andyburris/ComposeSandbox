@@ -75,6 +75,14 @@ fun Drawer(
                     .positionInWindow()
                     .toDpPosition(density)
             }
+            .draggable2D(
+                canDrag = dragDropState.draggingComponent.value != null,
+                onDrop = { dragDropState.drop() },
+                onPositionUpdate = {
+                    dragDropState.dragPosition.value = it
+                    //println("dragging, value = ${dragDropState.dragPosition.value}")
+                }
+            )
     ) { switchDrawerState, visibilityProgress, isTop ->
         Box(
             modifier = Modifier.graphicsLayer(
@@ -100,10 +108,16 @@ fun Drawer(
                     onDrag.invoke(it)
                     actionHandler.invoke(UserAction.Back)
                 }
-                is DrawerViewState.EditComponent -> DrawerEditProperties(switchDrawerState.component, isBaseComponent = switchDrawerState.component.id == sandboxState.openedTree.component.id, actionHandler, onExtractComponent = onExtractComponent) { updatedComponent ->
-                    val updatedTree = sandboxState.openedTree.component.updatedChildInTree(updatedComponent)
-                    onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
-                }
+                is DrawerViewState.EditComponent -> DrawerEditProperties(
+                    component = switchDrawerState.component,
+                    isBaseComponent = switchDrawerState.component.id == sandboxState.openedTree.component.id,
+                    actionHandler = actionHandler,
+                    onExtractComponent = onExtractComponent,
+                    onUpdate = { updatedComponent ->
+                        val updatedTree = sandboxState.openedTree.component.updatedChildInTree(updatedComponent)
+                        onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
+                    }
+                )
                 is DrawerViewState.PickBaseComponent -> {
                     ConfirmationDialog { confirmationState ->
                         ComponentList(project = sandboxState.project, title = "Pick Base Component", currentTreeID = sandboxState.openedTree.id, requiresLongClick = false) {
@@ -133,14 +147,7 @@ fun Drawer(
             }
             val draggingComponent = dragDropState.draggingComponent.value
             if (draggingComponent != null) {
-                ComponentDragDropItem(component = draggingComponent, position = dragDropState.dragPosition.value, modifier = Modifier.draggable2D(
-                    onDrop = { dragDropState.drop() },
-                    onDragStart = { dragDropState.dragPosition.value = it },
-                    onPositionUpdate = {
-                        dragDropState.dragPosition.value += it
-                        println("dragging, value = ${dragDropState.dragPosition.value}")
-                    }
-                ))
+                ComponentDragDropItem(component = draggingComponent, position = dragDropState.dragPosition.value)
             }
         }
     }
@@ -152,7 +159,7 @@ enum class DragDropScrolling { ScrollingUp, None, ScrollingDown }
 private fun ComponentDragDropItem(component: PrototypeComponent, position: DpOffset, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
-            .offset(position.x, position.y)
+            .offset(position.x - 16.dp, position.y - 8.dp)
             .shadow(4.dp, RoundedCornerShape(8.dp))
             .background(MaterialTheme.colors.background, shape = RoundedCornerShape(8.dp))
             .padding(16.dp),
@@ -173,6 +180,5 @@ private fun ComponentDragDropItem(component: PrototypeComponent, position: DpOff
             }
         }
     }
-
 }
 
