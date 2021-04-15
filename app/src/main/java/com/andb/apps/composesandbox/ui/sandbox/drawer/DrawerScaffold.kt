@@ -3,8 +3,6 @@ package com.andb.apps.composesandbox.ui.sandbox.drawer
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
@@ -12,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.AmbientDensity
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -27,7 +25,7 @@ fun DrawerHeader(
     screenName: String? = null,
     iconSlot: @Composable (icon: ImageVector) -> Unit = {
         IconButton(onClick = onIconClick) {
-            Icon(imageVector = it)
+            Icon(imageVector = it, contentDescription = "Navigate Up")
         }
     },
     onIconClick: () -> Unit,
@@ -62,15 +60,15 @@ fun ScrollableDrawer(header: @Composable () -> Unit, content: @Composable Column
             modifier = Modifier
                 .zIndex(4f)
                 .shadow(scrollState.toShadow())
-                .background(AmbientElevationOverlay.current?.apply(color = MaterialTheme.colors.surface, elevation = AmbientAbsoluteElevation.current + scrollState.toShadow()) ?: MaterialTheme.colors.surface)
+                .background(LocalElevationOverlay.current?.apply(color = MaterialTheme.colors.surface, elevation = LocalAbsoluteElevation.current + scrollState.toShadow()) ?: MaterialTheme.colors.surface)
         ) {
             header()
         }
-        ScrollableColumn(scrollState = scrollState) {
+        Column(Modifier.verticalScroll(scrollState)) {
             content()
         }
     }
 }
 
 @Composable
-fun ScrollState.toShadow() = with(AmbientDensity.current){ this@toShadow.value.toDp() }.coerceAtMost(4.dp)
+fun ScrollState.toShadow() = with(LocalDensity.current){ this@toShadow.value.toDp() }.coerceAtMost(4.dp)

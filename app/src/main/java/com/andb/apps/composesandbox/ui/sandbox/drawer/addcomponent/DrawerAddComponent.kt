@@ -1,22 +1,26 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.addcomponent
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.savedinstancestate.savedInstanceState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.data.model.icon
 import com.andb.apps.composesandbox.data.model.name
-import com.andb.apps.composesandbox.state.ActionHandlerAmbient
+import com.andb.apps.composesandbox.state.LocalActionHandler
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
 import com.andb.apps.composesandbox.ui.sandbox.drawer.ScrollableDrawer
@@ -36,7 +40,7 @@ fun ComponentList(project: Project, currentTreeID: String, title: String = "Add 
             ComponentListHeader(title)
         }
     ) {
-        val searchTerm = savedInstanceState { "" }
+        val searchTerm = rememberSaveable { mutableStateOf("") }
 
         Column(modifier = Modifier.padding(horizontal = 32.dp), verticalArrangement = Arrangement.spacedBy(16.dp),) {
 
@@ -81,6 +85,7 @@ fun AddComponentHeader(text: String, modifier: Modifier = Modifier) {
     Text(text = text.toUpperCase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.primary, modifier = modifier.padding(start = 0.dp, end = 32.dp, top = 8.dp))
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun AddComponentItem(component: PrototypeComponent, modifier: Modifier = Modifier, enabled: Boolean = true, requiresLongClick: Boolean, onSelect: (PrototypeComponent) -> Unit) {
     Column(
@@ -90,7 +95,7 @@ private fun AddComponentItem(component: PrototypeComponent, modifier: Modifier =
             .shadow(2.dp, shape = RoundedCornerShape(8.dp))
             .background(MaterialTheme.colors.background, shape = RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
-            .clickable(onLongClick = { if (requiresLongClick) onSelect.invoke(component) }, onClick = { if (!requiresLongClick) onSelect.invoke(component) })
+            .then(if (!requiresLongClick) Modifier.clickable { onSelect.invoke(component) } else Modifier.pointerInput(Unit) { detectTapGestures(onLongPress = { onSelect.invoke(component) } )} )
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -100,21 +105,11 @@ private fun AddComponentItem(component: PrototypeComponent, modifier: Modifier =
             Text(text = component.documentation, style = MaterialTheme.typography.body2, color = MaterialTheme.colors.onSecondary)
         }
     }
-/*    val color = if (enabled) Color.Unspecified else MaterialTheme.colors.secondary
-    ComponentItem(
-        component = component,
-        modifier = Modifier
-                then (if (enabled) Modifier.clickable(onLongClick = { onSelect.invoke(component) }, onClick = {}) else Modifier)
-            .padding(horizontal = 32.dp, vertical = 8.dp)
-            .fillMaxWidth(),
-        colors = Pair(color, color)
-    )*/
-
 }
 
 @Composable
 private fun ComponentListHeader(title: String) {
-    val actionHandler = ActionHandlerAmbient.current
+    val actionHandler = LocalActionHandler.current
     DrawerHeader(title = title, onIconClick = { actionHandler.invoke(UserAction.Back) })
 }
 

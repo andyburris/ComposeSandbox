@@ -2,7 +2,12 @@ package com.andb.apps.composesandbox.ui.sandbox
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -21,12 +26,14 @@ import com.andb.apps.composesandboxdata.model.*
 @Composable
 fun SandboxBackdrop(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) -> Unit) {
     val actionHandler = Handler
-    Column(Modifier.padding(vertical = 8.dp)) {
-        val (screens, components) = sandboxState.project.trees.partition { it.treeType == TreeType.Screen }
-        CategoryHeader(category = "Screens", modifier = Modifier.padding(bottom = 8.dp)) {
-            onUpdateProject.invoke(sandboxState.project.copy(trees = sandboxState.project.trees + PrototypeTree(name = sandboxState.project.nextScreenName(), treeType = TreeType.Screen)))
+    val (screens, components) = sandboxState.project.trees.partition { it.treeType == TreeType.Screen }
+    LazyColumn {
+        item {
+            CategoryHeader(category = "Screens", modifier = Modifier.padding(bottom = 8.dp)) {
+                onUpdateProject.invoke(sandboxState.project.copy(trees = sandboxState.project.trees + PrototypeTree(name = sandboxState.project.nextScreenName(), treeType = TreeType.Screen)))
+            }
         }
-        screens.forEach { screen ->
+        items(screens) { screen ->
             TreeItem(
                 tree = screen,
                 selected = sandboxState.openedTree == screen,
@@ -36,10 +43,12 @@ fun SandboxBackdrop(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) 
                 }
             }
         }
-        CategoryHeader(category = "Components", modifier = Modifier.padding(bottom = 8.dp, top = 16.dp)) {
-            onUpdateProject.invoke(sandboxState.project.copy(trees = sandboxState.project.trees + PrototypeTree(name = sandboxState.project.nextComponentName(), treeType = TreeType.Component)))
+        item {
+            CategoryHeader(category = "Components", modifier = Modifier.padding(bottom = 8.dp, top = 16.dp)) {
+                onUpdateProject.invoke(sandboxState.project.copy(trees = sandboxState.project.trees + PrototypeTree(name = sandboxState.project.nextComponentName(), treeType = TreeType.Component)))
+            }
         }
-        components.forEach { component ->
+        items(components) { component ->
             TreeItem(
                 tree = component,
                 selected = sandboxState.openedTree == component,
@@ -58,13 +67,13 @@ private fun TreeItem(tree: PrototypeTree, selected: Boolean, onSelect: () -> Uni
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start,
         modifier = Modifier
-            .clickable (onClick = onSelect)
+            .clickable(onClick = onSelect)
             .background(if (selected) MaterialTheme.colors.secondary else Color.Transparent)
             .padding(vertical = 8.dp, horizontal = 16.dp)
             .fillMaxWidth()
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            val icon = when(tree.treeType) {
+            val icon = when (tree.treeType) {
                 TreeType.Screen -> Icons.Default.PhoneAndroid
                 TreeType.Component -> Icons.Default.Toll
             }
@@ -76,7 +85,9 @@ private fun TreeItem(tree: PrototypeTree, selected: Boolean, onSelect: () -> Uni
 
 @Composable
 private fun CategoryHeader(category: String, modifier: Modifier = Modifier, onAdd: () -> Unit) {
-    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
+    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier
+        .padding(horizontal = 16.dp)
+        .fillMaxWidth()) {
         Text(text = category.toUpperCase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.onPrimary)
         Icon(imageVector = Icons.Default.Add, contentDescription = "Add", tint = MaterialTheme.colors.onPrimary, modifier = Modifier.clickable(onClick = onAdd))
     }

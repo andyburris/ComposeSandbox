@@ -1,9 +1,6 @@
 package com.andb.apps.composesandbox.ui.common
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.preferredWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -19,16 +16,16 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun OverflowMenu(icon: ImageVector = Icons.Default.MoreVert, content: @Composable ColumnScope.() -> Unit) {
     val menuShowing = remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { menuShowing.value = true }) {
+            Icon(imageVector = icon, contentDescription = "Open Overflow")
+        }
+    }
     DropdownMenu(
-        toggle = {
-            IconButton(onClick = { menuShowing.value = true }) {
-                Icon(imageVector = icon, contentDescription = "Open Overflow")
-            }
-        },
         expanded = menuShowing.value,
         onDismissRequest = { menuShowing.value = false },
-        dropdownContent = content,
-        dropdownModifier = Modifier.preferredWidth(196.dp)
+        content = content,
+        modifier = Modifier.width(196.dp)
     )
 }
 

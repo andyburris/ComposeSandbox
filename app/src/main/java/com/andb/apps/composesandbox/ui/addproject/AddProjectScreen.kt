@@ -7,7 +7,8 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.savedinstancestate.savedInstanceState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
@@ -54,8 +55,8 @@ private val templates = listOf(
 
 @Composable
 fun AddProjectScreen(onAddProject: (Project) -> Unit) {
-    val name = savedInstanceState { "" }
-    val selectedTemplateID = savedInstanceState<String?> { null }
+    val name = rememberSaveable { mutableStateOf("") }
+    val selectedTemplateID = rememberSaveable { mutableStateOf<String?>(null) }
     val canSave = name.value.isNotEmpty() && selectedTemplateID.value != null
     Scaffold(
         floatingActionButton = {
@@ -78,7 +79,7 @@ fun AddProjectScreen(onAddProject: (Project) -> Unit) {
                 },
             )
         },
-        bodyContent = {
+        content = {
             LazyColumn(
                 Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(32.dp),

@@ -4,10 +4,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.savedinstancestate.savedInstanceState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.state.ActionHandlerAmbient
+import com.andb.apps.composesandbox.state.LocalActionHandler
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
 import com.andb.apps.composesandbox.ui.sandbox.drawer.ScrollableDrawer
@@ -18,13 +19,13 @@ import com.andb.apps.composesandboxdata.model.PrototypeModifier
 
 @Composable
 fun AddModifierList(onSelect: (PrototypeModifier) -> Unit) {
-    val actionHandler = ActionHandlerAmbient.current
+    val actionHandler = LocalActionHandler.current
     ScrollableDrawer(
         header = {
             DrawerHeader("Add Modifier", onIconClick = { actionHandler.invoke(UserAction.Back) })
         },
         content = {
-            val searchTerm = savedInstanceState { "" }
+            val searchTerm = rememberSaveable { mutableStateOf("") }
 
             AddComponentHeader(text = "MODIFIERS", modifier = Modifier.padding(horizontal = 32.dp))
             AddModifierItem(PrototypeModifier.Padding.All(16), onSelect)

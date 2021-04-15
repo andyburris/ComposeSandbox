@@ -13,7 +13,7 @@ class Machine(coroutineScope: CoroutineScope) {
     private val allProjects: Flow<List<Project>> = DatabaseHelper.allProjects
     private val screens = MutableStateFlow(listOf<Screen>(Screen.Projects))
 
-    val stack: StateFlow<List<ViewState>> = combine(allProjects, screens, DatabaseHelper.history) { projects, screens, history ->
+    val stack: StateFlow<List<ViewState>> = combine(allProjects, screens) { projects, screens ->
         screens.map { screen ->
             when (screen) {
                 Screen.Projects -> ViewState.Projects(projects)
@@ -23,17 +23,17 @@ class Machine(coroutineScope: CoroutineScope) {
                     val openedTree = project.trees.first { it.id == screen.openedTreeID }
                     val drawerStack = screen.drawerScreens.map { drawerScreen ->
                         when (drawerScreen) {
-                            DrawerScreen.Tree -> DrawerState.Tree
-                            DrawerScreen.AddComponent -> DrawerState.AddComponent
-                            is DrawerScreen.EditComponent -> openedTree.component.findByIDInTree(drawerScreen.componentID)?.let { DrawerState.EditComponent(it) }
-                            is DrawerScreen.PickBaseComponent -> DrawerState.PickBaseComponent(openedTree.component)
-                            DrawerScreen.AddModifier -> DrawerState.AddModifier
-                            is DrawerScreen.EditModifier -> openedTree.component.findModifierByIDInTree(drawerScreen.modifierID)?.let { DrawerState.EditModifier(it) }
-                            DrawerScreen.EditTheme -> DrawerState.EditTheme
+                            DrawerScreen.Tree -> DrawerViewState.Tree
+                            DrawerScreen.AddComponent -> DrawerViewState.AddComponent
+                            is DrawerScreen.EditComponent -> openedTree.component.findByIDInTree(drawerScreen.componentID)?.let { DrawerViewState.EditComponent(it) }
+                            is DrawerScreen.PickBaseComponent -> DrawerViewState.PickBaseComponent(openedTree.component)
+                            DrawerScreen.AddModifier -> DrawerViewState.AddModifier
+                            is DrawerScreen.EditModifier -> openedTree.component.findModifierByIDInTree(drawerScreen.modifierID)?.let { DrawerViewState.EditModifier(it) }
+                            DrawerScreen.EditTheme -> DrawerViewState.EditTheme
                         }
                     }
                     val validStack = drawerStack.takeWhile { it != null }.filterNotNull()
-                    ViewState.Sandbox(project, openedTree, history.isNotEmpty(), validStack)
+                    ViewState.Sandbox(project, screen.openedTreeID, validStack)
                 }
                 is Screen.Preview -> {
                     val project = projects.first { it.id == screen.projectID }
@@ -51,17 +51,16 @@ class Machine(coroutineScope: CoroutineScope) {
     fun handleAction(action: Action) {
         when (action) {
             UserAction.Back -> handleBack()
-            UserAction.Undo -> DatabaseHelper.undo()
             is UserAction.OpenScreen -> screens.value += action.screen
             is UserAction.UpdateSandbox -> screens.updateSandbox { action.screen }
             is UserAction.OpenDrawerScreen -> screens.updateSandbox {
                 it.copy(drawerScreens = it.drawerScreens + action.drawerScreen)
             }
             is UserAction.AddProject -> {
-                DatabaseHelper.upsertProject(action.project, true)
+                DatabaseHelper.upsertProject(action.project)
                 screens.value = listOf(Screen.Projects, Screen.Sandbox(action.project.id, action.project.trees.first().id))
             }
-            is UserAction.UpdateProject -> DatabaseHelper.upsertProject(action.project, action.addToHistory)
+            is UserAction.UpdateProject -> DatabaseHelper.upsertProject(action.project)
             is UserAction.DeleteProject -> {
                 screens.value = listOf(Screen.Projects)
                 DatabaseHelper.deleteProject(action.project)

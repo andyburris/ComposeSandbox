@@ -15,16 +15,15 @@ import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.R
 import com.andb.apps.composesandboxdata.model.PrototypeModifier
 
-@Composable
 val PrototypeModifier.icon: ImageVector
-    get() = when (this) {
+    @Composable get() = when (this) {
         is PrototypeModifier.Padding -> Icons.Default.FlipToFront
         is PrototypeModifier.Border -> Icons.Default.BorderStyle
         is PrototypeModifier.Background -> Icons.Default.FormatPaint
         is PrototypeModifier.Height -> Icons.Default.Height
-        is PrototypeModifier.Width -> vectorResource(id = R.drawable.ic_width)
+        is PrototypeModifier.Width -> ImageVector.vectorResource(id = R.drawable.ic_width)
         is PrototypeModifier.Size -> Icons.Default.ZoomOutMap
-        is PrototypeModifier.FillMaxWidth -> vectorResource(id = R.drawable.ic_max_width)
+        is PrototypeModifier.FillMaxWidth -> ImageVector.vectorResource(id = R.drawable.ic_max_width)
         is PrototypeModifier.FillMaxHeight -> Icons.Default.UnfoldMore
         is PrototypeModifier.FillMaxSize -> Icons.Default.Fullscreen
     }

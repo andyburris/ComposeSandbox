@@ -1,6 +1,5 @@
 package com.andb.apps.composesandbox.ui.util
 
-import androidx.compose.animation.animatedFloat
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
@@ -23,7 +22,7 @@ fun <T> StackSwitcher(
     modifier: Modifier = Modifier,
     animateIf: (old: T?, current: T) -> Boolean = { old, new -> old != new },
     animationSpec: AnimationSpec<Float> = tween(),
-    content: @Composable (T, StackItemTransitionState, Float) -> Unit
+    content: @Composable (value: T, visibility: Float, isTop: Boolean) -> Unit
 ) {
     val state = remember { StackTransitionInnerState<T>() }
 
@@ -37,7 +36,7 @@ fun <T> StackSwitcher(
 
         keys.mapTo(state.items) { key ->
             StackAnimationItem(key.value, key.index) { children ->
-                val animationProgress = animatedVisibility(
+                val animation = animatedVisibility(
                     animation = animationSpec,
                     visible = key == current,
                     onAnimationFinish = {
@@ -49,13 +48,12 @@ fun <T> StackSwitcher(
                     }
                 )
                 val currentIndex = current.index
-                val transitionState = when {
-                    animationProgress == 1f -> StackItemTransitionState.Visible
-                    key.index > currentIndex -> StackItemTransitionState.Removing
-                    key.index < currentIndex -> StackItemTransitionState.Hiding
-                    else /*key.index == currentIndex*/ -> if (state.items.any { it.index > key.index }) StackItemTransitionState.Revealing else StackItemTransitionState.Adding
+                val isTop = when {
+                    key.index > currentIndex -> true
+                    key.index < currentIndex -> false
+                    else /*key.index == currentIndex*/ -> !state.items.any { it.index > key.index }
                 }
-                children(transitionState, animationProgress)
+                children(animation.value, isTop)
             }
         }
     } else if (current != state.current) {
@@ -74,10 +72,6 @@ fun <T> StackSwitcher(
     }
 }
 
-enum class StackItemTransitionState {
-    Visible, Adding, Removing, Hiding, Revealing
-}
-
 private class StackTransitionInnerState<T> {
     // we use Any here as something which will not be equals to the real initial value
     var current: IndexedValue<T>? = null
@@ -91,28 +85,77 @@ private data class StackAnimationItem<T>(
     val content: StackItemTransitionContent
 )
 
-private typealias StackItemTransitionContent = @Composable (children: @Composable (StackItemTransitionState, Float) -> Unit) -> Unit
+private typealias StackItemTransitionContent = @Composable (children: @Composable (progress: Float, isTop: Boolean) -> Unit) -> Unit
 
 @Composable
 private fun animatedVisibility(
     animation: AnimationSpec<Float>,
     visible: Boolean,
     onAnimationFinish: () -> Unit = {}
-): Float {
-    val animatedFloat = animatedFloat(if (!visible) 1f else 0f)
-    DisposableEffect(visible) {
-        animatedFloat.animateTo(
+): Animatable<Float, AnimationVector1D> {
+    val animatedFloat = remember { Animatable(if (visible) 1f else 0f) }
+    LaunchedEffect(visible) {
+        val result = animatedFloat.animateTo(
             if (visible) 1f else 0f,
-            anim = animation,
-            onEnd = { reason, _ ->
-                if (reason == AnimationEndReason.TargetReached) {
-                    onAnimationFinish()
-                }
-            }
+            animationSpec = animation
         )
-        onDispose {
-            animatedFloat.stop()
+        if (result.endReason == AnimationEndReason.Finished) {
+            onAnimationFinish()
         }
     }
-    return animatedFloat.value
+    return animatedFloat
 }
+
+/*
+@Composable
+fun <T> StackSwitcher2(
+    stack: List<T>,
+    modifier: Modifier = Modifier,
+    animateIf: (old: T?, current: T) -> Boolean = { old, new -> old != new },
+    animationSpec: FiniteAnimationSpec<Float> = tween(),
+    content: @Composable (T, StackItemTransitionState, Float) -> Unit
+) {
+    val items = remember { mutableStateListOf<StackAnimationItem2<T>>() }
+    val transitionState = remember { MutableTransitionState(stack) }
+    val targetChanged = (stack != transitionState.targetState)
+    transitionState.targetState = stack
+    val transition = updateTransition(transitionState)
+    if (targetChanged || items.isEmpty()) {
+        // Only manipulate the list when the state is changed, or in the first run.
+        val keys = items.map { it.key }.run {
+            if (!contains(stack)) {
+                toMutableList().also { it.add(stack) }
+            } else {
+                this
+            }
+        }
+        items.clear()
+        keys.mapTo(items) { key ->
+            StackAnimationItem2(key) {
+                val alpha by transition.animateFloat(
+                    transitionSpec = { animationSpec }
+                ) { if (it == key) 1f else 0f }
+                Box(Modifier.alpha(alpha = alpha)) {
+                    content(key)
+                }
+            }
+        }
+    } else if (transitionState.currentState == transitionState.targetState) {
+        // Remove all the intermediate items from the list once the animation is finished.
+        items.removeAll { it.key != transitionState.targetState }
+    }
+
+    Box(modifier) {
+        items.forEach {
+            key(it.key) {
+                it.content()
+            }
+        }
+    }
+}
+
+private data class StackAnimationItem2<T>(
+    val key: T,
+    val index: Int,
+    val content: @Composable () -> Unit
+)*/

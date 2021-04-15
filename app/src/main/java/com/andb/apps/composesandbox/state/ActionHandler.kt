@@ -1,19 +1,18 @@
 package com.andb.apps.composesandbox.state
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Providers
-import androidx.compose.runtime.staticAmbientOf
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 
 typealias ActionHandler = (Action) -> Unit
 
-val ActionHandlerAmbient = staticAmbientOf<ActionHandler>()
+val LocalActionHandler = staticCompositionLocalOf<ActionHandler>{ error("No ActionHandler provided") }
 
 @Composable
 fun ActionHandlerProvider(actionHandler: ActionHandler, content: @Composable() () -> Unit){
-    Providers(ActionHandlerAmbient provides actionHandler) {
+    CompositionLocalProvider(LocalActionHandler provides actionHandler) {
         content()
     }
 }
 
-@Composable
-val Handler get() = ActionHandlerAmbient.current
+val Handler @Composable get() = LocalActionHandler.current

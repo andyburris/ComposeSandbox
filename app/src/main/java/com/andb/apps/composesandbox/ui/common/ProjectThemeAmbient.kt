@@ -1,18 +1,17 @@
 package com.andb.apps.composesandbox.ui.common
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Providers
-import androidx.compose.runtime.staticAmbientOf
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import com.andb.apps.composesandboxdata.model.Project
 
-val AmbientProject = staticAmbientOf<Project>()
+val LocalProject = staticCompositionLocalOf<Project> { error("No LocalProject provided") }
 
-@Composable
-val ProjectTheme get() = AmbientProject.current.theme
+val ProjectTheme @Composable get() = LocalProject.current.theme
 
 @Composable
 fun ProjectProvider(project: Project, content: @Composable() () -> Unit){
-    Providers(AmbientProject provides project) {
+    CompositionLocalProvider(LocalProject provides project) {
         content()
     }
 }

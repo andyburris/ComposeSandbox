@@ -17,10 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.AmbientConfiguration
-import androidx.compose.ui.platform.AmbientDensity
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.ui.common.ProjectProvider
@@ -34,17 +34,21 @@ fun ProjectItem(project: Project, modifier: Modifier = Modifier, selected: Boole
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
                 .border(2.dp, MaterialTheme.colors.secondaryVariant, RoundedCornerShape(8.dp))
-                .aspectRatio(AmbientConfiguration.current.screenWidthDp.toFloat() / AmbientConfiguration.current.screenHeightDp)
+                .aspectRatio(LocalConfiguration.current.screenWidthDp.toFloat() / LocalConfiguration.current.screenHeightDp)
                 .fillMaxWidth()
         ) {
-            BoxWithConstraints {
-                val width = AmbientConfiguration.current.screenWidthDp
-                val height = AmbientConfiguration.current.screenHeightDp
-                val scaleX = with(AmbientDensity.current) { constraints.maxWidth.toDp().value } / width.toFloat()
-                val scaleY = with(AmbientDensity.current) { constraints.maxHeight.toDp().value } / height.toFloat()
-                println("projectItem, scaleX = $scaleX, scaleY = $scaleY")
+            BoxWithConstraints(Modifier.background(Color.Red)) {
+                val width = LocalConfiguration.current.screenWidthDp.dp
+                val height = LocalConfiguration.current.screenHeightDp.dp
+                val scaleX = maxWidth / width
+                val scaleY = maxHeight / height
+                println("projectItem, screen width = $width, boxWidth = ${maxWidth}, scaleX = $scaleX, scaleY = $scaleY")
                 ProjectProvider(project = project) {
-                    Box(modifier = Modifier.graphicsLayer(scaleX = scaleX, scaleY = scaleY).size(width.dp, height.dp)) {
+                    Box(modifier = Modifier.background(Color.Green).size(width = maxWidth, height = maxHeight))
+                    Box(modifier = Modifier
+                        .graphicsLayer(scaleX = scaleX, scaleY = scaleY)
+                        .requiredSize(width, height)
+                    ) {
                         RenderComponentParent(theme = project.theme, component = project.trees.first().component)
                     }
                 }
@@ -73,7 +77,9 @@ fun ProjectItem(project: Project, modifier: Modifier = Modifier, selected: Boole
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Selected",
-                        modifier = Modifier.padding(16.dp).align(Alignment.BottomEnd),
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .align(Alignment.BottomEnd),
                         tint = MaterialTheme.colors.onPrimary
                     )
                 }

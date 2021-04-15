@@ -3,12 +3,13 @@ package com.andb.apps.composesandbox.ui.code
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animate
-import androidx.compose.foundation.ScrollableRow
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -18,7 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.AmbientContext
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -52,7 +53,7 @@ fun CodeScreen(project: Project) {
                 backgroundColor = MaterialTheme.colors.primary
             )
         },
-        bodyContent = {
+        content = {
             val opened = remember { mutableStateOf<String?>(null) }
             LazyColumn {
                 item {
@@ -75,7 +76,7 @@ fun CodeScreen(project: Project) {
             }
         },
         floatingActionButton = {
-            val context = AmbientContext.current
+            val context = LocalContext.current
             ExtendedFloatingActionButton(
                 icon = { Icon(imageVector = Icons.Default.Share, contentDescription = null) },
                 text = { Text(text = "Export Code") },
@@ -102,8 +103,8 @@ fun CodeScreen(project: Project) {
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun CodeCard(generator: CodeGenerator, tree: PrototypeTree, opened: Boolean, modifier: Modifier = Modifier, onToggle: () -> Unit) {
-    val padding = animate(if (opened) 8.dp else 0.dp)
-    val elevation = animate(if (opened) 4.dp else 0.dp)
+    val padding = animateDpAsState(if (opened) 8.dp else 0.dp).value
+    val elevation = animateDpAsState(if (opened) 4.dp else 0.dp).value
     Card(modifier.padding(padding), elevation = elevation, shape = RoundedCornerShape(padding)) {
         Column {
             FileItem(tree = tree, onToggle = onToggle, expanded = opened)
@@ -116,7 +117,7 @@ private fun CodeCard(generator: CodeGenerator, tree: PrototypeTree, opened: Bool
                         color = MaterialTheme.colors.onSecondary,
                         modifier = Modifier.endBorder(1.dp, MaterialTheme.colors.secondary).padding(end = 8.dp)
                     )
-                    ScrollableRow {
+                    Row(Modifier.horizontalScroll(rememberScrollState())) {
                         Text(text = code, style = codeStyle, modifier = Modifier.padding(start = 8.dp, end = 16.dp))
                     }
                 }
