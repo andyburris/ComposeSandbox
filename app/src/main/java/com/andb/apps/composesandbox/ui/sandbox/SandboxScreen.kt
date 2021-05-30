@@ -21,20 +21,31 @@ import com.andb.apps.composesandbox.state.*
 import com.andb.apps.composesandbox.ui.common.*
 import com.andb.apps.composesandbox.ui.sandbox.drawer.Drawer
 import com.andb.apps.composesandboxdata.model.*
+import com.andb.apps.composesandboxdata.state.ProjectAction
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) -> Unit) {
+fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (UserAction.UpdateProject) -> Unit) {
     val actionHandler = Handler
     println("updating sandbox state, sandboxState.openedTree.component = ${sandboxState.openedTree.component.stringify()}")
-    val dragDropState = rememberDragDropState(sandboxState) { draggingComponent, dropState ->
-        println("dropping, sandboxState.openedTree.component = ${sandboxState.openedTree.component.stringify()}")
-        val updatedComponent = sandboxState.openedTree.component.handleDropComponent(draggingComponent, dropState)
-        val updatedTree = sandboxState.openedTree.copy(component = updatedComponent)
-        println("updatedComponent = ${updatedComponent.stringify()}")
-        onUpdateProject.invoke(sandboxState.project.updatedTree(updatedTree))
-        println("after drop, openedTree.component = ${sandboxState.openedTree.component.stringify()}")
+    val dragDropState = rememberDragDropState(sandboxState) { draggingComponent, hoverState ->
+        println("dropping ${draggingComponent.stringify(showIDs = true)} over $hoverState")
+        val isMoving = sandboxState.openedTree.component.findByIDInTree(draggingComponent.id) != null
+        when(hoverState) {
+            HoverState.OverNone -> {
+                if (!isMoving) return@rememberDragDropState // the component would be added, so deleting it doesn't affect the tree
+                onUpdateProject.invoke(UserAction.UpdateProject(sandboxState.project, ProjectAction.TreeAction.DeleteComponent(draggingComponent))) // the component is being moved, so deleting it deletes it from the tree
+            }
+            is HoverState.OverTreeItem -> {
+                val parentInfo = sandboxState.openedTree.component.handleDropComponent(hoverState)
+                val action = when(isMoving) {
+                    true -> ProjectAction.TreeAction.MoveComponent(draggingComponent, parentInfo.first, parentInfo.second)
+                    false -> ProjectAction.TreeAction.AddComponent(draggingComponent, parentInfo.first, parentInfo.second)
+                }
+                onUpdateProject.invoke(UserAction.UpdateProject(sandboxState.project, action))
+            }
+        }
     }
     val backdropState = rememberBackdropScaffoldState(initialValue = BackdropValue.Concealed)
     ProjectProvider(project = sandboxState.project) {
@@ -47,18 +58,17 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) ->
                     SandboxAppBar(
                         sandboxState = sandboxState,
                         project = sandboxState.project,
-                        iconState = backdropState.currentValue,
+                        iconState = backdropState.targetValue,
                         onToggle = {
                             coroutineScope.launch {
-                                if (backdropState.currentValue == BackdropValue.Concealed) backdropState.reveal() else backdropState.conceal()
+                                if (backdropState.targetValue == BackdropValue.Concealed) backdropState.reveal() else backdropState.conceal()
                             }
-                        }
+                        },
+                        onUpdateProject = onUpdateProject
                     )
                 },
                 backLayerContent = {
-                    SandboxBackdrop(sandboxState) {
-                        onUpdateProject.invoke(it)
-                    }
+                    SandboxBackdrop(sandboxState, onUpdateProject = { onUpdateProject.invoke(UserAction.UpdateProject(sandboxState.project, it)) })
                 },
                 frontLayerContent = {
                     val bottomSheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
@@ -78,28 +88,13 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) ->
                                 sheetState = bottomSheetState,
                                 dragDropState = dragDropState,
                                 modifier = Modifier.height(with(LocalDensity.current) { (height / 2).toDp() } + 88.dp),
-                                onScreenUpdate = { onUpdateProject.invoke(sandboxState.project.updatedTree(it)) },
-                                onThemeUpdate = { onUpdateProject.invoke(sandboxState.project.copy(theme = it)) },
-                                onExtractComponent = { oldComponent ->
-                                    val customTree = PrototypeTree(name = sandboxState.project.nextComponentName(), treeType = TreeType.Component, component = oldComponent)
-                                    val customComponent = PrototypeComponent.Custom(treeID = customTree.id)
-                                    val editedTrees = sandboxState.project.trees.map { it.copy(component = it.component.replaceWithCustom(oldComponent.id, customComponent)) }
-                                    onUpdateProject.invoke(sandboxState.project.copy(trees = editedTrees + customTree))
-                                },
+                                onUpdateProject = { onUpdateProject.invoke(UserAction.UpdateProject(sandboxState.project, it)) },
                                 onDrag = { dragDropState.draggingComponent.value = it },
-                                onDeleteTree = {
-                                    val newTrees = sandboxState.project.trees.filter { it.id != sandboxState.openedTree.id }.map {
-                                        it.copy(component = it.component.replaceCustomWith(sandboxState.openedTree.id, sandboxState.openedTree.component))
-                                    }
-                                    actionHandler.invoke(UserAction.UpdateSandbox((sandboxState.toScreen() as Screen.Sandbox).copy(openedTreeID = newTrees.first().id)))
-                                    onUpdateProject.invoke(sandboxState.project.copy(trees = newTrees))
-                                }
                             )
                         },
                         content = {
                             val offset = if (bottomSheetState.offset.value.isNaN()) 0f else bottomSheetState.offset.value
                             val scale = (offset / height).coerceIn(0f..1f)
-                            //Box(Modifier.background(Color.Red).size(128.dp))
                             Box(
                                 modifier = Modifier
                                     .background(MaterialTheme.colors.secondary)
@@ -123,26 +118,9 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) ->
     }
 }
 
-private fun PrototypeComponent.handleDropComponent(droppingComponent: PrototypeComponent, hoverState: HoverState): PrototypeComponent {
-    return when (hoverState) {
-        is HoverState.OverTreeItem -> {
-            if (droppingComponent == hoverState.hoveringComponent) return this
-            val updatedTree = when (hoverState.dropPosition) {
-                is DropPosition.Nested.First -> this.minusChildFromTree(droppingComponent).plusChildInTree(droppingComponent, hoverState.hoveringComponent as PrototypeComponent.Group, 0)
-                is DropPosition.Nested.Last -> this.minusChildFromTree(droppingComponent).plusChildInTree(droppingComponent, hoverState.hoveringComponent as PrototypeComponent.Group, hoverState.hoveringComponent.children.size)
-                else -> {
-                    val (parent, index) = this.findParentOfComponent(hoverState.hoveringComponent)!!
-                    println("not nesting, parent = $parent, index = $index")
-                    when (hoverState.dropPosition) {
-                        DropPosition.Above -> this.minusChildFromTree(droppingComponent).plusChildInTree(droppingComponent, parent, index)
-                        DropPosition.Below -> this.minusChildFromTree(droppingComponent).plusChildInTree(droppingComponent, parent, index + 1)
-                        else -> throw Error("will never reach here")
-                    }
-                }
-            }
-            println("updated tree = ${updatedTree.stringify()}")
-            return updatedTree
-        }
-        is HoverState.OverNone -> this.minusChildFromTree(droppingComponent)
-    }
+private fun PrototypeComponent.handleDropComponent(hoverState: HoverState.OverTreeItem): Pair<PrototypeComponent.Group, Int> = when(hoverState.dropPosition) {
+    DropPosition.Above -> this.findParentOfComponent(hoverState.hoveringComponent)!!
+    DropPosition.Below -> this.findParentOfComponent(hoverState.hoveringComponent)!!.let { it.copy(second = it.second + 1) }
+    DropPosition.Nested.First -> Pair(hoverState.hoveringComponent as PrototypeComponent.Group, 0)
+    DropPosition.Nested.Last -> Pair(hoverState.hoveringComponent as PrototypeComponent.Group, hoverState.hoveringComponent.children.size)
 }

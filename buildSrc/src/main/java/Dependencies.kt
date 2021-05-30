@@ -5,10 +5,10 @@ object Versions {
     const val kotlin = "1.4.32"
     const val kotlinCoroutines = "1.4.1"
     const val koin = "2.1.5"
-    const val compose = "1.0.0-beta04"
-    const val colorPicker = "0.2.2-beta04"
+    const val compose = "1.0.0-beta07"
+    const val colorPicker = "0.3.2-beta07"
     const val kaseChange = "1.3.0"
-    const val activity = "1.3.0-alpha03"
+    const val activity = "1.3.0-alpha08"
     const val sqlDelight = "1.4.3"
 }
 

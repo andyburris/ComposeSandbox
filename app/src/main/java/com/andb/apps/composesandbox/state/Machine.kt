@@ -1,9 +1,7 @@
 package com.andb.apps.composesandbox.state
 
 import com.andb.apps.composesandboxdata.local.DatabaseHelper
-import com.andb.apps.composesandboxdata.model.Project
-import com.andb.apps.composesandboxdata.model.findByIDInTree
-import com.andb.apps.composesandboxdata.model.findModifierByIDInTree
+import com.andb.apps.composesandboxdata.model.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -60,11 +58,13 @@ class Machine(coroutineScope: CoroutineScope) {
                 DatabaseHelper.upsertProject(action.project)
                 screens.value = listOf(Screen.Projects, Screen.Sandbox(action.project.id, action.project.trees.first().id))
             }
-            is UserAction.UpdateProject -> DatabaseHelper.upsertProject(action.project)
+            is UserAction.UpdateProject -> DatabaseHelper.upsertProject(action.project.apply(action.action))
             is UserAction.DeleteProject -> {
                 screens.value = listOf(Screen.Projects)
                 DatabaseHelper.deleteProject(action.project)
             }
+            is UserAction.Undo -> DatabaseHelper.upsertProject(action.project.undo())
+            is UserAction.Redo -> DatabaseHelper.upsertProject(action.project.redo())
         }
     }
 

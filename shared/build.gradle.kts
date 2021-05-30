@@ -11,15 +11,12 @@ android {
     defaultConfig {
         minSdkVersion(Versions.minSDK)
         targetSdkVersion(Versions.targetSDK)
-        versionCode = 1
-        versionName = "0.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         getByName("release") {
-            minifyEnabled(false)
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

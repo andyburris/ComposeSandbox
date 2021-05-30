@@ -8,7 +8,6 @@ sealed class Action
 sealed class UserAction : Action() {
     /** Navigate back in the navigation stack */
     object Back : UserAction()
-    object Undo : UserAction()
     /** Add a [Screen] to the top of the navigation stack */
     data class OpenScreen(val screen: Screen) : UserAction()
     data class UpdateSandbox(val screen: Screen.Sandbox) : UserAction()
@@ -18,6 +17,8 @@ sealed class UserAction : Action() {
     data class AddProject(val project: Project) : UserAction()
     data class UpdateProject (val project: Project, val action: ProjectAction) : UserAction()
     data class DeleteProject (val project: Project) : UserAction()
+    data class Undo(val project: Project) : UserAction()
+    data class Redo(val project: Project) : UserAction()
 
 
 }

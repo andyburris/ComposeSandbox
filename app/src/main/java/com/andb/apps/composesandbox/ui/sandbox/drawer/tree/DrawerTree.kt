@@ -10,13 +10,12 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.isFocused
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
@@ -34,9 +33,9 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.DragDropScrolling
 import com.andb.apps.composesandbox.ui.sandbox.drawer.DrawerHeader
 import com.andb.apps.composesandbox.ui.sandbox.drawer.toShadow
 import com.andb.apps.composesandboxdata.model.PrototypeComponent
-import com.andb.apps.composesandboxdata.model.PrototypeTree
 import com.andb.apps.composesandboxdata.model.TreeType
 import com.andb.apps.composesandboxdata.model.screens
+import com.andb.apps.composesandboxdata.state.ProjectAction
 import kotlinx.coroutines.launch
 
 /**
@@ -53,8 +52,7 @@ fun DrawerTree(
     hovering: HoverState?,
     scrolling: DragDropScrolling,
     onMoveComponent: (PrototypeComponent, pointerOffset: DpOffset) -> Unit,
-    onTreeNameChanged: (PrototypeTree) -> Unit,
-    onDeleteTree: (PrototypeTree) -> Unit,
+    onUpdateProject: (ProjectAction) -> Unit,
 ) {
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
@@ -82,12 +80,7 @@ fun DrawerTree(
                         if (sheetState.isExpanded) sheetState.collapse() else sheetState.expand()
                     }
                 },
-                onTreeNameChanged = {
-                    onTreeNameChanged.invoke(sandboxState.openedTree.copy(name = it))
-                },
-                onDeleteTree = {
-                    onDeleteTree.invoke(sandboxState.openedTree)
-                }
+                onUpdateProject = onUpdateProject
             )
             Column(Modifier.verticalScroll(scrollState, enabled = hovering == null)) {
                 Tree(
@@ -105,19 +98,18 @@ fun DrawerTree(
 
 @OptIn(ExperimentalMaterialApi::class, InternalTextApi::class)
 @Composable
-private fun DrawerTreeHeader(sandboxState: ViewState.Sandbox, modifier: Modifier = Modifier, isExpanded: Boolean, onTreeNameChanged: (String) -> Unit, onDeleteTree: () -> Unit, onToggleExpand: () -> Unit) {
+private fun DrawerTreeHeader(sandboxState: ViewState.Sandbox, modifier: Modifier = Modifier, isExpanded: Boolean, onUpdateProject: (ProjectAction) -> Unit, onToggleExpand: () -> Unit) {
     val actionHandler = LocalActionHandler.current
     val iconRotation = animateFloatAsState(targetValue = if (isExpanded) 180f else 0f).value
     DrawerHeader(
         title = sandboxState.openedTree.name,
         titleSlot = {
+            val currentValue = remember(sandboxState.openedTree.name) { mutableStateOf(sandboxState.openedTree.name) }
             Box {
                 BasicTextField(
                     value = it,
                     textStyle = MaterialTheme.typography.h6.copy(color = MaterialTheme.colors.onBackground),
-                    onValueChange = {
-                        onTreeNameChanged.invoke(it)
-                    },
+                    onValueChange = { currentValue.value = it },
                     decorationBox = { innerTextField ->
                         innerTextField()
                         if (it.isEmpty()) {
@@ -127,6 +119,9 @@ private fun DrawerTreeHeader(sandboxState: ViewState.Sandbox, modifier: Modifier
                                 color = MaterialTheme.colors.secondaryVariant
                             )
                         }
+                    },
+                    modifier = Modifier.onFocusChanged { focusState ->
+                        if (focusState.isFocused) onUpdateProject.invoke(ProjectAction.TreeAction.UpdateName(sandboxState.openedTree, currentValue.value))
                     }
                 )
             }
@@ -153,9 +148,7 @@ private fun DrawerTreeHeader(sandboxState: ViewState.Sandbox, modifier: Modifier
                 icon = Icons.Default.Delete,
                 title = if (sandboxState.openedTree.treeType == TreeType.Screen) "Delete Screen" else "Delete Component",
                 enabled = sandboxState.openedTree.treeType == TreeType.Component || sandboxState.project.trees.screens().size >= 2,
-                onClick = {
-                    onDeleteTree.invoke()
-                }
+                onClick = { onUpdateProject.invoke(ProjectAction.DeleteTree(sandboxState.openedTree)) }
             )
         }
     }

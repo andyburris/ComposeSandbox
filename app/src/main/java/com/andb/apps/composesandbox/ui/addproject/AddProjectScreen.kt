@@ -19,39 +19,6 @@ import com.andb.apps.composesandbox.util.gridItems
 import com.andb.apps.composesandboxdata.model.*
 import java.util.*
 
-private val templates = listOf(
-    //******** Empty *******//
-    Project(
-        name = "Empty",
-        trees = listOf(
-            PrototypeTree(name = "Screen 1", treeType = TreeType.Screen)
-        ),
-        theme = lightColors().toTheme()
-    ),
-
-    //******** Hello World *******//
-    Project(
-        name = "Hello World",
-        trees = listOf(
-            PrototypeTree(
-                name = "Screen 1",
-                component = PrototypeComponent.Group.Column(
-                    horizontalAlignment = PrototypeAlignment.Horizontal.CenterHorizontally,
-                    verticalArrangement = PrototypeArrangement.Vertical.Center,
-                    modifiers = listOf(PrototypeModifier.FillMaxSize()),
-                    children = listOf(
-                        PrototypeComponent.Text(
-                            text = "Hello World"
-                        )
-                    )
-                ),
-                treeType = TreeType.Screen
-            )
-        ),
-        theme = lightColors().toTheme()
-    ),
-
-)
 
 @Composable
 fun AddProjectScreen(onAddProject: (Project) -> Unit) {
@@ -100,7 +67,9 @@ fun AddProjectScreen(onAddProject: (Project) -> Unit) {
                         label = {
                             Text(text = "Name")
                         },
-                        modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .fillMaxWidth()
                     )
                 }
 

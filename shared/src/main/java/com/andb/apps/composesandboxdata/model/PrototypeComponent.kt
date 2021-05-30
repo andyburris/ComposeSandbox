@@ -188,6 +188,7 @@ sealed class Slots {
         return this.map { transform(all.indexOf(it), it) }
     }
 
+
     @Serializable
     data class TopAppBar(
         val navigationIcon: Slot = Slot("Navigation Icon", enabled = true),
@@ -328,12 +329,12 @@ fun PrototypeComponent.findByIDInTree(id: String): PrototypeComponent? {
  */
 fun PrototypeComponent.findParentOfComponent(component: PrototypeComponent): Pair<PrototypeComponent.Group, Int>? =
     when (this) {
-        is PrototypeComponent.Slotted -> this.slots.allSlots().map { it.group.findParentOfComponent(component) }.filterNotNull().firstOrNull()
+        is PrototypeComponent.Slotted -> this.slots.allSlots().mapNotNull { it.group.findParentOfComponent(component) }.firstOrNull()
         is PrototypeComponent.Group -> {
-            println("finding parent for $component, this = $this")
-            val index = children.indexOf(component)
+            println("finding parent for ${component.stringify(showIDs = true)}, this = ${this.stringify(showIDs = true)}")
+            val index = children.indexOfFirst { it.id == component.id }
             println("index = $index")
-            val parentPair = if (index == -1) children.map { it.findParentOfComponent(component) }.filterNotNull().firstOrNull() else Pair(this, index)
+            val parentPair = if (index == -1) children.mapNotNull { it.findParentOfComponent(component) }.firstOrNull() else Pair(this, index)
             println("parentPair = $parentPair")
             parentPair
         }
@@ -352,26 +353,67 @@ fun PrototypeComponent.findModifierByIDInTree(id: String): PrototypeModifier? {
     }
 }
 
+data class ReplacementComponents(val originalComponent: PrototypeComponent, val replacements: List<PrototypeComponent>)
 /**
  * Creates a copy of a component tree with a custom component replaced by another tree. Finds original component in tree based on [PrototypeComponent.id]
  * Used recursively, and returns copy of component tree with no changes if [component] can't be found.
  * @param customTreeID the id of the custom component to replace in the tree
  * @param replacementComponent the component to replace it with
  */
-fun PrototypeComponent.replaceCustomWith(customTreeID: String, replacementComponent: PrototypeComponent) : PrototypeComponent {
+fun PrototypeComponent.replaceCustomWith(customTreeID: String, replacementComponents: ReplacementComponents) : PrototypeComponent {
     return when {
-        this is PrototypeComponent.Custom && this.treeID == customTreeID -> replacementComponent.copy(id = UUID.randomUUID().toString(), modifiers = this.modifiers + replacementComponent.modifiers)
-        this is PrototypeComponent.Group -> this.withChildren(children = this.children.map { it.replaceCustomWith(customTreeID, replacementComponent) })
-        this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(group = it.group.replaceCustomWith(customTreeID, replacementComponent) as PrototypeComponent.Group) })
+        this is PrototypeComponent.Custom && this.treeID == customTreeID -> (replacementComponents.replacements.find { it.id == this.id } ?: replacementComponents.originalComponent).let { it.copy(modifiers = this.modifiers + it.modifiers) }
+        this is PrototypeComponent.Group -> this.withChildren(children = this.children.map { it.replaceCustomWith(customTreeID, replacementComponents) })
+        this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(group = it.group.replaceCustomWith(customTreeID, replacementComponents) as PrototypeComponent.Group) })
         else -> this
     }
 }
 
-fun PrototypeComponent.replaceWithCustom(oldTreeID: String, replacementCustomComponent: PrototypeComponent.Custom): PrototypeComponent {
-    return when {
-        this.id == oldTreeID -> replacementCustomComponent.copy(id = UUID.randomUUID().toString())
-        this is PrototypeComponent.Group -> this.withChildren(this.children.map { it.replaceWithCustom(oldTreeID, replacementCustomComponent) })
-        this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(group = it.group.replaceWithCustom(oldTreeID, replacementCustomComponent) as PrototypeComponent.Group) })
+fun PrototypeComponent.reassignIDs(): PrototypeComponent {
+    return when(this) {
+        is PrototypeComponent.Group -> {
+            var acc = this.id.increment()
+            val newChildren = children.map { child ->
+                val newChild = child.copy(id = acc).reassignIDs()
+                acc = acc.increment(amount = child.flatten().size)
+                newChild
+            }
+            this.withChildren(newChildren)
+        }
+        is PrototypeComponent.Slotted -> {
+            var acc = this.id.increment()
+            val newSlots = this.slots.map {
+                val newSlot = it.copy(group = it.group.copy(id = acc).reassignIDs() as PrototypeComponent.Group)
+                acc = acc.increment(newSlot.group.flatten().size)
+                newSlot
+            }
+            this.withSlots(newSlots)
+        }
+        else -> this
+    }
+}
+
+fun String.increment(amount: Int = 1): String {
+    var incremented = this.last()
+    var rolledOver = 0
+    repeat(amount) {
+        incremented = incremented.increment()
+        if (incremented == '0') rolledOver++
+    }
+    return if (rolledOver > 0) this.dropLast(1).increment(rolledOver) + incremented else this.dropLast(1) + incremented
+}
+fun Char.increment(): Char = when(this) {
+    '9' -> 'a'
+    'z' -> 'A'
+    'Z' -> '0'
+    else -> this + 1
+}
+
+fun PrototypeComponent.replaceWithCustom(oldComponents: List<PrototypeComponent>, replacementCustomComponents: List<PrototypeComponent.Custom>): PrototypeComponent {
+    return when (this) {
+        in oldComponents -> replacementCustomComponents.first { it.id == this.id }
+        is PrototypeComponent.Group -> this.withChildren(this.children.map { it.replaceWithCustom(oldComponents, replacementCustomComponents) })
+        is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(group = it.group.replaceWithCustom(oldComponents, replacementCustomComponents) as PrototypeComponent.Group) })
         else -> this
     }
 }
@@ -412,10 +454,13 @@ fun PrototypeComponent.replaceParent(replacementComponent: PrototypeComponent): 
     return Pair(newComponent, losesChildren)
 }
 
-fun PrototypeComponent.flattenIDs(): List<String> = when(this) {
-    is PrototypeComponent.Group -> this.children.flatMap { it.flattenIDs() }
-    is PrototypeComponent.Slotted -> this.slots.allSlots().flatMap { it.group.flattenIDs() }
-    else -> listOf(this.id)
+fun PrototypeComponent.toTree(project: Project) = PrototypeTree(name = project.trees.nextComponentName(), treeType = TreeType.Component, component = this)
+
+
+fun PrototypeComponent.flatten(): List<PrototypeComponent> = when(this) {
+    is PrototypeComponent.Group -> this.children.flatMap { it.flatten() }.plusElement(this, 0)
+    is PrototypeComponent.Slotted -> this.slots.allSlots().flatMap { it.group.flatten() }.plusElement(this, 0)
+    else -> listOf(this)
 }
 
 fun <T> List<List<T>>.fitToSize(size: Int) : List<List<T>> {
@@ -429,18 +474,19 @@ fun <T> List<List<T>>.fitToSize(size: Int) : List<List<T>> {
     }
 }
 
-fun PrototypeComponent.stringify(): String = when(this) {
-    is PrototypeComponent.Custom -> "Custom(treeID = ${this.treeID})"
-    is PrototypeComponent.Group.Box -> "Box(${children.stringifyChildren()})"
-    is PrototypeComponent.Group.Column -> "Column(${children.stringifyChildren()})"
-    is PrototypeComponent.Group.Row -> "Row(${children.stringifyChildren()})"
-    is PrototypeComponent.Icon -> "Icon(${icon.name})"
-    is PrototypeComponent.Slotted.BottomAppBar -> "BottomAppBar(content = ${slots.allSlots().stringifySlots()})"
-    is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> "ExtendedFloatingActionButton(${slots.allSlots().stringifySlots()})"
-    is PrototypeComponent.Slotted.Scaffold -> "Scaffold(${slots.allSlots().stringifySlots()})"
-    is PrototypeComponent.Slotted.TopAppBar -> "TopAppBar(${slots.allSlots().stringifySlots()})"
-    is PrototypeComponent.Text -> "Text(\"${this.text}\")"
+fun PrototypeComponent.stringify(showIDs: Boolean = false): String = when(this) {
+    is PrototypeComponent.Custom -> "Custom(${printID(showIDs)}treeID = ${this.treeID})"
+    is PrototypeComponent.Group.Box -> "Box(${printID(showIDs)}${children.stringifyChildren(showIDs)})"
+    is PrototypeComponent.Group.Column -> "Column(${printID(showIDs)}${children.stringifyChildren(showIDs)})"
+    is PrototypeComponent.Group.Row -> "Row(${printID(showIDs)}${children.stringifyChildren(showIDs)})"
+    is PrototypeComponent.Icon -> "Icon(${printID(showIDs)}${icon.name})"
+    is PrototypeComponent.Slotted.BottomAppBar -> "BottomAppBar(${printID(showIDs)}content = ${slots.allSlots().stringifySlots(showIDs)})"
+    is PrototypeComponent.Slotted.ExtendedFloatingActionButton -> "ExtendedFloatingActionButton(${printID(showIDs)}${slots.allSlots().stringifySlots(showIDs)})"
+    is PrototypeComponent.Slotted.Scaffold -> "${printID(showIDs)}Scaffold(${slots.allSlots().stringifySlots(showIDs)})"
+    is PrototypeComponent.Slotted.TopAppBar -> "TopAppBar(${printID(showIDs)}${slots.allSlots().stringifySlots(showIDs)})"
+    is PrototypeComponent.Text -> "Text(${printID(showIDs)}\"${this.text}\")"
 }
 
-fun List<Slot>.stringifySlots() = this.filter { it.enabled }.joinToString() { "${it.name} = ${it.group.stringify()}" }
-fun List<PrototypeComponent>.stringifyChildren() = this.joinToString { it.stringify() }
+fun PrototypeComponent.printID(showIDs: Boolean) = if (showIDs) "id = ${this.id}, " else ""
+fun List<Slot>.stringifySlots(showIDs: Boolean) = this.filter { it.enabled }.joinToString() { "${it.name} = ${it.group.stringify(showIDs)}" }
+fun List<PrototypeComponent>.stringifyChildren(showIDs: Boolean) = this.joinToString { it.stringify(showIDs) }

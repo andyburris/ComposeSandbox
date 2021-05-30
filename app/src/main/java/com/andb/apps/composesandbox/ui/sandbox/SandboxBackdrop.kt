@@ -21,16 +21,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.state.*
-import com.andb.apps.composesandboxdata.model.*
+import com.andb.apps.composesandboxdata.model.PrototypeTree
+import com.andb.apps.composesandboxdata.model.TreeType
+import com.andb.apps.composesandboxdata.model.nextComponentName
+import com.andb.apps.composesandboxdata.model.nextScreenName
+import com.andb.apps.composesandboxdata.state.ProjectAction
 
 @Composable
-fun SandboxBackdrop(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) -> Unit) {
+fun SandboxBackdrop(sandboxState: ViewState.Sandbox, onUpdateProject: (ProjectAction) -> Unit) {
     val actionHandler = Handler
     val (screens, components) = sandboxState.project.trees.partition { it.treeType == TreeType.Screen }
     LazyColumn {
         item {
             CategoryHeader(category = "Screens", modifier = Modifier.padding(bottom = 8.dp)) {
-                onUpdateProject.invoke(sandboxState.project.copy(trees = sandboxState.project.trees + PrototypeTree(name = sandboxState.project.nextScreenName(), treeType = TreeType.Screen)))
+                onUpdateProject.invoke(ProjectAction.AddTree(PrototypeTree(name = sandboxState.project.trees.nextScreenName(), treeType = TreeType.Screen)))
             }
         }
         items(screens) { screen ->
@@ -45,7 +49,7 @@ fun SandboxBackdrop(sandboxState: ViewState.Sandbox, onUpdateProject: (Project) 
         }
         item {
             CategoryHeader(category = "Components", modifier = Modifier.padding(bottom = 8.dp, top = 16.dp)) {
-                onUpdateProject.invoke(sandboxState.project.copy(trees = sandboxState.project.trees + PrototypeTree(name = sandboxState.project.nextComponentName(), treeType = TreeType.Component)))
+                onUpdateProject.invoke(ProjectAction.AddTree(PrototypeTree(name = sandboxState.project.trees.nextComponentName(), treeType = TreeType.Screen)))
             }
         }
         items(components) { component ->

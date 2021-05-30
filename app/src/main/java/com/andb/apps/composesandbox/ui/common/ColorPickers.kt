@@ -26,7 +26,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.andb.apps.composecolorpicker.ui.ExpandedColorPicker
+import com.andb.apps.composecolorpicker.ui.ColorPickerLayout
 import com.andb.apps.composecolorpicker.ui.MaterialPalette
 import com.andb.apps.composesandbox.data.model.name
 import com.andb.apps.composesandbox.data.model.projectColor
@@ -228,7 +228,7 @@ fun ColorPickerWithTheme(current: PrototypeColor, modifier: Modifier = Modifier,
             Tabs.THEME -> MaterialThemePicker(current, modifier = Modifier.padding(24.dp)) {
                 onSelect.invoke(it)
             }
-            Tabs.PICKER -> ExpandedColorPicker(selected = current.projectColor(), modifier = Modifier.padding(24.dp)) {
+            Tabs.PICKER -> ColorPickerLayout(selected = current.projectColor(), modifier = Modifier.padding(24.dp)) {
                 onSelect.invoke(it.toPrototypeColor())
             }
             Tabs.PALETTE -> {
@@ -266,7 +266,7 @@ fun ColorPickerWithoutTheme(current: Color, onSelect: (Color) -> Unit) {
             }
         }
         when (currentTab.value) {
-            Tabs.PICKER -> ExpandedColorPicker(selected = current, modifier = Modifier.padding(24.dp), onSelect = onSelect)
+            Tabs.PICKER -> ColorPickerLayout(selected = current, modifier = Modifier.padding(24.dp), onSelect = onSelect)
             Tabs.PALETTE -> {
                 MaterialTheme(typography = MaterialTheme.typography.copy(overline = MaterialTheme.typography.overline.copy(letterSpacing = 0.sp))) {
                     MaterialPalette(selected = current, modifier = Modifier.padding(24.dp), onSelect = onSelect)

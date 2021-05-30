@@ -3,7 +3,8 @@ CREATE TABLE projectData (
     name TEXT NOT NULL,
     trees TEXT NOT NULL,
     theme TEXT NOT NULL,
-    history TEXT NOT NULL
+    pastHistory TEXT NOT NULL,
+    futureHistory TEXT NOT NULL
 );
 
 CREATE INDEX project_id ON projectData(id);
@@ -18,8 +19,8 @@ FROM projectData
 WHERE id = ?;
 
 insert:
-INSERT OR REPLACE INTO projectData(id, name, trees, theme, history)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO projectData(id, name, trees, theme, pastHistory, futureHistory)
+VALUES (?, ?, ?, ?, ?, ?);
 
 delete:
 DELETE FROM projectData WHERE id = ?;

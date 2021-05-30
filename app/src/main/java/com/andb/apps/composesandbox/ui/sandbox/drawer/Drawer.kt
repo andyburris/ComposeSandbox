@@ -40,6 +40,7 @@ import com.andb.apps.composesandbox.ui.util.StackSwitcher
 import com.andb.apps.composesandbox.ui.util.draggable2D
 import com.andb.apps.composesandboxdata.model.*
 import com.andb.apps.composesandboxdata.plusElement
+import com.andb.apps.composesandboxdata.state.ProjectAction
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -48,10 +49,7 @@ fun Drawer(
     sheetState: BottomSheetState,
     dragDropState: DragDropState,
     modifier: Modifier = Modifier,
-    onScreenUpdate: (PrototypeTree) -> Unit,
-    onThemeUpdate: (Theme) -> Unit,
-    onDeleteTree: (PrototypeTree) -> Unit,
-    onExtractComponent: (PrototypeComponent) -> Unit,
+    onUpdateProject: (ProjectAction) -> Unit,
     onDrag: (draggingComponent: PrototypeComponent?) -> Unit
 ) {
     val density = LocalDensity.current
@@ -96,13 +94,12 @@ fun Drawer(
                     sheetState = sheetState,
                     hovering = dragDropState.draggingComponent.value?.let { dragDropState.getDropState() },
                     scrolling = dragDropScrolling,
-                    onTreeNameChanged = { onScreenUpdate.invoke(it) },
+                    onUpdateProject = onUpdateProject,
                     onMoveComponent = { component, pointer ->
                         println("moving ${component.stringify()}, openedTree.component = ${sandboxState.openedTree.component.stringify()}")
                         dragDropState.dragPosition.value = pointer
                         onDrag.invoke(component)
                     },
-                    onDeleteTree = onDeleteTree
                 )
                 DrawerViewState.AddComponent -> ComponentList(project = sandboxState.project, currentTreeID = sandboxState.openedTree.id, requiresLongClick = true) {
                     onDrag.invoke(it)
@@ -112,18 +109,15 @@ fun Drawer(
                     component = switchDrawerState.component,
                     isBaseComponent = switchDrawerState.component.id == sandboxState.openedTree.component.id,
                     actionHandler = actionHandler,
-                    onExtractComponent = onExtractComponent,
-                    onUpdate = { updatedComponent ->
-                        val updatedTree = sandboxState.openedTree.component.updatedChildInTree(updatedComponent)
-                        onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
-                    }
+                    onExtractComponent = { onUpdateProject.invoke(ProjectAction.ExtractComponent(it.toTree(sandboxState.project), listOf(it))) },
+                    onUpdate = { updatedComponent -> onUpdateProject.invoke(ProjectAction.TreeAction.UpdateComponent(updatedComponent)) }
                 )
                 is DrawerViewState.PickBaseComponent -> {
                     ConfirmationDialog { confirmationState ->
                         ComponentList(project = sandboxState.project, title = "Pick Base Component", currentTreeID = sandboxState.openedTree.id, requiresLongClick = false) {
                             val (newBaseComponent, losesChildren) = sandboxState.openedTree.component.replaceParent(it)
                             confirmationState.confirm(title = "Confirm Change?", summary = "This will delete all children of the old component", needToConfirm = losesChildren) {
-                                onScreenUpdate.invoke(sandboxState.openedTree.copy(component = newBaseComponent))
+                                onUpdateProject.invoke(ProjectAction.TreeAction.UpdateComponent(newBaseComponent))
                                 actionHandler.invoke(UserAction.Back)
                                 actionHandler.invoke(UserAction.Back)
                             }
@@ -132,17 +126,16 @@ fun Drawer(
                 }
                 is DrawerViewState.AddModifier -> AddModifierList {
                     val withModifier = sandboxState.editingComponent.copy(modifiers = sandboxState.editingComponent.modifiers.plusElement(it, 0))
-                    val updatedTree = sandboxState.openedTree.component.updatedChildInTree(withModifier)
-                    onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
+                    onUpdateProject.invoke(ProjectAction.TreeAction.UpdateComponent(withModifier))
                     actionHandler.invoke(UserAction.Back)
                 }
                 is DrawerViewState.EditModifier -> DrawerEditModifiers(prototypeModifier = switchDrawerState.modifier) {
                     println("edited modifier = $it")
-                    val updatedTree = sandboxState.openedTree.component.updatedChildInTree(sandboxState.editingComponent.updatedModifier(it))
-                    onScreenUpdate.invoke(sandboxState.openedTree.copy(component = updatedTree))
+                    val updatedComponent = sandboxState.editingComponent.updatedModifier(it)
+                    onUpdateProject.invoke(ProjectAction.TreeAction.UpdateComponent(updatedComponent))
                 }
                 is DrawerViewState.EditTheme -> DrawerEditTheme(theme = sandboxState.project.theme) {
-                    onThemeUpdate.invoke(it)
+                    onUpdateProject.invoke(ProjectAction.UpdateTheme(it))
                 }
             }
             val draggingComponent = dragDropState.draggingComponent.value
