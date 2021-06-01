@@ -18,7 +18,9 @@ fun OverflowMenu(icon: ImageVector = Icons.Default.MoreVert, content: @Composabl
     val menuShowing = remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { menuShowing.value = true }) {
-            Icon(imageVector = icon, contentDescription = "Open Overflow")
+            if (icon != null) { //TODO: figure out why icon is null when menuShowing = true
+                Icon(imageVector = icon, contentDescription = "Open Overflow")
+            }
         }
     }
     DropdownMenu(

@@ -255,7 +255,7 @@ fun PrototypeComponent.Slotted.withSlots(slots: Slots): PrototypeComponent.Slott
 fun PrototypeComponent.plusChildInTree(adding: PrototypeComponent, parent: PrototypeComponent.Group, indexInParent: Int): PrototypeComponent {
     println("adding child to tree - adding = ${adding.stringify()}, parent = ${parent.stringify()}, indexInParent = $indexInParent, this = ${this.stringify()}")
     return when {
-        this == parent -> {
+        this.id == parent.id -> {
             if (this !is PrototypeComponent.Group) throw Error("Can only add a child to a component that is a PrototypeComponent.Group")
             this.withChildren(children.plusElement(adding, indexInParent))
         }
@@ -285,7 +285,7 @@ fun PrototypeComponent.minusChildFromTree(component: PrototypeComponent): Protot
         this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { slot -> slot.copy(group = slot.group.minusChildFromTree(component) as PrototypeComponent.Group) })
         this !is PrototypeComponent.Group -> this
         component !in this.children -> this.withChildren(children = this.children.map { it.minusChildFromTree(component) })
-        else -> this.withChildren(children = this.children - component)
+        else -> this.withChildren(children = this.children.filter { it.id != component.id })
     }
 }
 

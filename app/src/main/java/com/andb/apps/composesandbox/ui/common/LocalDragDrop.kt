@@ -31,8 +31,12 @@ data class DragDropState(
     val onDrop: (dragging: PrototypeComponent, HoverState) -> Unit
 ) {
     fun updateTreeItem(item: TreeHoverItem) {
-        treeItems.removeAll { it.component.id == item.component.id }
+        removeTreeItem(item.component.id)
         treeItems.add(item)
+    }
+
+    fun removeTreeItem(id: String) {
+        treeItems.removeAll { it.component.id == id }
     }
 
     private fun hoveringOverItem(): TreeHoverItem? {
@@ -40,8 +44,7 @@ data class DragDropState(
         val treeItemsWithGlobalOffset = treeItems.map { it.copy(position = it.position.copy(y = it.position.y - globalOffset.value.y)) }
         val dragIsBelowTree = dragPosition.y > treeItemsWithGlobalOffset.maxOfOrNull { it.position.y + it.height } ?: 0.dp
         return if (dragIsBelowTree) {
-            val indent = (dragPosition.x.value / 40).toInt().coerceIn(0, treeItemsWithGlobalOffset.maxOfOrNull { it.indent }
-                ?: 0)
+            val indent = (dragPosition.x.value / 40).toInt().coerceIn(0, treeItemsWithGlobalOffset.maxOfOrNull { it.indent } ?: 0)
             treeItemsWithGlobalOffset.filter { it.indent <= indent }.maxByOrNull { it.position.y + it.height }
         } else {
             treeItemsWithGlobalOffset

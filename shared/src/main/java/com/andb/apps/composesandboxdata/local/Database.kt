@@ -6,8 +6,13 @@ import com.andb.apps.composesandboxdata.model.Project
 import com.andb.apps.composesandboxdata.model.PrototypeTree
 import com.andb.apps.composesandboxdata.model.Theme
 import com.andb.apps.composesandboxdata.state.ProjectAction
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import kotlinx.datetime.TimeZone
 import kotlinx.serialization.KSerializer
@@ -39,32 +44,36 @@ class LocalDateTimeSerializer : KSerializer<LocalDateTime> {
     override fun deserialize(decoder: Decoder): LocalDateTime = Instant.fromEpochMilliseconds(decoder.decodeLong()).toLocalDateTime(TimeZone.UTC)
 }
 
+/*data class DatabaseHelper(val database: Database, val json: Json = Json.Default, val coroutineScope: CoroutineScope) {
+
+}*/
+
 object DatabaseHelper : KoinComponent {
     private val database: Database = get()
     private val json = Json.Default
 
     private val buffer = MutableStateFlow<List<Project>>(database.projectQueries.selectAll().executeAsList().map { it.toProject() })
-    val allProjects: StateFlow<List<Project>> = buffer
-
-    fun upsertProject(project: Project) {
-        var updated = false
-        buffer.value = buffer.value.map {
-            when (it.id) {
-                project.id -> {
-                    updated = true; project
+    private val bufferList = database.projectQueries.selectAll().executeAsList().map { it.toProject() }.associate { it.id to MutableStateFlow(it) }.toMutableMap()
+    init {
+        CoroutineScope(Dispatchers.IO).launch {
+            bufferList.forEach { (id, flow) ->
+                flow.collect { project ->
+                    val serializedTrees = json.encodeToString(ListSerializer(PrototypeTree.serializer()), project.trees)
+                    val serializedTheme = json.encodeToString(Theme.serializer(), project.theme)
+                    val pastHistory = json.encodeToString(ListSerializer(HistoryEntry.serializer()), project.pastHistory)
+                    val futureHistory = json.encodeToString(ListSerializer(HistoryEntry.serializer()), project.futureHistory)
+                    database.projectQueries.insert(project.id, project.name, serializedTrees, serializedTheme, pastHistory, futureHistory)
                 }
-                else -> it
             }
         }
-        if (!updated) {
-            buffer.value += project
-        }
+    }
+    val allProjects: Flow<List<Project>> = combine(bufferList.map { it.value }) { projects -> projects.toList() }
 
-        val serializedTrees = json.encodeToString(ListSerializer(PrototypeTree.serializer()), project.trees)
-        val serializedTheme = json.encodeToString(Theme.serializer(), project.theme)
-        val pastHistory = json.encodeToString(ListSerializer(HistoryEntry.serializer()), project.pastHistory)
-        val futureHistory = json.encodeToString(ListSerializer(HistoryEntry.serializer()), project.futureHistory)
-        database.projectQueries.insert(project.id, project.name, serializedTrees, serializedTheme, pastHistory, futureHistory)
+    fun upsertProject(project: Project) {
+        when(project.id) {
+            in bufferList -> bufferList.getValue(project.id).value = project
+            else -> bufferList += project.id to MutableStateFlow(project)
+        }
     }
 
     fun deleteProject(project: Project) {

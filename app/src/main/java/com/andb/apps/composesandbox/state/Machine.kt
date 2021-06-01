@@ -5,6 +5,8 @@ import com.andb.apps.composesandboxdata.model.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class Machine(coroutineScope: CoroutineScope) {
@@ -18,7 +20,7 @@ class Machine(coroutineScope: CoroutineScope) {
                 Screen.AddProject -> ViewState.AddProject
                 is Screen.Sandbox -> {
                     val project = projects.first { it.id == screen.projectID }
-                    val openedTree = project.trees.first { it.id == screen.openedTreeID }
+                    val openedTree = project.trees.find { it.id == screen.openedTreeID } ?: project.trees.first()
                     val drawerStack = screen.drawerScreens.map { drawerScreen ->
                         when (drawerScreen) {
                             DrawerScreen.Tree -> DrawerViewState.Tree
@@ -46,6 +48,7 @@ class Machine(coroutineScope: CoroutineScope) {
 
     operator fun plusAssign(action: Action) = handleAction(action)
 
+    @OptIn(ExperimentalTime::class)
     fun handleAction(action: Action) {
         when (action) {
             UserAction.Back -> handleBack()
@@ -58,7 +61,14 @@ class Machine(coroutineScope: CoroutineScope) {
                 DatabaseHelper.upsertProject(action.project)
                 screens.value = listOf(Screen.Projects, Screen.Sandbox(action.project.id, action.project.trees.first().id))
             }
-            is UserAction.UpdateProject -> DatabaseHelper.upsertProject(action.project.apply(action.action))
+            is UserAction.UpdateProject -> {
+                println("UserAction.UpdateProject time = " + measureTime {
+                    var newProject: Project
+                    val applyTime = measureTime { newProject = action.project.apply(action.action) }
+                    println("apply time = $applyTime")
+                    DatabaseHelper.upsertProject(newProject)
+                })
+            }
             is UserAction.DeleteProject -> {
                 screens.value = listOf(Screen.Projects)
                 DatabaseHelper.deleteProject(action.project)

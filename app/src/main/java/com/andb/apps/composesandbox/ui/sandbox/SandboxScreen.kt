@@ -38,10 +38,10 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (UserAction.
                 onUpdateProject.invoke(UserAction.UpdateProject(sandboxState.project, ProjectAction.TreeAction.DeleteComponent(draggingComponent))) // the component is being moved, so deleting it deletes it from the tree
             }
             is HoverState.OverTreeItem -> {
-                val parentInfo = sandboxState.openedTree.component.handleDropComponent(hoverState)
+                val (parent, indexInParent) = sandboxState.openedTree.component.handleDropComponent(hoverState)
                 val action = when(isMoving) {
-                    true -> ProjectAction.TreeAction.MoveComponent(draggingComponent, parentInfo.first, parentInfo.second)
-                    false -> ProjectAction.TreeAction.AddComponent(draggingComponent, parentInfo.first, parentInfo.second)
+                    true -> ProjectAction.TreeAction.MoveComponent(draggingComponent, parent, indexInParent)
+                    false -> ProjectAction.TreeAction.AddComponent(draggingComponent, parent, indexInParent)
                 }
                 onUpdateProject.invoke(UserAction.UpdateProject(sandboxState.project, action))
             }

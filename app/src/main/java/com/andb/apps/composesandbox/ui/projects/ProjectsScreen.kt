@@ -36,7 +36,7 @@ fun ProjectsScreen(projects: List<Project>) {
         ) {
             item {
                 Text(
-                    text = "Compose Sandbox",
+                    text = "Projects",
                     style = MaterialTheme.typography.h4,
                     modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp)
                 )

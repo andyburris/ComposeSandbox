@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -27,6 +26,7 @@ import com.andb.apps.composesandbox.state.DrawerScreen
 import com.andb.apps.composesandbox.state.LocalActionHandler
 import com.andb.apps.composesandbox.state.UserAction
 import com.andb.apps.composesandbox.ui.common.*
+import com.andb.apps.composesandbox.ui.util.genericDroppable
 import com.andb.apps.composesandbox.util.divider
 import com.andb.apps.composesandbox.util.onBackgroundSecondary
 import com.andb.apps.composesandboxdata.model.PrototypeComponent
@@ -119,16 +119,19 @@ fun TreeScope.ComponentTreeItem(component: PrototypeComponent, lastItem: Boolean
             lastItem = lastItem,
             modifier = modifier
                 .clickable { actionHandler.invoke(UserAction.OpenDrawerScreen(DrawerScreen.EditComponent(component.id))) }
-                .onGloballyPositioned {
-                    val hoverItem = TreeHoverItem(
-                        component,
-                        it.positionInWindow().toDpPosition(density),
-                        with(density) { it.size.height.toDp() },
-                        branchesShowing.size,
-                        true
-                    )
-                    dragDropState.updateTreeItem(hoverItem)
-                }
+                .genericDroppable(
+                    onMeasure = { offset, size ->
+                        val hoverItem = TreeHoverItem(
+                            component,
+                            offset.toDpPosition(density),
+                            with(density) { size.height.toDp() },
+                            branchesShowing.size,
+                            true
+                        )
+                        dragDropState.updateTreeItem(hoverItem)
+                    },
+                    onDispose = { dragDropState.removeTreeItem(component.id) }
+                )
                 .fillMaxWidth()
         ) {
             ComponentItem(
@@ -167,16 +170,20 @@ fun TreeScope.SlotTreeItem(slot: Slot, lastItem: Boolean, modifier: Modifier = M
     val dragDropState = LocalDragDrop.current
     GenericTreeItem(
         lastItem = lastItem,
-        modifier = modifier.onGloballyPositioned {
-            val hoverItem = TreeHoverItem(
-                slot.group,
-                it.positionInWindow().toDpPosition(density),
-                with(density) { it.size.height.toDp() },
-                indent,
-                false
-            )
-            dragDropState.updateTreeItem(hoverItem)
-        }
+        modifier = modifier.genericDroppable(
+            onMeasure = { offset, size ->
+                val hoverItem = TreeHoverItem(
+                    slot.group,
+                    offset.toDpPosition(density),
+                    with(density) { size.height.toDp() },
+                    branchesShowing.size,
+                    false
+                )
+                dragDropState.updateTreeItem(hoverItem)
+                println("updated tree item with $hoverItem")
+            },
+            onDispose = { dragDropState.removeTreeItem(slot.group.id); println("removed hover item with id = ${slot.group.id}") }
+        )
     ) {
         MaterialTheme(colors = MaterialTheme.colors.copy(onBackground = MaterialTheme.colors.onBackgroundSecondary)) {
             ProvideTextStyle(value = TextStyle.Default.copy(fontStyle = FontStyle.Italic)) {
@@ -286,7 +293,7 @@ fun ComponentItem(
             Icon(imageVector = Icons.Default.DragIndicator,
                 tint = MaterialTheme.colors.divider,
                 contentDescription = "Move Component",
-                modifier = Modifier.pointerInput(Unit) {
+                modifier = Modifier.pointerInput(component) {
                     detectTapGestures(onPress = { onDrag?.invoke(it.toDpPosition(density)) })
                 }
             )

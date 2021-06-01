@@ -20,7 +20,6 @@ object Dependencies {
         const val core = "androidx.activity:activity:${Versions.activity}"
         const val compose = "androidx.activity:activity-compose:${Versions.activity}"
         const val ktx = "androidx.activity:activity-ktx:${Versions.activity}"
-
     }
 
     object Compose {

@@ -49,7 +49,7 @@ fun SandboxBackdrop(sandboxState: ViewState.Sandbox, onUpdateProject: (ProjectAc
         }
         item {
             CategoryHeader(category = "Components", modifier = Modifier.padding(bottom = 8.dp, top = 16.dp)) {
-                onUpdateProject.invoke(ProjectAction.AddTree(PrototypeTree(name = sandboxState.project.trees.nextComponentName(), treeType = TreeType.Screen)))
+                onUpdateProject.invoke(ProjectAction.AddTree(PrototypeTree(name = sandboxState.project.trees.nextComponentName(), treeType = TreeType.Component)))
             }
         }
         items(components) { component ->
