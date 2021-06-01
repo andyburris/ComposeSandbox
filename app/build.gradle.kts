@@ -67,6 +67,8 @@ dependencies {
     implementation(Dependencies.colorPicker)
     implementation(Dependencies.Activity.core)
     implementation(Dependencies.Activity.compose)
+    implementation(Dependencies.KodeHighlighter.core)
+    implementation(Dependencies.KodeHighlighter.kotlin)
     implementation(Dependencies.coroutines)
     testImplementation("junit:junit:4.13")
     androidTestImplementation("androidx.test.ext:junit:1.1.2")

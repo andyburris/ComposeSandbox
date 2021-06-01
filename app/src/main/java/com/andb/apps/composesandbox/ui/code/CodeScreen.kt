@@ -15,11 +15,13 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -27,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.andb.apps.composesandbox.state.Handler
 import com.andb.apps.composesandbox.state.UserAction
+import com.andb.apps.composesandbox.util.AnnotatedStringHighlighter
+import com.andb.apps.composesandbox.util.ComposeRuleBook
 import com.andb.apps.composesandbox.util.endBorder
 import com.andb.apps.composesandboxdata.model.*
 
@@ -110,15 +114,23 @@ private fun CodeCard(generator: CodeGenerator, tree: PrototypeTree, opened: Bool
             FileItem(tree = tree, onToggle = onToggle, expanded = opened)
             AnimatedVisibility(visible = opened) {
                 Row(Modifier.padding(start = 16.dp, bottom = 16.dp)) {
-                    val code = with(generator) { tree.toCode() }
+                    val highlighter = remember { AnnotatedStringHighlighter(ComposeRuleBook()) }
+                    val highlightedCode = remember { mutableStateOf(AnnotatedString("")) }
+                    LaunchedEffect(tree) {
+                        val code = with(generator) { tree.toCode() }
+                        highlightedCode.value = highlighter.highlight(code)
+                        println("annotations = ${highlightedCode.value.spanStyles}")
+                    }
                     Text(
-                        text = (1..code.lines().size).joinToString("\n"),
+                        text = (1..highlightedCode.value.lines().size).joinToString("\n"),
                         style = codeStyle.copy(textAlign = TextAlign.End),
                         color = MaterialTheme.colors.onSecondary,
-                        modifier = Modifier.endBorder(1.dp, MaterialTheme.colors.secondary).padding(end = 8.dp)
+                        modifier = Modifier
+                            .endBorder(1.dp, MaterialTheme.colors.secondary)
+                            .padding(end = 8.dp)
                     )
                     Row(Modifier.horizontalScroll(rememberScrollState())) {
-                        Text(text = code, style = codeStyle, modifier = Modifier.padding(start = 8.dp, end = 16.dp))
+                        Text(text = highlightedCode.value, style = codeStyle, modifier = Modifier.padding(start = 8.dp, end = 16.dp))
                     }
                 }
             }
@@ -126,9 +138,14 @@ private fun CodeCard(generator: CodeGenerator, tree: PrototypeTree, opened: Bool
     }
 }
 
+
+
 @Composable
 private fun FileItem(tree: PrototypeTree, modifier: Modifier = Modifier, expanded: Boolean, onToggle: () -> Unit) {
-    Row(modifier.clickable(onClick = onToggle).padding(16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier
+        .clickable(onClick = onToggle)
+        .padding(16.dp)
+        .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column {
             Text(text = tree.name, style = MaterialTheme.typography.subtitle1)
             Text(text = "${tree.name.capitalize().filter { it != ' ' }}.kt", style = codeStyle)

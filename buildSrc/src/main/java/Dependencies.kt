@@ -10,6 +10,7 @@ object Versions {
     const val kaseChange = "1.3.0"
     const val activity = "1.3.0-alpha08"
     const val sqlDelight = "1.4.3"
+    const val kodeHighlighter = "v3.0.0"
 }
 
 object Dependencies {
@@ -35,9 +36,13 @@ object Dependencies {
         const val viewModel = "org.koin:koin-android-viewmodel:${Versions.koin}"
     }
 
+    object KodeHighlighter {
+        const val core = "com.github.markusressel.KodeHighlighter:core:${Versions.kodeHighlighter}"
+        const val kotlin = "com.github.markusressel.KodeHighlighter:kotlin:${Versions.kodeHighlighter}"
+    }
+
     object SQLDelight {
         const val android = "com.squareup.sqldelight:android-driver:${Versions.sqlDelight}"
         const val coroutines = "com.squareup.sqldelight:coroutines-extensions-jvm:${Versions.sqlDelight}"
     }
-
 }
