@@ -82,7 +82,7 @@ fun ComponentList(project: Project, currentTreeID: String, title: String = "Add 
 
 @Composable
 fun AddComponentHeader(text: String, modifier: Modifier = Modifier) {
-    Text(text = text.toUpperCase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.primary, modifier = modifier.padding(start = 0.dp, end = 32.dp, top = 8.dp))
+    Text(text = text.uppercase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.primary, modifier = modifier.padding(start = 0.dp, end = 32.dp, top = 8.dp))
 }
 
 @OptIn(ExperimentalFoundationApi::class)

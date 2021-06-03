@@ -13,10 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.data.model.toTheme
 import com.andb.apps.composesandbox.ui.projects.ProjectItem
 import com.andb.apps.composesandbox.util.gridItems
-import com.andb.apps.composesandboxdata.model.*
+import com.andb.apps.composesandboxdata.model.Project
 import java.util.*
 
 
@@ -90,6 +89,7 @@ fun AddProjectScreen(onAddProject: (Project) -> Unit) {
                             .weight(1f)
                             .padding(16.dp)
                             .clickable {
+                                println("clicked project = ${project.id}")
                                 if (name.value.isEmpty()) {
                                     name.value = project.name
                                 }

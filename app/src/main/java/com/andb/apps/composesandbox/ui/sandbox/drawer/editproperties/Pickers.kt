@@ -27,8 +27,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.andb.apps.composesandbox.data.model.projectColor
-import com.andb.apps.composesandbox.ui.common.ColorPickerCircle
-import com.andb.apps.composesandbox.ui.common.ColorPickerWithTheme
+import com.andb.apps.composesandbox.ui.theme.ColorPickerCircle
+import com.andb.apps.composesandbox.ui.theme.ColorPickerWithTheme
 import com.andb.apps.composesandbox.util.bottomBorder
 import com.andb.apps.composesandbox.util.isDark
 import com.andb.apps.composesandboxdata.model.PrototypeColor
@@ -41,37 +41,42 @@ fun TextPicker(label: String, value: String, onValueChange: (String) -> Unit) {
 
 
 @Composable
-fun <T> OptionsPicker(label: String, selected: T, options: List<T>, stringify: (T) -> String = { it.toString() }, onValueChange: (T) -> Unit) {
-    val opened = remember { mutableStateOf(false) }
+fun <T> OptionsPicker(label: String, selected: T, options: Collection<T>, stringify: (T) -> String = { it.toString() }, onValueChange: (T) -> Unit) {
     GenericPropertyEditor(label) {
-        Box {
-            Row(
-                modifier = Modifier
-                    .bottomBorder(1.dp, MaterialTheme.colors.onSecondary)
-                    .background(MaterialTheme.colors.secondary, shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                    .clickable { opened.value = true }
-                    .height(32.dp)
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = stringify(selected))
-                //Icon(imageVector = Icons.Default.ExpandMore, contentDescription = "Open Dropdown")
-                Image(
-                    imageVector = Icons.Default.ExpandMore,
-                    contentDescription = "Open Dropdown",
-                    colorFilter = ColorFilter.tint(MaterialTheme.colors.onSecondary),
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-            DropdownMenu(
-                expanded = opened.value,
-                onDismissRequest = { opened.value = false }
-            ) {
-                for (option in options) {
-                    DropdownMenuItem(onClick = { onValueChange.invoke(option); }) {
-                        Text(text = stringify(option))
-                    }
+        Dropdown(selected, options, stringify, onValueChange)
+    }
+}
+
+@Composable
+fun <T> Dropdown(selected: T, options: Collection<T>, stringify: (T) -> String = { it.toString() }, onValueChange: (T) -> Unit) {
+    val opened = remember { mutableStateOf(false) }
+    Box {
+        Row(
+            modifier = Modifier
+                .bottomBorder(1.dp, MaterialTheme.colors.onSecondary)
+                .background(MaterialTheme.colors.secondary, shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                .clickable { opened.value = true }
+                .height(32.dp)
+                .padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = stringify(selected))
+            //Icon(imageVector = Icons.Default.ExpandMore, contentDescription = "Open Dropdown")
+            Image(
+                imageVector = Icons.Default.ExpandMore,
+                contentDescription = "Open Dropdown",
+                colorFilter = ColorFilter.tint(MaterialTheme.colors.onSecondary),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        DropdownMenu(
+            expanded = opened.value,
+            onDismissRequest = { opened.value = false }
+        ) {
+            for (option in options) {
+                DropdownMenuItem(onClick = { onValueChange.invoke(option); }) {
+                    Text(text = stringify(option))
                 }
             }
         }
@@ -122,14 +127,20 @@ fun NumberPicker(label: String, current: Int, minValue: Int = 0, maxValue: Int =
                 imageVector = Icons.Default.Remove,
                 contentDescription = "Decrement",
                 colorFilter = ColorFilter.tint(MaterialTheme.colors.onSecondary),
-                modifier = Modifier.clickable { onValueChange.invoke((current - 1).coerceIn(minValue..maxValue)) }.padding(8.dp).size(16.dp)
+                modifier = Modifier
+                    .clickable { onValueChange.invoke((current - 1).coerceIn(minValue..maxValue)) }
+                    .padding(8.dp)
+                    .size(16.dp)
             )
             Text(text = current.toString())
             Image(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Increment",
                 colorFilter = ColorFilter.tint(MaterialTheme.colors.onSecondary),
-                modifier = Modifier.clickable { onValueChange.invoke((current + 1).coerceIn(minValue..maxValue)) }.padding(8.dp).size(16.dp)
+                modifier = Modifier
+                    .clickable { onValueChange.invoke((current + 1).coerceIn(minValue..maxValue)) }
+                    .padding(8.dp)
+                    .size(16.dp)
             )
         }
     }
@@ -147,7 +158,9 @@ fun GenericPropertyEditor(label: String, modifier: Modifier = Modifier, widget: 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.height(32.dp).fillMaxWidth()
+        modifier = modifier
+            .height(32.dp)
+            .fillMaxWidth()
     ) {
         Text(label)
         widget()
@@ -159,14 +172,19 @@ fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Mod
     val pickingColor = remember { mutableStateOf(false) }
     GenericPropertyEditor(label = label, modifier) {
         Box {
-            ColorPickerCircle(color = current.projectColor()) {
-                pickingColor.value = true
-            }
+            ColorPickerCircle(
+                color = current.projectColor(),
+                modifier = Modifier.clickable {
+                    pickingColor.value = true
+                }
+            )
             if (current is PrototypeColor.ThemeColor) {
                 Image(
                     imageVector = Icons.Default.Link,
                     contentDescription = "Linked to Theme",
-                    modifier = Modifier.align(Alignment.Center).size(20.dp),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(20.dp),
                     colorFilter = ColorFilter.tint(if (current.projectColor().isDark()) Color.White else Color.Black))
             }
         }
@@ -188,9 +206,11 @@ fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Mod
             Column(Modifier.background(MaterialTheme.colors.background, RoundedCornerShape(16.dp))) {
                 Text(text = "Pick Color", style = MaterialTheme.typography.h6, modifier = Modifier.padding(32.dp))
                 ColorPickerWithTheme(current = current, onSelect = onSelect)
-                Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
+                Row(Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp), horizontalArrangement = Arrangement.End) {
                     TextButton(onClick = { pickingColor.value = false }) {
-                        Text(text = "Select".toUpperCase())
+                        Text(text = "Select".uppercase())
                     }
                 }
             }
@@ -228,7 +248,9 @@ fun PickerWithChildren(childrenExpanded: Boolean, parent: @Composable () -> Unit
         parent()
         if (children != null) {
             AnimatedVisibility(visible = childrenExpanded) {
-                Column(Modifier.background(MaterialTheme.colors.secondary, RoundedCornerShape(8.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top), content = children)
+                Column(Modifier
+                    .background(MaterialTheme.colors.secondary, RoundedCornerShape(8.dp))
+                    .padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top), content = children)
             }
         }
     }

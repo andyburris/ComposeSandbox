@@ -24,16 +24,13 @@ sealed class PrototypeComponent {
     @Serializable
     data class Text(
         val text: String,
-        val weight: Weight = Weight.Normal,
-        val size: Int = 14,
+        val style: PrototypeTextStyle.ThemeStyle = PrototypeTextStyle.ThemeStyle.Body1,
+        val weight: PrototypeFontWeight? = null,
+        val size: Int? = null,
         val color: PrototypeColor = PrototypeColor.ThemeColor.OnBackground,
         override val id: String = UUID.randomUUID().toString(),
         override val modifiers: List<PrototypeModifier> = emptyList(),
-    ) : PrototypeComponent() {
-        enum class Weight {
-            Thin, ExtraLight, Light, Normal, Medium, SemiBold, Bold, ExtraBold, Black,
-        }
-    }
+    ) : PrototypeComponent()
 
     @Serializable
     data class Icon(

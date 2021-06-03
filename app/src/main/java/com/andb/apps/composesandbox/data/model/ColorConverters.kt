@@ -4,8 +4,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import com.andb.apps.composesandboxdata.model.PrototypeColor
 import com.andb.apps.composesandbox.ui.common.ProjectTheme
+import com.andb.apps.composesandboxdata.model.PrototypeColor
 
 fun Color.toPrototypeColor() = PrototypeColor.FixedColor(this.toArgb())
 fun PrototypeColor.FixedColor.toColor(): Color = Color(this.color)
@@ -36,18 +36,18 @@ fun PrototypeColor.renderColor() = when(this) {
          */
 fun PrototypeColor.projectColor() = when (this){
     is PrototypeColor.FixedColor -> this.toColor()
-    is PrototypeColor.ThemeColor.Primary -> ProjectTheme.primary.toColor()
-    is PrototypeColor.ThemeColor.PrimaryVariant -> ProjectTheme.primaryVariant.toColor()
-    is PrototypeColor.ThemeColor.OnPrimary -> ProjectTheme.onPrimary.toColor()
-    is PrototypeColor.ThemeColor.Secondary -> ProjectTheme.secondary.toColor()
-    is PrototypeColor.ThemeColor.SecondaryVariant -> ProjectTheme.secondaryVariant.toColor()
-    is PrototypeColor.ThemeColor.OnSecondary -> ProjectTheme.onSecondary.toColor()
-    is PrototypeColor.ThemeColor.Background -> ProjectTheme.background.toColor()
-    is PrototypeColor.ThemeColor.OnBackground -> ProjectTheme.onBackground.toColor()
-    is PrototypeColor.ThemeColor.Surface -> ProjectTheme.surface.toColor()
-    is PrototypeColor.ThemeColor.OnSurface -> ProjectTheme.onSurface.toColor()
-    is PrototypeColor.ThemeColor.Error -> ProjectTheme.error.toColor()
-    PrototypeColor.ThemeColor.OnError -> ProjectTheme.onError.toColor()
+    is PrototypeColor.ThemeColor.Primary -> ProjectTheme.colors.primary.toColor()
+    is PrototypeColor.ThemeColor.PrimaryVariant -> ProjectTheme.colors.primaryVariant.toColor()
+    is PrototypeColor.ThemeColor.OnPrimary -> ProjectTheme.colors.onPrimary.toColor()
+    is PrototypeColor.ThemeColor.Secondary -> ProjectTheme.colors.secondary.toColor()
+    is PrototypeColor.ThemeColor.SecondaryVariant -> ProjectTheme.colors.secondaryVariant.toColor()
+    is PrototypeColor.ThemeColor.OnSecondary -> ProjectTheme.colors.onSecondary.toColor()
+    is PrototypeColor.ThemeColor.Background -> ProjectTheme.colors.background.toColor()
+    is PrototypeColor.ThemeColor.OnBackground -> ProjectTheme.colors.onBackground.toColor()
+    is PrototypeColor.ThemeColor.Surface -> ProjectTheme.colors.surface.toColor()
+    is PrototypeColor.ThemeColor.OnSurface -> ProjectTheme.colors.onSurface.toColor()
+    is PrototypeColor.ThemeColor.Error -> ProjectTheme.colors.error.toColor()
+    PrototypeColor.ThemeColor.OnError -> ProjectTheme.colors.onError.toColor()
 }
 
 val PrototypeColor.ThemeColor.name get() = when (this) {

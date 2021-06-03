@@ -13,6 +13,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andb.apps.composesandbox.data.model.*
@@ -23,9 +24,11 @@ private val selectionColor = Color(0xFF56CCF2)
 
 @Composable
 fun RenderComponentParent(theme: Theme, component: PrototypeComponent, selected: String? = null) {
-    MaterialTheme(colors = theme.toColors(), typography = Typography(), shapes = Shapes()) {
+    MaterialTheme(colors = theme.colors.toColors(), typography = theme.type.toTypography(), shapes = Shapes()) {
         CompositionLocalProvider(LocalSelected provides selected) {
-            Box(modifier = Modifier.background(MaterialTheme.colors.background).fillMaxSize()) {
+            Box(modifier = Modifier
+                .background(MaterialTheme.colors.background)
+                .fillMaxSize()) {
                 RenderComponent(component = component)
             }
         }
@@ -44,8 +47,9 @@ fun RenderComponent(component: PrototypeComponent){
     when (component){
         is PrototypeComponent.Text -> Text(
             text = component.text,
-            fontWeight = component.weight.toFontWeight(),
-            fontSize = component.size.sp,
+            style = component.style.projectStyle().renderStyle(),
+            fontWeight = component.weight?.toFontWeight(),
+            fontSize = component.size?.sp ?: TextUnit.Unspecified,
             color = component.color.renderColor(),
             modifier = modifier
         )

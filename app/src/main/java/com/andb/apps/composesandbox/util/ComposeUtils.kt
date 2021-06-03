@@ -10,9 +10,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
-
-typealias Content = @Composable() () -> Unit
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 
 fun Modifier.startBorder(width: Dp, color: Color) = this.drawBehind {
     drawRect(color, size = this.size.copy(width = width.toPx()))
@@ -33,6 +35,9 @@ fun Modifier.bottomBorder(height: Dp, color: Color) = drawBehind {
         size = this.size.copy(height = height.toPx())
     )
 }
+
+fun Offset.toDpOffset(density: Density) = with(density) { DpOffset(this@toDpOffset.x.toDp(), this@toDpOffset.y.toDp()) }
+fun Offset.toIntOffset() =  IntOffset(this.x.roundToInt(), this.y.roundToInt())
 
 fun Color.isDark(): Boolean {
     val darkness: Double = 1 - (0.299 * this.red + 0.587 * this.green + 0.114 * this.blue)

@@ -1,7 +1,5 @@
 package com.andb.apps.composesandbox.ui.addproject
 
-import androidx.compose.material.lightColors
-import com.andb.apps.composesandbox.data.model.toTheme
 import com.andb.apps.composesandboxdata.model.*
 
 private val empty = newProject(
@@ -9,7 +7,6 @@ private val empty = newProject(
     trees = listOf(
         PrototypeTree(name = "Screen 1", treeType = TreeType.Screen)
     ),
-    theme = lightColors().toTheme(),
 )
 
 private val helloWorld = newProject(
@@ -30,7 +27,6 @@ private val helloWorld = newProject(
             treeType = TreeType.Screen
         )
     ),
-    theme = lightColors().toTheme()
 )
 
 private val scaffoldDemo = newProject(
@@ -64,7 +60,7 @@ private val scaffoldDemo = newProject(
                                             enabled = true,
                                             group = PrototypeComponent.Group.Box(
                                                 children = listOf(
-                                                    PrototypeComponent.Text("App Name", weight = PrototypeComponent.Text.Weight.Medium, size = 20, color = PrototypeColor.ThemeColor.OnPrimary)
+                                                    PrototypeComponent.Text("App Name", style = PrototypeTextStyle.ThemeStyle.H6, color = PrototypeColor.ThemeColor.OnPrimary)
                                                 )
                                             )
                                         ),
@@ -95,7 +91,7 @@ private val scaffoldDemo = newProject(
                                             enabled = true,
                                             group = PrototypeComponent.Group.Box(
                                                 children = listOf(
-                                                    PrototypeComponent.Text("EXTENDED FAB", weight = PrototypeComponent.Text.Weight.Medium, color = PrototypeColor.ThemeColor.OnSecondary)
+                                                    PrototypeComponent.Text("EXTENDED FAB", style = PrototypeTextStyle.ThemeStyle.Button, color = PrototypeColor.ThemeColor.OnSecondary)
                                                 )
                                             )
                                         ),

@@ -35,9 +35,9 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties.DrawerEditP
 import com.andb.apps.composesandbox.ui.sandbox.drawer.theme.DrawerEditTheme
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.ComponentItem
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.DrawerTree
-import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.toDpPosition
 import com.andb.apps.composesandbox.ui.util.StackSwitcher
 import com.andb.apps.composesandbox.ui.util.draggable2D
+import com.andb.apps.composesandbox.util.toDpOffset
 import com.andb.apps.composesandboxdata.model.*
 import com.andb.apps.composesandboxdata.plusElement
 import com.andb.apps.composesandboxdata.state.ProjectAction
@@ -71,13 +71,12 @@ fun Drawer(
                 setContentSize(it.size.toSize())
                 dragDropState.globalOffset.value = it
                     .positionInWindow()
-                    .toDpPosition(density)
+                    .toDpOffset(density)
             }
             .draggable2D(
-                canDrag = dragDropState.draggingComponent.value != null,
-                onDrop = { dragDropState.drop() },
+                onDrop = { if (dragDropState.draggingComponent.value != null) dragDropState.drop() },
                 onPositionUpdate = {
-                    dragDropState.dragPosition.value = it
+                    dragDropState.dragPosition.value = it.toDpOffset(density)
                     //println("dragging, value = ${dragDropState.dragPosition.value}")
                 }
             )

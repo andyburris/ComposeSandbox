@@ -14,14 +14,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.isFocused
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.InternalTextApi
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.andb.apps.composesandbox.state.DrawerScreen
@@ -175,4 +172,3 @@ private fun DeleteOverlay(hoverState: HoverState) {
     }
 }
 
-fun Offset.toDpPosition(density: Density) = with(density) { DpOffset(this@toDpPosition.x.toDp(), this@toDpPosition.y.toDp()) }

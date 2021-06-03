@@ -34,7 +34,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        apiVersion = "1.4"
         jvmTarget = "1.8"
         useIR = true
     }

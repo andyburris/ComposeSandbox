@@ -1,9 +1,6 @@
 package com.andb.apps.composesandbox.state
 
-import com.andb.apps.composesandboxdata.model.Project
-import com.andb.apps.composesandboxdata.model.PrototypeComponent
-import com.andb.apps.composesandboxdata.model.PrototypeModifier
-import com.andb.apps.composesandboxdata.model.PrototypeTree
+import com.andb.apps.composesandboxdata.model.*
 
 sealed class Screen {
     object Projects : Screen()
@@ -40,6 +37,37 @@ fun ViewState.toScreen() = when (this) {
     is ViewState.Preview -> Screen.Preview(project.id, currentTree.id)
     is ViewState.Code -> Screen.Code(project.id)
     ViewState.Test -> Screen.Test
+}
+
+fun Screen.toViewState(projects: List<Project>): ViewState? {
+    return when (this) {
+        Screen.Projects -> ViewState.Projects(projects)
+        Screen.AddProject -> ViewState.AddProject
+        is Screen.Sandbox -> {
+            val project = projects.find { it.id == this.projectID } ?: return null
+            val openedTree = project.trees.find { it.id == this.openedTreeID } ?: project.trees.first()
+            val drawerStack = this.drawerScreens.map { drawerScreen ->
+                when (drawerScreen) {
+                    DrawerScreen.Tree -> DrawerViewState.Tree
+                    DrawerScreen.AddComponent -> DrawerViewState.AddComponent
+                    is DrawerScreen.EditComponent -> openedTree.component.findByIDInTree(drawerScreen.componentID)?.let { DrawerViewState.EditComponent(it) }
+                    is DrawerScreen.PickBaseComponent -> DrawerViewState.PickBaseComponent(openedTree.component)
+                    DrawerScreen.AddModifier -> DrawerViewState.AddModifier
+                    is DrawerScreen.EditModifier -> openedTree.component.findModifierByIDInTree(drawerScreen.modifierID)?.let { DrawerViewState.EditModifier(it) }
+                    DrawerScreen.EditTheme -> DrawerViewState.EditTheme
+                }
+            }
+            val validStack = drawerStack.takeWhile { it != null }.filterNotNull()
+            ViewState.Sandbox(project, this.openedTreeID, validStack)
+        }
+        is Screen.Preview -> {
+            val project = projects.find { it.id == this.projectID } ?: return null
+            val currentScreen = project.trees.first { it.id == this.currentScreenID }
+            ViewState.Preview(project, currentScreen)
+        }
+        is Screen.Code -> ViewState.Code(projects.first { it.id == this.projectID })
+        is Screen.Test -> ViewState.Test
+    }
 }
 
 sealed class DrawerScreen {

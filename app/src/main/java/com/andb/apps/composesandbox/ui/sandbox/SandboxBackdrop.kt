@@ -92,7 +92,7 @@ private fun CategoryHeader(category: String, modifier: Modifier = Modifier, onAd
     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier
         .padding(horizontal = 16.dp)
         .fillMaxWidth()) {
-        Text(text = category.toUpperCase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.onPrimary)
+        Text(text = category.uppercase(), style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.onPrimary)
         Icon(imageVector = Icons.Default.Add, contentDescription = "Add", tint = MaterialTheme.colors.onPrimary, modifier = Modifier.clickable(onClick = onAdd))
     }
 }

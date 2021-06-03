@@ -2,11 +2,11 @@ object Versions {
     const val minSDK = 23
     const val targetSDK = 29
     const val compileSDK = 29
-    const val kotlin = "1.4.32"
-    const val kotlinCoroutines = "1.4.1"
+    const val kotlin = "1.5.10"
+    const val kotlinCoroutines = "1.5.0"
     const val koin = "2.1.5"
-    const val compose = "1.0.0-beta07"
-    const val colorPicker = "0.3.2-beta07"
+    const val compose = "1.0.0-beta08"
+    const val colorPicker = "0.3.2-beta08"
     const val kaseChange = "1.3.0"
     const val activity = "1.3.0-alpha08"
     const val sqlDelight = "1.4.3"

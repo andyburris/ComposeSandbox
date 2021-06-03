@@ -3,7 +3,7 @@ package com.andb.apps.composesandbox.data.model
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.filled.Title
 import androidx.compose.material.icons.filled.Toll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -16,7 +16,7 @@ val PrototypeComponent.name @Composable get() = this.name(LocalProject.current)
 
 
 val PrototypeComponent.icon @Composable get() = when (this) {
-    is PrototypeComponent.Text -> Icons.Default.TextFields
+    is PrototypeComponent.Text -> Icons.Default.Title
     is PrototypeComponent.Icon -> Icons.Default.Image
     is PrototypeComponent.Group.Column -> ImageVector.vectorResource(id = R.drawable.ic_column)
     is PrototypeComponent.Group.Row -> ImageVector.vectorResource(id = R.drawable.ic_row)

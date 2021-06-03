@@ -37,7 +37,7 @@ fun ProjectItem(project: Project, modifier: Modifier = Modifier, selected: Boole
                 .aspectRatio(LocalConfiguration.current.screenWidthDp.toFloat() / LocalConfiguration.current.screenHeightDp)
                 .fillMaxWidth()
         ) {
-            BoxWithConstraints(Modifier.background(Color.Red)) {
+            BoxWithConstraints() {
                 val width = LocalConfiguration.current.screenWidthDp.dp
                 val height = LocalConfiguration.current.screenHeightDp.dp
                 val scaleX = maxWidth / width

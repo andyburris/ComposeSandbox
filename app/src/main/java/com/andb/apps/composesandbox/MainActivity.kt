@@ -20,7 +20,7 @@ import com.andb.apps.composesandbox.ui.preview.PreviewScreen
 import com.andb.apps.composesandbox.ui.projects.ProjectsScreen
 import com.andb.apps.composesandbox.ui.sandbox.SandboxScreen
 import com.andb.apps.composesandbox.ui.test.TestScreen
-import com.andb.apps.composesandbox.ui.theme.AppTheme
+import com.andb.apps.composesandbox.ui.theming.AppTheme
 import org.koin.android.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
             is ViewState.Projects -> MaterialTheme.colors.secondary
             ViewState.AddProject -> MaterialTheme.colors.secondary
             is ViewState.Sandbox -> MaterialTheme.colors.primaryVariant
-            is ViewState.Preview -> state.project.theme.primaryVariant.renderColor()
+            is ViewState.Preview -> state.project.theme.colors.primaryVariant.renderColor()
             is ViewState.Code -> MaterialTheme.colors.primaryVariant
             ViewState.Test -> MaterialTheme.colors.secondary
         }
@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
             is ViewState.Projects -> MaterialTheme.colors.secondary
             ViewState.AddProject -> MaterialTheme.colors.secondary
             is ViewState.Sandbox -> MaterialTheme.colors.secondary
-            is ViewState.Preview -> state.project.theme.primaryVariant.renderColor()
+            is ViewState.Preview -> state.project.theme.colors.primaryVariant.renderColor()
             is ViewState.Code -> MaterialTheme.colors.secondary
             ViewState.Test -> MaterialTheme.colors.secondary
         }

@@ -52,7 +52,7 @@ open class PatternRule(val pattern: Regex) : LanguageRule {
     override fun findMatches(text: CharSequence) = RuleHelper.findRegexMatches(text, pattern)
 }
 
-class BetterNumberRule : PatternRule("[^a-zA-Z](-)?\\d+(\\.\\d+)?(L)?".toRegex())
+class BetterNumberRule : PatternRule("(?<!\\w)(-)?\\d+(\\.\\d+)?(L)?".toRegex())
 class ParameterRule : PatternRule("(?![\\(,])[\\n\\s]*\\w* *=".toRegex())
 
 class ComposeRuleBook : LanguageRuleBook {

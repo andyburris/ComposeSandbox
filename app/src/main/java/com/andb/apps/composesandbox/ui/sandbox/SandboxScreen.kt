@@ -27,23 +27,26 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (UserAction.UpdateProject) -> Unit) {
-    val actionHandler = Handler
-    println("updating sandbox state, sandboxState.openedTree.component = ${sandboxState.openedTree.component.stringify()}")
-    val dragDropState = rememberDragDropState(sandboxState) { draggingComponent, hoverState ->
+    val draggingComponent = rememberDraggingComponent()
+    val sandboxStateWithoutDraggingComponent = when (val component = draggingComponent.value) {
+        null -> sandboxState
+        else -> sandboxState.copy(project = sandboxState.project.updatedTree(sandboxState.openedTree.copy(component = sandboxState.openedTree.component.minusChildFromTree(component))))
+    }
+    val dragDropState = rememberDragDropState(sandboxState, draggingComponent = draggingComponent) { draggingComponent, hoverState ->
         println("dropping ${draggingComponent.stringify(showIDs = true)} over $hoverState")
-        val isMoving = sandboxState.openedTree.component.findByIDInTree(draggingComponent.id) != null
+        val isMoving = sandboxStateWithoutDraggingComponent.openedTree.component.findByIDInTree(draggingComponent.id) != null
         when(hoverState) {
             HoverState.OverNone -> {
                 if (!isMoving) return@rememberDragDropState // the component would be added, so deleting it doesn't affect the tree
                 onUpdateProject.invoke(UserAction.UpdateProject(sandboxState.project, ProjectAction.TreeAction.DeleteComponent(draggingComponent))) // the component is being moved, so deleting it deletes it from the tree
             }
             is HoverState.OverTreeItem -> {
-                val (parent, indexInParent) = sandboxState.openedTree.component.handleDropComponent(hoverState)
+                val (parent, indexInParent) = sandboxStateWithoutDraggingComponent.openedTree.component.handleDropComponent(hoverState)
                 val action = when(isMoving) {
                     true -> ProjectAction.TreeAction.MoveComponent(draggingComponent, parent, indexInParent)
                     false -> ProjectAction.TreeAction.AddComponent(draggingComponent, parent, indexInParent)
                 }
-                onUpdateProject.invoke(UserAction.UpdateProject(sandboxState.project, action))
+                onUpdateProject.invoke(UserAction.UpdateProject(sandboxStateWithoutDraggingComponent.project, action))
             }
         }
     }
@@ -79,10 +82,6 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (UserAction.
                         sheetPeekHeight = 88.dp,
                         sheetGesturesEnabled = dragDropState.draggingComponent.value == null,
                         sheetContent = {
-                            val sandboxStateWithoutDraggingComponent = when (val component = dragDropState.draggingComponent.value) {
-                                null -> sandboxState
-                                else -> sandboxState.copy(project = sandboxState.project.updatedTree(sandboxState.openedTree.copy(component = sandboxState.openedTree.component.minusChildFromTree(component))))
-                            }
                             Drawer(
                                 sandboxState = sandboxStateWithoutDraggingComponent,
                                 sheetState = bottomSheetState,

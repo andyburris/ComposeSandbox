@@ -1,27 +1,107 @@
 package com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LineWeight
+import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.andb.apps.composesandbox.data.model.projectStyle
 import com.andb.apps.composesandbox.data.model.toReadableString
+import com.andb.apps.composesandbox.ui.common.ProjectTheme
+import com.andb.apps.composesandbox.util.divider
+import com.andb.apps.composesandbox.util.onBackgroundSecondary
+import com.andb.apps.composesandbox.util.overlay
 import com.andb.apps.composesandboxdata.model.*
 
 @Composable
 fun TextProperties(component: PrototypeComponent.Text, onUpdate: (PrototypeComponent.Text) -> Unit) {
+    val projectTypography = ProjectTheme.type
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TextPicker(label = "Text", value = component.text) {
             onUpdate(component.copy(text = it))
         }
-        NumberPicker(label = "Text Size", current = component.size) {
-            onUpdate.invoke(component.copy(size = it))
+        GenericPropertyEditor(label = "Text Style") {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                ToggleIcon(
+                    icon = Icons.Default.LineWeight,
+                    contentDescription = "Toggle Inherit Weight",
+                    enabled = component.weight == null,
+                    onToggle = {
+                        val newWeight = if (component.weight == null) component.style.projectStyle(projectTypography).fontWeight else null
+                        onUpdate.invoke(component.copy(weight = newWeight))
+                    }
+                )
+                ToggleIcon(
+                    icon = Icons.Default.TextFields,
+                    contentDescription = "Toggle Inherit Size",
+                    enabled = component.size == null,
+                    onToggle = {
+                        val newSize = if (component.size == null) component.style.projectStyle(projectTypography).fontSize else null
+                        onUpdate.invoke(component.copy(size = newSize))
+                    }
+                )
+                Dropdown(
+                    selected = component.style,
+                    options = ProjectTheme.type.items().values,
+                    stringify = { it.name },
+                    onValueChange = {
+                        onUpdate.invoke(component.copy(style = it))
+                    }
+                )
+            }
         }
-        OptionsPicker(label = "Font Weight", selected = component.weight, options = PrototypeComponent.Text.Weight.values().toList()) {
-            onUpdate.invoke(component.copy(weight = it))
+        if (component.size != null) {
+            NumberPicker(label = "Font Size", current = component.size!!) {
+                onUpdate.invoke(component.copy(size = it))
+            }
+        }
+        if (component.weight != null) {
+            OptionsPicker(label = "Font Weight", selected = component.weight!!, options = fontWeights.toList(), stringify = { it.name }) {
+                onUpdate.invoke(component.copy(weight = it))
+            }
         }
         ColorPicker(label = "Text Color", current = component.color) {
             onUpdate.invoke(component.copy(color = it))
         }
+    }
+}
+
+@Composable
+private fun ToggleIcon(
+    icon: ImageVector,
+    contentDescription: String,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    onToggle: () -> Unit
+) {
+    val backgroundColor = if (enabled) MaterialTheme.colors.overlay else Color.Transparent
+    val borderColor = if (enabled) Color.Transparent else MaterialTheme.colors.divider
+    Box(
+        modifier = modifier
+            .border(1.dp, borderColor, CircleShape)
+            .background(backgroundColor, CircleShape)
+            .clip(CircleShape)
+            .clickable(onClick = onToggle)
+            .size(32.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = if (enabled) MaterialTheme.colors.onBackgroundSecondary else MaterialTheme.colors.divider,
+            modifier = Modifier.align(Alignment.Center)
+        )
     }
 }
 

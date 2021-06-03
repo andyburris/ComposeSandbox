@@ -15,14 +15,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.andb.apps.composesandbox.data.model.toTheme
+import com.andb.apps.composesandbox.data.model.toThemeColors
 import com.andb.apps.composesandboxdata.model.*
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class CodeGenerationTest {
 
-    private val project = Project(name = "Test Project", trees = emptyList(), theme = lightColors().toTheme())
+    private val project = Project(name = "Test Project", trees = emptyList(), theme = lightColors().toThemeColors())
     private val generator = CodeGenerator(project)
 
     @Test

@@ -19,7 +19,7 @@ import com.andb.apps.composesandboxdata.model.*
 fun DrawerEditModifiers(prototypeModifier: PrototypeModifier, onEdit: (PrototypeModifier) -> Unit) {
     val actionHandler = LocalActionHandler.current
     Column() {
-        DrawerHeader(title = prototypeModifier.name, screenName = "Edit Modifier".toUpperCase(), onIconClick = { actionHandler.invoke(UserAction.Back) })
+        DrawerHeader(title = prototypeModifier.name, screenName = "Edit Modifier".uppercase(), onIconClick = { actionHandler.invoke(UserAction.Back) })
         Column(Modifier.padding(horizontal = 32.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             when (prototypeModifier) {
                 is PrototypeModifier.Padding -> PaddingModifierEditor(prototypeModifier = prototypeModifier, onEdit)

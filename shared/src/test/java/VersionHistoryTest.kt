@@ -5,7 +5,7 @@ import org.junit.Test
 
 private val baseProject = newProject(
     name = "Demo Project",
-    theme = Theme(),
+    theme = ThemeColors(),
     trees = listOf(
         PrototypeTree(name = "Screen 1", treeType = TreeType.Screen, component = PrototypeComponent.Group.Column(id = "columnID", modifiers = listOf(PrototypeModifier.FillMaxSize())))
     )

@@ -1,4 +1,4 @@
-package com.andb.apps.composesandbox.ui.theme
+package com.andb.apps.composesandbox.ui.theming
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme

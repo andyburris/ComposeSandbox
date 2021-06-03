@@ -29,6 +29,7 @@ import com.andb.apps.composesandbox.ui.common.*
 import com.andb.apps.composesandbox.ui.util.genericDroppable
 import com.andb.apps.composesandbox.util.divider
 import com.andb.apps.composesandbox.util.onBackgroundSecondary
+import com.andb.apps.composesandbox.util.toDpOffset
 import com.andb.apps.composesandboxdata.model.PrototypeComponent
 import com.andb.apps.composesandboxdata.model.Slot
 import com.andb.apps.composesandboxdata.model.stringify
@@ -123,7 +124,7 @@ fun TreeScope.ComponentTreeItem(component: PrototypeComponent, lastItem: Boolean
                     onMeasure = { offset, size ->
                         val hoverItem = TreeHoverItem(
                             component,
-                            offset.toDpPosition(density),
+                            offset.toDpOffset(density),
                             with(density) { size.height.toDp() },
                             branchesShowing.size,
                             true
@@ -174,15 +175,14 @@ fun TreeScope.SlotTreeItem(slot: Slot, lastItem: Boolean, modifier: Modifier = M
             onMeasure = { offset, size ->
                 val hoverItem = TreeHoverItem(
                     slot.group,
-                    offset.toDpPosition(density),
+                    offset.toDpOffset(density),
                     with(density) { size.height.toDp() },
                     branchesShowing.size,
                     false
                 )
                 dragDropState.updateTreeItem(hoverItem)
-                println("updated tree item with $hoverItem")
             },
-            onDispose = { dragDropState.removeTreeItem(slot.group.id); println("removed hover item with id = ${slot.group.id}") }
+            onDispose = { dragDropState.removeTreeItem(slot.group.id) }
         )
     ) {
         MaterialTheme(colors = MaterialTheme.colors.copy(onBackground = MaterialTheme.colors.onBackgroundSecondary)) {
@@ -294,7 +294,7 @@ fun ComponentItem(
                 tint = MaterialTheme.colors.divider,
                 contentDescription = "Move Component",
                 modifier = Modifier.pointerInput(component) {
-                    detectTapGestures(onPress = { onDrag?.invoke(it.toDpPosition(density)) })
+                    detectTapGestures(onPress = { onDrag?.invoke(it.toDpOffset(density)) })
                 }
             )
         }

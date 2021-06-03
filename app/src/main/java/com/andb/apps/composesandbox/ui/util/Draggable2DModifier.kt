@@ -1,34 +1,30 @@
 package com.andb.apps.composesandbox.ui.util
 
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.DpOffset
-import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.toDpPosition
 
 fun Modifier.draggable2D(
     onDrop: () -> Unit,
-    canDrag: Boolean = true,
-    onPositionUpdate: (position: DpOffset) -> Unit
+    onPositionUpdate: (position: Offset) -> Unit
 ): Modifier = composed {
-    val density = LocalDensity.current
-    return@composed Modifier.pointerInput(canDrag) {
+    val onDropState = rememberUpdatedState(newValue = onDrop)
+    this.pointerInput(Unit) {
         awaitPointerEventScope {
             while (true) {
                 val event: PointerEvent = this.awaitPointerEvent(pass = PointerEventPass.Initial)
                 when {
                     event.changes.isEmpty() -> continue
-                    event.changes.first().changedToUpIgnoreConsumed() -> break
-                    else -> onPositionUpdate.invoke(event.changes.first().position.toDpPosition(density))
+                    event.changes.first().changedToUpIgnoreConsumed() -> onDropState.value.invoke()
+                    !event.changes.first().pressed -> continue
+                    else -> onPositionUpdate.invoke(event.changes.first().position)
                 }
             }
-
-            //drag(down.id) { onPositionUpdate.invoke(it.position.toDpPosition(density)) }
-            if (canDrag) onDrop.invoke()
         }
     }
 }

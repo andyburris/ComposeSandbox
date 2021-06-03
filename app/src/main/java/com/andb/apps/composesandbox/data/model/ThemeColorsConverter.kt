@@ -4,10 +4,10 @@ import androidx.compose.material.Colors
 import androidx.compose.material.lightColors
 import androidx.compose.ui.graphics.toArgb
 import com.andb.apps.composesandboxdata.model.PrototypeColor
-import com.andb.apps.composesandboxdata.model.Theme
+import com.andb.apps.composesandboxdata.model.ThemeColors
 
 
-fun Theme.toColors(): Colors = lightColors(
+fun ThemeColors.toColors(): Colors = lightColors(
     primary = primary.toColor(),
     primaryVariant = primaryVariant.toColor(),
     secondary = secondary.toColor(),
@@ -22,7 +22,7 @@ fun Theme.toColors(): Colors = lightColors(
     onError = onError.toColor()
 )
 
-fun Colors.toTheme() = Theme(
+fun Colors.toThemeColors() = ThemeColors(
     primary = PrototypeColor.FixedColor(primary.toArgb()),
     primaryVariant = PrototypeColor.FixedColor(primaryVariant.toArgb()),
     secondary = PrototypeColor.FixedColor(secondary.toArgb()),
