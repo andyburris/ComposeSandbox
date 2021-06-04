@@ -190,22 +190,10 @@ fun ColorPicker(label: String, current: PrototypeColor, modifier: Modifier = Mod
         }
     }
     if (pickingColor.value) {
-        AlertDialog(
-            onDismissRequest = { pickingColor.value = false },
-            title = { Text(text = "Pick Color") },
-            text = {
-                ColorPickerWithTheme(current = current, onSelect = onSelect)
-            },
-            buttons = {
-                Button(onClick = { pickingColor.value = false }) {
-                    Text(text = "Select")
-                }
-            },
-        )
         Dialog(onDismissRequest = { pickingColor.value = false }) {
             Column(Modifier.background(MaterialTheme.colors.background, RoundedCornerShape(16.dp))) {
                 Text(text = "Pick Color", style = MaterialTheme.typography.h6, modifier = Modifier.padding(32.dp))
-                ColorPickerWithTheme(current = current, onSelect = onSelect)
+                ColorPickerWithTheme(current = current, onSelect = onSelect, modifier = Modifier.weight(1f))
                 Row(Modifier
                     .fillMaxWidth()
                     .padding(16.dp), horizontalArrangement = Arrangement.End) {

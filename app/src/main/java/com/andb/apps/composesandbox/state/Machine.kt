@@ -1,10 +1,7 @@
 package com.andb.apps.composesandbox.state
 
 import com.andb.apps.composesandboxdata.local.DatabaseHelper
-import com.andb.apps.composesandboxdata.model.Project
-import com.andb.apps.composesandboxdata.model.apply
-import com.andb.apps.composesandboxdata.model.redo
-import com.andb.apps.composesandboxdata.model.undo
+import com.andb.apps.composesandboxdata.model.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -17,10 +14,9 @@ class Machine(coroutineScope: CoroutineScope) {
     val screens = MutableStateFlow(listOf<Screen>(Screen.Projects))
 
     val stack: StateFlow<List<ViewState>> = combine(allProjects, screens) { projects, screens ->
-        screens.map { screen ->
-            screen.toViewState(projects)
-        }.filterNotNull()
-    }.stateIn(coroutineScope, SharingStarted.Lazily, listOf(ViewState.Projects(listOf())))
+        println("stack updated, projects = ${projects.map { it.stringify() }}, screens = $screens")
+        screens.map { screen -> screen.toViewState(projects) }.filterNotNull()
+    }.stateIn(coroutineScope, SharingStarted.Eagerly, listOf(ViewState.Projects(listOf())))
 
     operator fun plusAssign(action: Action) = handleAction(action)
 

@@ -64,9 +64,9 @@ fun ProjectsScreen(projects: List<Project>) {
                         }
                 )
             }
-            if (projects.isEmpty()) {
-                item { NoProjects(modifier = Modifier.fillMaxSize()) }
-            }
+        }
+        if (projects.isEmpty()) {
+            NoProjects(modifier = Modifier.fillMaxSize())
         }
     }
 }

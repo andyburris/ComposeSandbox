@@ -21,47 +21,29 @@ import com.andb.apps.composesandbox.ui.common.ProjectTheme
 import com.andb.apps.composesandboxdata.model.PrototypeColor
 
 enum class ColorTabs {
-    PICKER, PALETTE, THEME
+    Theme, Picker, Palette,
 }
 
 @Composable
 fun ColorPickerWithTheme(current: PrototypeColor, modifier: Modifier = Modifier, onSelect: (PrototypeColor) -> Unit) {
-    val currentTab = remember { mutableStateOf(ColorTabs.THEME) }
+    val currentTab = remember { mutableStateOf(ColorTabs.Theme) }
     Column(modifier) {
-        TabRow(
-            selectedTabIndex = when(currentTab.value) {
-                ColorTabs.THEME -> 0
-                ColorTabs.PICKER -> 1
-                ColorTabs.PALETTE -> 2
-            },
-            backgroundColor = MaterialTheme.colors.background
-        ) {
-            Tab(
-                selected = currentTab.value == ColorTabs.THEME,
-                onClick = { currentTab.value = ColorTabs.THEME },
-                modifier = Modifier.padding(vertical = 16.dp)
-            ) {
-                Text(text = "THEME")
+        TabRow(selectedTabIndex = currentTab.value.ordinal, backgroundColor = MaterialTheme.colors.background) {
+            Tab(selected = currentTab.value == ColorTabs.Theme, onClick = { currentTab.value = ColorTabs.Theme }) {
+                Text(text = "Theme".uppercase(), modifier = Modifier.padding(vertical = 16.dp))
             }
-            Tab(
-                selected = currentTab.value == ColorTabs.PICKER,
-                onClick = { currentTab.value = ColorTabs.PICKER },
-                modifier = Modifier.padding(vertical = 16.dp)
-            ) {
-                Text(text = "PICKER")
+            Tab(selected = currentTab.value == ColorTabs.Picker, onClick = { currentTab.value = ColorTabs.Picker }) {
+                Text(text = "Picker".uppercase(), modifier = Modifier.padding(vertical = 16.dp))
             }
-            Tab(
-                selected = currentTab.value == ColorTabs.PALETTE,
-                onClick = { currentTab.value = ColorTabs.PALETTE },
-                modifier = Modifier.padding(vertical = 16.dp)
-            ) {
-                Text(text = "PALETTE")
+            Tab(selected = currentTab.value == ColorTabs.Palette, onClick = { currentTab.value = ColorTabs.Palette }) {
+                Text(text = "Palette".uppercase(), modifier = Modifier.padding(vertical = 16.dp))
             }
         }
+
         when (currentTab.value) {
-            ColorTabs.THEME -> ThemeColorsPicker(ProjectTheme.colors, current, modifier = Modifier.padding(24.dp)) { onSelect.invoke(it) }
-            ColorTabs.PICKER -> ColorPickerLayout(selected = current.projectColor(), modifier = Modifier.padding(24.dp)) { onSelect.invoke(it.toPrototypeColor()) }
-            ColorTabs.PALETTE -> {
+            ColorTabs.Theme -> ThemeColorsPicker(ProjectTheme.colors, current) { onSelect.invoke(it) }
+            ColorTabs.Picker -> ColorPickerLayout(selected = current.projectColor(), modifier = Modifier.padding(24.dp)) { onSelect.invoke(it.toPrototypeColor()) }
+            ColorTabs.Palette -> {
                 MaterialTheme(typography = MaterialTheme.typography.copy(overline = MaterialTheme.typography.overline.copy(letterSpacing = 0.sp))) {
                     MaterialPalette (selected = current.projectColor(), modifier = Modifier.padding(24.dp)) {
                         onSelect.invoke(it.toPrototypeColor())
@@ -74,30 +56,30 @@ fun ColorPickerWithTheme(current: PrototypeColor, modifier: Modifier = Modifier,
 
 @Composable
 fun ColorPickerWithoutTheme(current: Color, onSelect: (Color) -> Unit) {
-    val currentTab = remember { mutableStateOf(ColorTabs.PICKER) }
+    val currentTab = remember { mutableStateOf(ColorTabs.Picker) }
     Column {
         TabRow(
-            selectedTabIndex = if (currentTab.value == ColorTabs.PICKER) 0 else 1,
+            selectedTabIndex = if (currentTab.value == ColorTabs.Picker) 0 else 1,
             backgroundColor = MaterialTheme.colors.background
         ) {
             Tab(
-                selected = currentTab.value == ColorTabs.PICKER,
-                onClick = { currentTab.value = ColorTabs.PICKER },
+                selected = currentTab.value == ColorTabs.Picker,
+                onClick = { currentTab.value = ColorTabs.Picker },
                 modifier = Modifier.padding(vertical = 16.dp)
             ) {
                 Text(text = "PICKER")
             }
             Tab(
-                selected = currentTab.value == ColorTabs.PALETTE,
-                onClick = { currentTab.value = ColorTabs.PALETTE },
+                selected = currentTab.value == ColorTabs.Palette,
+                onClick = { currentTab.value = ColorTabs.Palette },
                 modifier = Modifier.padding(vertical = 16.dp)
             ) {
                 Text(text = "PALETTE")
             }
         }
         when (currentTab.value) {
-            ColorTabs.PICKER -> ColorPickerLayout(selected = current, modifier = Modifier.padding(24.dp), onSelect = onSelect)
-            ColorTabs.PALETTE -> {
+            ColorTabs.Picker -> ColorPickerLayout(selected = current, modifier = Modifier.padding(24.dp), onSelect = onSelect)
+            ColorTabs.Palette -> {
                 MaterialTheme(typography = MaterialTheme.typography.copy(overline = MaterialTheme.typography.overline.copy(letterSpacing = 0.sp))) {
                     MaterialPalette(selected = current, modifier = Modifier.padding(24.dp), onSelect = onSelect)
                 }

@@ -75,7 +75,7 @@ object DatabaseHelper : KoinComponent {
             }
         }
     }
-    val allProjects: Flow<List<Project>> = buffer.map { it.values.toList() }
+    val allProjects: Flow<List<Project>> = buffer.map { it.values.toList() }//.stateIn(CoroutineScope(Dispatchers.IO), SharingStarted.Lazily, emptyList())
 
     fun upsertProject(project: Project) {
         buffer.value = buffer.value.plus(project.id to project)

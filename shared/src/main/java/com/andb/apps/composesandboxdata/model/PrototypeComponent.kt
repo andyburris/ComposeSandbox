@@ -250,10 +250,10 @@ fun PrototypeComponent.Slotted.withSlots(slots: Slots): PrototypeComponent.Slott
  * @param indexInParent the position in the parent group that [adding] should be inserted at
  */
 fun PrototypeComponent.plusChildInTree(adding: PrototypeComponent, parent: PrototypeComponent.Group, indexInParent: Int): PrototypeComponent {
-    println("adding child to tree - adding = ${adding.stringify()}, parent = ${parent.stringify()}, indexInParent = $indexInParent, this = ${this.stringify()}")
+    println("adding child to tree - adding = ${adding.stringify(true)}, parent = ${parent.stringify(true)}, indexInParent = $indexInParent, this = ${this.stringify(true)}")
     return when {
         this.id == parent.id -> {
-            if (this !is PrototypeComponent.Group) throw Error("Can only add a child to a component that is a PrototypeComponent.Group")
+            if (this !is PrototypeComponent.Group) throw Error("Can only add a child to a component that is a PrototypeComponent.Group (this = ${this.stringify(true)})")
             this.withChildren(children.plusElement(adding, indexInParent))
         }
         this is PrototypeComponent.Slotted -> {
@@ -359,10 +359,29 @@ data class ReplacementComponents(val originalComponent: PrototypeComponent, val 
  */
 fun PrototypeComponent.replaceCustomWith(customTreeID: String, replacementComponents: ReplacementComponents) : PrototypeComponent {
     return when {
-        this is PrototypeComponent.Custom && this.treeID == customTreeID -> (replacementComponents.replacements.find { it.id == this.id } ?: replacementComponents.originalComponent).let { it.copy(modifiers = this.modifiers + it.modifiers) }
+        this is PrototypeComponent.Custom && this.treeID  == customTreeID -> (replacementComponents.replacements.find { it.id + "-replaced" == this.id } ?: replacementComponents.originalComponent).let { it.copy(modifiers = this.modifiers + it.modifiers) }
         this is PrototypeComponent.Group -> this.withChildren(children = this.children.map { it.replaceCustomWith(customTreeID, replacementComponents) })
         this is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(group = it.group.replaceCustomWith(customTreeID, replacementComponents) as PrototypeComponent.Group) })
         else -> this
+    }
+}
+
+
+fun PrototypeComponent.replaceWithCustom(oldComponents: List<PrototypeComponent>, replacementCustomComponents: List<PrototypeComponent.Custom>): PrototypeComponent {
+    return when (this) {
+        in oldComponents -> replacementCustomComponents.first { it.id == this.id + "-replaced" }
+        is PrototypeComponent.Group -> this.withChildren(this.children.map { it.replaceWithCustom(oldComponents, replacementCustomComponents) })
+        is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(group = it.group.replaceWithCustom(oldComponents, replacementCustomComponents) as PrototypeComponent.Group) })
+        else -> this
+    }
+}
+
+fun PrototypeComponent.containsCustomComponent(customTreeID: String): Boolean {
+    return when {
+        this is PrototypeComponent.Custom && this.treeID == customTreeID -> true
+        this is PrototypeComponent.Group -> this.children.any { it.containsCustomComponent(customTreeID) }
+        this is PrototypeComponent.Slotted -> this.slots.allSlots().any { it.group.containsCustomComponent(customTreeID) }
+        else -> false
     }
 }
 
@@ -406,23 +425,6 @@ fun Char.increment(): Char = when(this) {
     else -> this + 1
 }
 
-fun PrototypeComponent.replaceWithCustom(oldComponents: List<PrototypeComponent>, replacementCustomComponents: List<PrototypeComponent.Custom>): PrototypeComponent {
-    return when (this) {
-        in oldComponents -> replacementCustomComponents.first { it.id == this.id }
-        is PrototypeComponent.Group -> this.withChildren(this.children.map { it.replaceWithCustom(oldComponents, replacementCustomComponents) })
-        is PrototypeComponent.Slotted -> this.withSlots(slots = this.slots.map { it.copy(group = it.group.replaceWithCustom(oldComponents, replacementCustomComponents) as PrototypeComponent.Group) })
-        else -> this
-    }
-}
-
-fun PrototypeComponent.containsCustomComponent(customTreeID: String): Boolean {
-    return when {
-        this is PrototypeComponent.Custom && this.treeID == customTreeID -> true
-        this is PrototypeComponent.Group -> this.children.any { it.containsCustomComponent(customTreeID) }
-        this is PrototypeComponent.Slotted -> this.slots.allSlots().any { it.group.containsCustomComponent(customTreeID) }
-        else -> false
-    }
-}
 
 fun PrototypeComponent.replaceParent(replacementComponent: PrototypeComponent): Pair<PrototypeComponent, Boolean> {
     if (this::class == replacementComponent::class) return Pair(this, false)

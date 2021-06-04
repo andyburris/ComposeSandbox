@@ -6,10 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.TransformOrigin
@@ -71,6 +68,9 @@ fun SandboxScreen(sandboxState: ViewState.Sandbox, onUpdateProject: (UserAction.
                     )
                 },
                 backLayerContent = {
+                    LaunchedEffect(sandboxState) {
+                        println("selected tree = ${sandboxState.openedTree.name}")
+                    }
                     SandboxBackdrop(sandboxState, onUpdateProject = { onUpdateProject.invoke(UserAction.UpdateProject(sandboxState.project, it)) })
                 },
                 frontLayerContent = {

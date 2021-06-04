@@ -9,13 +9,13 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
@@ -35,7 +35,6 @@ import com.andb.apps.composesandbox.ui.sandbox.drawer.editproperties.DrawerEditP
 import com.andb.apps.composesandbox.ui.sandbox.drawer.theme.DrawerEditTheme
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.ComponentItem
 import com.andb.apps.composesandbox.ui.sandbox.drawer.tree.DrawerTree
-import com.andb.apps.composesandbox.ui.util.StackSwitcher
 import com.andb.apps.composesandbox.ui.util.draggable2D
 import com.andb.apps.composesandbox.util.toDpOffset
 import com.andb.apps.composesandboxdata.model.*
@@ -63,7 +62,7 @@ fun Drawer(
             else -> DragDropScrolling.None
         }
     } else DragDropScrolling.None
-    StackSwitcher(
+/*    StackSwitcher(
         stack = sandboxState.drawerStack,
         animateIf = { old, current -> old != null && old::class != current::class },
         modifier = modifier
@@ -80,13 +79,30 @@ fun Drawer(
                     //println("dragging, value = ${dragDropState.dragPosition.value}")
                 }
             )
-    ) { switchDrawerState, visibilityProgress, isTop ->
+    ) { switchDrawerState, visibilityProgress, isTop -> */
         Box(
-            modifier = Modifier.graphicsLayer(
+/*            modifier = Modifier.graphicsLayer(
                 translationX = (1 - visibilityProgress) * contentSize.width * if (isTop) 1 else -1,
                 alpha = visibilityProgress
+            )*/
+            modifier = modifier.onGloballyPositioned {
+                setContentSize(it.size.toSize())
+                dragDropState.globalOffset.value = it
+                    .positionInWindow()
+                    .toDpOffset(density)
+            }
+            .draggable2D(
+                onDrop = { if (dragDropState.draggingComponent.value != null) dragDropState.drop() },
+                onPositionUpdate = {
+                    dragDropState.dragPosition.value = it.toDpOffset(density)
+                    //println("dragging, value = ${dragDropState.dragPosition.value}")
+                }
             )
         ) {
+    val switchDrawerState = sandboxState.drawerStack.last()
+            LaunchedEffect(switchDrawerState) {
+                println("new DrawerState = $switchDrawerState")
+            }
             when (switchDrawerState) {
                 is DrawerViewState.Tree -> DrawerTree(
                     sandboxState = sandboxState,
@@ -141,7 +157,7 @@ fun Drawer(
             if (draggingComponent != null) {
                 ComponentDragDropItem(component = draggingComponent, position = dragDropState.dragPosition.value)
             }
-        }
+        //}
     }
 }
 

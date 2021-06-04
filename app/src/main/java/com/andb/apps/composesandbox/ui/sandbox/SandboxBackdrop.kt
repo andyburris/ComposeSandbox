@@ -40,7 +40,7 @@ fun SandboxBackdrop(sandboxState: ViewState.Sandbox, onUpdateProject: (ProjectAc
         items(screens) { screen ->
             TreeItem(
                 tree = screen,
-                selected = sandboxState.openedTree == screen,
+                selected = sandboxState.openedTree.id == screen.id,
             ) {
                 if (sandboxState.openedTree.id != screen.id) {
                     actionHandler.invoke(UserAction.UpdateSandbox((sandboxState.toScreen() as Screen.Sandbox).copy(openedTreeID = screen.id, drawerScreens = listOf(DrawerScreen.Tree))))
@@ -55,7 +55,7 @@ fun SandboxBackdrop(sandboxState: ViewState.Sandbox, onUpdateProject: (ProjectAc
         items(components) { component ->
             TreeItem(
                 tree = component,
-                selected = sandboxState.openedTree == component,
+                selected = sandboxState.openedTree.id == component.id,
             ) {
                 if (sandboxState.openedTree.id != component.id) {
                     actionHandler.invoke(UserAction.UpdateSandbox((sandboxState.toScreen() as Screen.Sandbox).copy(openedTreeID = component.id, drawerScreens = listOf(DrawerScreen.Tree))))

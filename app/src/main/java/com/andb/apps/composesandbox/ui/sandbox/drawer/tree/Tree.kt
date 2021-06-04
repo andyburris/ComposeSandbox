@@ -284,7 +284,7 @@ fun ComponentItem(
     onDrag: ((pointerOffset: DpOffset) -> Unit)? = null
 ) {
     Row(modifier = modifier, horizontalArrangement = Arrangement.SpaceBetween) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
             Icon(imageVector = component.icon, contentDescription = null, tint = MaterialTheme.colors.onBackgroundSecondary)
             Text(text = name, modifier = Modifier.padding(start = 16.dp), color = MaterialTheme.colors.onBackground)
         }

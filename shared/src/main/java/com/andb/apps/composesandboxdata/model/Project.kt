@@ -68,7 +68,7 @@ fun Project.reduce(action: ProjectAction): ActionResult<Project> = when(action) 
     is ProjectAction.ExtractComponent -> {
         val extractedTrees = this.trees.map { tree ->
             val replacementComponents = action.oldComponents.map { oldComponent ->
-                PrototypeComponent.Custom(id = oldComponent.id, treeID = action.tree.id)
+                PrototypeComponent.Custom(id = oldComponent.id + "-replaced", treeID = action.tree.id)
             }
             tree.copy(component = tree.component.replaceWithCustom(action.oldComponents, replacementComponents))
         }

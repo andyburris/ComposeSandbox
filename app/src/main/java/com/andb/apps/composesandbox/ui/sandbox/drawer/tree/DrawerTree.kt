@@ -14,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
@@ -101,12 +100,11 @@ private fun DrawerTreeHeader(sandboxState: ViewState.Sandbox, modifier: Modifier
     DrawerHeader(
         title = sandboxState.openedTree.name,
         titleSlot = {
-            val currentValue = remember(sandboxState.openedTree.name) { mutableStateOf(sandboxState.openedTree.name) }
             Box {
                 BasicTextField(
                     value = it,
                     textStyle = MaterialTheme.typography.h6.copy(color = MaterialTheme.colors.onBackground),
-                    onValueChange = { currentValue.value = it },
+                    onValueChange = { onUpdateProject.invoke(ProjectAction.TreeAction.UpdateName(sandboxState.openedTree, it)) },
                     decorationBox = { innerTextField ->
                         innerTextField()
                         if (it.isEmpty()) {
@@ -116,9 +114,6 @@ private fun DrawerTreeHeader(sandboxState: ViewState.Sandbox, modifier: Modifier
                                 color = MaterialTheme.colors.secondaryVariant
                             )
                         }
-                    },
-                    modifier = Modifier.onFocusChanged { focusState ->
-                        if (focusState.isFocused) onUpdateProject.invoke(ProjectAction.TreeAction.UpdateName(sandboxState.openedTree, currentValue.value))
                     }
                 )
             }
